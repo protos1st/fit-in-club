@@ -33,6 +33,21 @@ router.put('/me', (req, res) => {
     }
   }
 
+  const MAX_SLOTS_PER_DAY = 2;
+  for (let d = 0; d <= 6; d++) {
+    const daySlots = slots.filter((s) => s.day_of_week === d);
+    if (daySlots.length > MAX_SLOTS_PER_DAY) {
+      return res.status(400).json({ error: `Maximum ${MAX_SLOTS_PER_DAY} time slots per day` });
+    }
+    for (let i = 0; i < daySlots.length; i++) {
+      for (let j = i + 1; j < daySlots.length; j++) {
+        if (daySlots[i].start_time < daySlots[j].end_time && daySlots[j].start_time < daySlots[i].end_time) {
+          return res.status(400).json({ error: 'Time slots cannot overlap on the same day' });
+        }
+      }
+    }
+  }
+
   const deleteAll = db.prepare('DELETE FROM schedules WHERE user_id = ?');
   const insert = db.prepare(
     'INSERT INTO schedules (user_id, day_of_week, start_time, end_time) VALUES (?, ?, ?, ?)'

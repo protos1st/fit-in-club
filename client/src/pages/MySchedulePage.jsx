@@ -59,6 +59,16 @@ export default function MySchedulePage() {
       setDraftError('Start time must be before end time');
       return;
     }
+    const daySlots = slots.filter((s) => s.day_of_week === day);
+    if (daySlots.length >= 2) {
+      setDraftError('Max 2 slots per day');
+      return;
+    }
+    const overlaps = daySlots.some((s) => draft.start_time < s.end_time && s.start_time < draft.end_time);
+    if (overlaps) {
+      setDraftError('Overlaps with an existing slot');
+      return;
+    }
     setDraftError('');
     const newSlots = [...slots, { day_of_week: day, ...draft }];
     setAddingDay(null);
@@ -174,9 +184,9 @@ export default function MySchedulePage() {
                       <button className="btn btn-ghost btn-sm" onClick={() => { setAddingDay(null); setDraftError(''); }}>Cancel</button>
                     </div>
                   </div>
-                ) : (
+                ) : daySlots.length < 2 ? (
                   <button className="slot-add-btn" onClick={() => startAdding(dayIndex)}>+ Add time</button>
-                )}
+                ) : null}
               </div>
             </div>
           );
