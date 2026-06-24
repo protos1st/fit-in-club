@@ -29,7 +29,9 @@ export default function AppShell({ children }) {
     <div className="app-shell">
       <aside className="sidebar">
         <div className="sidebar-brand">
-          <img src={fitinLogo} alt="Fit In Club" className="sidebar-logo" />
+          <a href="https://fitin.club/" target="_blank" rel="noopener noreferrer">
+            <img src={fitinLogo} alt="Fit In Club" className="sidebar-logo" />
+          </a>
         </div>
         <nav className="sidebar-nav">
           {links.map((l) => (

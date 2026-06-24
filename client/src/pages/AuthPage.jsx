@@ -36,7 +36,9 @@ export default function AuthPage() {
   return (
     <div className="auth-screen">
       <div className="auth-card">
-        <img src={fitinLogo} alt="Fit In Club" className="auth-logo" />
+        <a href="https://fitin.club/" target="_blank" rel="noopener noreferrer">
+          <img src={fitinLogo} alt="Fit In Club" className="auth-logo" />
+        </a>
         <div className="auth-tagline">
           {mode === 'login' ? 'Log in to find your gym buddies.' : 'Sign up with your gym access code.'}
         </div>
