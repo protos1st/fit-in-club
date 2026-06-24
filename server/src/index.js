@@ -4,6 +4,8 @@ const http = require('http');
 const cors = require('cors');
 const { Server } = require('socket.io');
 
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const { initDb } = require('./db');
 const { verifyToken } = require('./auth');
 const authRoutes = require('./routes/auth');
@@ -20,18 +22,45 @@ const io = new Server(server, {
   cors: { origin: CLIENT_ORIGIN, methods: ['GET', 'POST'] }
 });
 
+app.use(helmet());
+app.set('trust proxy', 1);
 app.use(cors({ origin: CLIENT_ORIGIN }));
-app.use(express.json());
+app.use(express.json({ limit: '16kb' }));
+
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later' }
+});
+app.use(globalLimiter);
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 15,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many login attempts, please try again later' }
+});
+
+const messageLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Sending messages too fast, slow down' }
+});
 
 // Track which users are currently connected over websocket: Map<userId, Set<socketId>>
 const onlineUsers = new Map();
 app.set('io', io);
 app.set('onlineUsers', onlineUsers);
 
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/schedule', scheduleRoutes);
 app.use('/api/buddies', buddyRoutes);
-app.use('/api/messages', messageRoutes);
+app.use('/api/messages', messageLimiter, messageRoutes);
 
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 

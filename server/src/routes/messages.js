@@ -45,6 +45,9 @@ router.post('/:userId', async (req, res) => {
   if (!body || !body.trim()) {
     return res.status(400).json({ error: 'Message body is required' });
   }
+  if (body.length > 2000) {
+    return res.status(400).json({ error: 'Message is too long (max 2000 characters)' });
+  }
   if (!(await areConnected(req.user.id, otherId))) {
     return res.status(403).json({ error: 'You can only message accepted gym buddies' });
   }
