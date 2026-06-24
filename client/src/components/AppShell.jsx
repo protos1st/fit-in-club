@@ -52,7 +52,12 @@ export default function AppShell({ children }) {
         </div>
         <button className="sidebar-logout-mobile" onClick={logout}>Log out</button>
       </aside>
-      <main className="app-main">{children}</main>
+      <main className="app-main">
+        {children}
+        <footer className="powered-by">
+          Powered by <a href="https://fitin.club/" target="_blank" rel="noopener noreferrer">FitIn</a>
+        </footer>
+      </main>
     </div>
   );
 }
