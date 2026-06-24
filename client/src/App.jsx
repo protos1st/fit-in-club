@@ -10,6 +10,7 @@ import LiveNowPage from './pages/LiveNowPage';
 import RequestsPage from './pages/RequestsPage';
 import ConnectionsPage from './pages/ConnectionsPage';
 import ChatPage from './pages/ChatPage';
+import ProfilePage from './pages/ProfilePage';
 
 function ProtectedRoutes() {
   const { user, loading } = useAuth();
@@ -37,6 +38,7 @@ function ProtectedRoutes() {
             <Route path="/requests" element={<RequestsPage />} />
             <Route path="/connections" element={<ConnectionsPage />} />
             <Route path="/connections/:userId" element={<ChatPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </AppShell>

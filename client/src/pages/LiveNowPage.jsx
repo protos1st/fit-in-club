@@ -18,6 +18,8 @@ export default function LiveNowPage() {
   const [live, setLive] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sentTo, setSentTo] = useState(new Set());
+  const [connectedTo, setConnectedTo] = useState(new Set());
+  const [pendingTo, setPendingTo] = useState(new Set());
   const showToast = useToast();
 
   function load() {
@@ -26,6 +28,10 @@ export default function LiveNowPage() {
 
   useEffect(() => {
     load();
+    Promise.all([api.getConnections(), api.getOutgoing()]).then(([conn, out]) => {
+      setConnectedTo(new Set((conn.connections || []).map((c) => c.user_id)));
+      setPendingTo(new Set((out.outgoing || []).map((r) => r.user_id)));
+    });
     const interval = setInterval(load, 30000);
     return () => clearInterval(interval);
   }, []);
@@ -64,13 +70,17 @@ export default function LiveNowPage() {
                   checked in {timeAgo(p.checked_in_at)}
                 </div>
               </div>
-              <button
-                className="btn btn-primary btn-sm"
-                onClick={() => sendRequest(p.user_id)}
-                disabled={sentTo.has(p.user_id)}
-              >
-                {sentTo.has(p.user_id) ? 'Sent' : 'Send request'}
-              </button>
+              {connectedTo.has(p.user_id) ? (
+                <span className="btn btn-ghost btn-sm" style={{ cursor: 'default' }}>Connected</span>
+              ) : (
+                <button
+                  className="btn btn-primary btn-sm"
+                  onClick={() => sendRequest(p.user_id)}
+                  disabled={sentTo.has(p.user_id) || pendingTo.has(p.user_id)}
+                >
+                  {sentTo.has(p.user_id) || pendingTo.has(p.user_id) ? 'Sent' : 'Send request'}
+                </button>
+              )}
             </div>
           ))
         )}

@@ -66,7 +66,17 @@ export default function MySchedulePage() {
   }
 
   function removeSlot(slotId) {
-    persist(slots.filter((s) => s.id !== slotId));
+    const removed = slots.find((s) => s.id === slotId);
+    const newSlots = slots.filter((s) => s.id !== slotId);
+    setSlots(newSlots);
+    persist(newSlots);
+    showToast('Time slot removed', 'info', {
+      onUndo: () => {
+        const restored = [...newSlots, removed];
+        setSlots(restored);
+        persist(restored);
+      }
+    });
   }
 
   async function toggleLive() {
@@ -75,6 +85,16 @@ export default function MySchedulePage() {
       if (liveStatus) {
         await api.checkOut();
         setLiveStatus(null);
+        showToast('Checked out', 'info', {
+          onUndo: async () => {
+            try {
+              const data = await api.checkIn();
+              setLiveStatus(data);
+            } catch (err) {
+              showToast(err.message, 'error');
+            }
+          }
+        });
       } else {
         const data = await api.checkIn();
         setLiveStatus(data);

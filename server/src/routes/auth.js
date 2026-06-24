@@ -81,4 +81,18 @@ router.get('/me', authMiddleware, (req, res) => {
   res.json({ user });
 });
 
+// PUT /api/auth/profile
+router.put('/profile', authMiddleware, async (req, res) => {
+  const { name, trainingType, bio } = req.body;
+  if (!name || !name.trim()) {
+    return res.status(400).json({ error: 'Name is required' });
+  }
+  db.prepare(
+    'UPDATE users SET name = ?, training_type = ?, bio = ? WHERE id = ?'
+  ).run(name.trim(), trainingType || '', bio || '', req.user.id);
+
+  const user = db.prepare('SELECT id, name, email, training_type, bio FROM users WHERE id = ?').get(req.user.id);
+  res.json({ user });
+});
+
 module.exports = router;

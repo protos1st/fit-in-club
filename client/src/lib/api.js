@@ -45,6 +45,7 @@ export const api = {
   signup: (payload) => request('/api/auth/signup', { method: 'POST', body: payload, auth: false }),
   login: (payload) => request('/api/auth/login', { method: 'POST', body: payload, auth: false }),
   me: () => request('/api/auth/me'),
+  updateProfile: (payload) => request('/api/auth/profile', { method: 'PUT', body: payload }),
 
   getMySchedule: () => request('/api/schedule/me'),
   saveMySchedule: (slots) => request('/api/schedule/me', { method: 'PUT', body: { slots } }),

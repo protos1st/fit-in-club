@@ -92,6 +92,7 @@ export default function ChatPage() {
                 {m.body}
                 <div className="chat-time">
                   {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {mine && <span className="chat-read-status">{m.read_at ? ' ✓✓' : ' ✓'}</span>}
                 </div>
               </div>
             );

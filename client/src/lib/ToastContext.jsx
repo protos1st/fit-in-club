@@ -14,11 +14,17 @@ export function ToastProvider({ children }) {
     delete timeouts.current[id];
   }, []);
 
-  const showToast = useCallback((message, type = 'error') => {
+  const showToast = useCallback((message, type = 'error', { onUndo } = {}) => {
     const id = ++idCounter;
-    setToasts((prev) => [...prev, { id, message, type }]);
-    timeouts.current[id] = setTimeout(() => dismiss(id), 5000);
+    setToasts((prev) => [...prev, { id, message, type, onUndo }]);
+    timeouts.current[id] = setTimeout(() => dismiss(id), onUndo ? 6000 : 5000);
+    return id;
   }, [dismiss]);
+
+  function handleUndo(toast) {
+    dismiss(toast.id);
+    if (toast.onUndo) toast.onUndo();
+  }
 
   return (
     <ToastContext.Provider value={showToast}>
@@ -27,7 +33,12 @@ export function ToastProvider({ children }) {
         {toasts.map((t) => (
           <div className={`toast toast-${t.type}`} key={t.id}>
             <span>{t.message}</span>
-            <button className="toast-close" onClick={() => dismiss(t.id)} aria-label="Dismiss">×</button>
+            <div className="toast-actions">
+              {t.onUndo && (
+                <button className="toast-undo" onClick={() => handleUndo(t)}>Undo</button>
+              )}
+              <button className="toast-close" onClick={() => dismiss(t.id)} aria-label="Dismiss">×</button>
+            </div>
           </div>
         ))}
       </div>

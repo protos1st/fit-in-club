@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700;800&display=swap');
+
 :root {
   /* --- Color tokens (Fitin brand) --- */
   --color-bg: #f5f1dd;          /* fitin cream */
@@ -25,7 +27,23 @@
   --shadow-card: 0 1px 2px rgba(42,42,34,0.06), 0 4px 14px rgba(42,42,34,0.06);
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700;800&display=swap');
+/* ---------- Dark mode ---------- */
+
+[data-theme="dark"] {
+  --color-bg: #1a1a1a;
+  --color-ink: #e0ddd0;
+  --color-accent: #fba327;
+  --color-accent-ink: #1a1a1a;
+  --color-navy: #a3b58a;
+  --color-sage: #b89878;
+  --color-sage-bg: #2a2822;
+  --color-line: #333328;
+  --color-card: #242420;
+  --color-danger: #e05a3a;
+  --color-warn-bg: #3a3020;
+  --color-warn-ink: #d4a870;
+  --color-brown: #d4a870;
+}
 
 * { box-sizing: border-box; }
 
@@ -148,7 +166,31 @@ input, select, textarea {
   font-size: 0.82rem;
   width: 100%;
 }
+.sidebar-theme-toggle {
+  background: none;
+  border: 1px solid var(--color-line);
+  color: var(--color-navy);
+  padding: 7px 12px;
+  border-radius: var(--radius);
+  font-size: 0.82rem;
+  width: 100%;
+  margin-bottom: 8px;
+}
+.sidebar-theme-toggle:hover { border-color: var(--color-accent); color: var(--color-accent); }
+
 .sidebar-logout:hover { border-color: var(--color-accent); color: var(--color-accent); }
+
+.sidebar-logout-mobile {
+  display: none;
+  background: none;
+  border: 1px solid var(--color-line);
+  color: var(--color-navy);
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  font-size: 0.82rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
 
 @media (max-width: 720px) {
   .app-shell { flex-direction: column; }
@@ -159,6 +201,7 @@ input, select, textarea {
   .sidebar-link { padding: 8px 12px; border-left: none; border-bottom: 3px solid transparent; white-space: nowrap; }
   .sidebar-link.active { border-left: none; border-bottom-color: var(--color-accent); }
   .sidebar-foot { display: none; }
+  .sidebar-logout-mobile { display: block; }
 }
 
 /* ---------- Page header ---------- */
@@ -246,7 +289,7 @@ input, select, textarea {
   padding: 10px 12px;
   border: 1.5px solid var(--color-line);
   border-radius: var(--radius);
-  background: #fff;
+  background: var(--color-card);
   color: var(--color-ink);
 }
 .field input:focus, .field select:focus, .field textarea:focus {
@@ -326,7 +369,7 @@ input, select, textarea {
 }
 
 .day-col {
-  background: #fcfbf8;
+  background: var(--color-card);
   border: 1px solid var(--color-line);
   border-radius: var(--radius);
   min-height: 160px;
@@ -408,7 +451,7 @@ input, select, textarea {
   margin-bottom: 20px;
 }
 .live-banner.off {
-  background: #fff;
+  background: var(--color-card);
   border: 1px solid var(--color-line);
 }
 .live-banner.on {
@@ -519,7 +562,7 @@ input, select, textarea {
 }
 .chat-bubble.theirs {
   align-self: flex-start;
-  background: #fff;
+  background: var(--color-card);
   border: 1px solid var(--color-line);
   border-radius: 14px 14px 14px 4px;
 }
@@ -527,6 +570,10 @@ input, select, textarea {
   font-size: 0.68rem;
   opacity: 0.6;
   margin-top: 3px;
+}
+.chat-read-status {
+  font-weight: 600;
+  letter-spacing: -1px;
 }
 .chat-input-row {
   display: flex;
@@ -624,7 +671,7 @@ input, select, textarea {
   color: var(--color-navy);
 }
 .toast-info {
-  background: #fff;
+  background: var(--color-card);
   border: 1px solid var(--color-line);
   color: var(--color-navy);
 }
@@ -640,6 +687,22 @@ input, select, textarea {
   flex-shrink: 0;
 }
 .toast-close:hover { opacity: 1; }
+
+.toast-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.toast-undo {
+  background: none;
+  border: none;
+  color: inherit;
+  font-weight: 700;
+  font-size: 0.82rem;
+  text-decoration: underline;
+  padding: 0;
+}
 
 /* ---------- Layout utility classes (replace inline styles) ---------- */
 

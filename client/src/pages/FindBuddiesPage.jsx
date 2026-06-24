@@ -20,13 +20,17 @@ export default function FindBuddiesPage() {
   const [note, setNote] = useState('');
   const [loading, setLoading] = useState(true);
   const [sentTo, setSentTo] = useState(new Set());
+  const [connectedTo, setConnectedTo] = useState(new Set());
+  const [pendingTo, setPendingTo] = useState(new Set());
   const showToast = useToast();
 
   useEffect(() => {
-    api.getOverlap()
-      .then((data) => {
-        setMatches(data.matches || []);
-        setNote(data.note || '');
+    Promise.all([api.getOverlap(), api.getConnections(), api.getOutgoing()])
+      .then(([overlap, conn, out]) => {
+        setMatches(overlap.matches || []);
+        setNote(overlap.note || '');
+        setConnectedTo(new Set((conn.connections || []).map((c) => c.user_id)));
+        setPendingTo(new Set((out.outgoing || []).map((r) => r.user_id)));
       })
       .finally(() => setLoading(false));
   }, []);
@@ -78,13 +82,17 @@ export default function FindBuddiesPage() {
               {m.training_type && <div className="person-meta"><span className="tag">{m.training_type}</span></div>}
               {m.bio && <div className="person-meta">{m.bio}</div>}
             </div>
-            <button
-              className="btn btn-primary btn-sm"
-              onClick={() => sendRequest(m.user_id)}
-              disabled={sentTo.has(m.user_id)}
-            >
-              {sentTo.has(m.user_id) ? 'Request sent' : 'Send request'}
-            </button>
+            {connectedTo.has(m.user_id) ? (
+              <span className="btn btn-ghost btn-sm" style={{ cursor: 'default' }}>Connected</span>
+            ) : (
+              <button
+                className="btn btn-primary btn-sm"
+                onClick={() => sendRequest(m.user_id)}
+                disabled={sentTo.has(m.user_id) || pendingTo.has(m.user_id)}
+              >
+                {sentTo.has(m.user_id) || pendingTo.has(m.user_id) ? 'Request sent' : 'Send request'}
+              </button>
+            )}
           </div>
           <div className="overlap-slots">
             {m.overlapping_slots.map((s, i) => (
