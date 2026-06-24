@@ -1,6 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const db = require('../db');
+const { pool } = require('../db');
 const { signToken, authMiddleware } = require('../auth');
 
 const router = express.Router();
@@ -31,19 +31,20 @@ router.post('/signup', async (req, res) => {
     return res.status(400).json({ error: 'Password must be at least 6 characters' });
   }
 
-  const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email.toLowerCase().trim());
-  if (existing) {
+  const existing = await pool.query('SELECT id FROM users WHERE email = $1', [email.toLowerCase().trim()]);
+  if (existing.rows.length > 0) {
     return res.status(409).json({ error: 'An account with this email already exists' });
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
 
-  const result = db.prepare(
+  const result = await pool.query(
     `INSERT INTO users (name, email, password_hash, training_type, bio)
-     VALUES (?, ?, ?, ?, ?)`
-  ).run(name.trim(), email.toLowerCase().trim(), passwordHash, trainingType || '', bio || '');
+     VALUES ($1, $2, $3, $4, $5) RETURNING id, name, email, training_type, bio`,
+    [name.trim(), email.toLowerCase().trim(), passwordHash, trainingType || '', bio || '']
+  );
 
-  const user = db.prepare('SELECT id, name, email, training_type, bio FROM users WHERE id = ?').get(result.lastInsertRowid);
+  const user = result.rows[0];
   const token = signToken(user);
 
   res.status(201).json({ token, user });
@@ -57,7 +58,8 @@ router.post('/login', async (req, res) => {
     return res.status(400).json({ error: 'email and password are required' });
   }
 
-  const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email.toLowerCase().trim());
+  const result = await pool.query('SELECT * FROM users WHERE email = $1', [email.toLowerCase().trim()]);
+  const user = result.rows[0];
   if (!user) {
     return res.status(401).json({ error: 'Invalid email or password' });
   }
@@ -75,8 +77,9 @@ router.post('/login', async (req, res) => {
 });
 
 // GET /api/auth/me
-router.get('/me', authMiddleware, (req, res) => {
-  const user = db.prepare('SELECT id, name, email, training_type, bio FROM users WHERE id = ?').get(req.user.id);
+router.get('/me', authMiddleware, async (req, res) => {
+  const result = await pool.query('SELECT id, name, email, training_type, bio FROM users WHERE id = $1', [req.user.id]);
+  const user = result.rows[0];
   if (!user) return res.status(404).json({ error: 'User not found' });
   res.json({ user });
 });
@@ -87,12 +90,13 @@ router.put('/profile', authMiddleware, async (req, res) => {
   if (!name || !name.trim()) {
     return res.status(400).json({ error: 'Name is required' });
   }
-  db.prepare(
-    'UPDATE users SET name = ?, training_type = ?, bio = ? WHERE id = ?'
-  ).run(name.trim(), trainingType || '', bio || '', req.user.id);
+  await pool.query(
+    'UPDATE users SET name = $1, training_type = $2, bio = $3 WHERE id = $4',
+    [name.trim(), trainingType || '', bio || '', req.user.id]
+  );
 
-  const user = db.prepare('SELECT id, name, email, training_type, bio FROM users WHERE id = ?').get(req.user.id);
-  res.json({ user });
+  const result = await pool.query('SELECT id, name, email, training_type, bio FROM users WHERE id = $1', [req.user.id]);
+  res.json({ user: result.rows[0] });
 });
 
 module.exports = router;

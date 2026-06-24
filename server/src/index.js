@@ -4,6 +4,7 @@ const http = require('http');
 const cors = require('cors');
 const { Server } = require('socket.io');
 
+const { initDb } = require('./db');
 const { verifyToken } = require('./auth');
 const authRoutes = require('./routes/auth');
 const scheduleRoutes = require('./routes/schedule');
@@ -71,6 +72,12 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 4000;
-server.listen(PORT, () => {
-  console.log(`Gym Buddy server running on http://localhost:${PORT}`);
+
+initDb().then(() => {
+  server.listen(PORT, () => {
+    console.log(`Gym Buddy server running on http://localhost:${PORT}`);
+  });
+}).catch((err) => {
+  console.error('Failed to initialize database:', err);
+  process.exit(1);
 });

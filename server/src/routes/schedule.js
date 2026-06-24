@@ -1,21 +1,21 @@
 const express = require('express');
-const db = require('../db');
+const { pool } = require('../db');
 const { authMiddleware } = require('../auth');
 
 const router = express.Router();
 router.use(authMiddleware);
 
-// GET /api/schedule/me — my recurring weekly schedule
-router.get('/me', (req, res) => {
-  const rows = db.prepare(
-    'SELECT id, day_of_week, start_time, end_time FROM schedules WHERE user_id = ? ORDER BY day_of_week, start_time'
-  ).all(req.user.id);
-  res.json({ schedule: rows });
+// GET /api/schedule/me
+router.get('/me', async (req, res) => {
+  const result = await pool.query(
+    'SELECT id, day_of_week, start_time, end_time FROM schedules WHERE user_id = $1 ORDER BY day_of_week, start_time',
+    [req.user.id]
+  );
+  res.json({ schedule: result.rows });
 });
 
-// PUT /api/schedule/me — replace my whole weekly schedule
-// body: { slots: [{ day_of_week, start_time, end_time }, ...] }
-router.put('/me', (req, res) => {
+// PUT /api/schedule/me
+router.put('/me', async (req, res) => {
   const { slots } = req.body;
   if (!Array.isArray(slots)) {
     return res.status(400).json({ error: 'slots must be an array' });
@@ -48,43 +48,51 @@ router.put('/me', (req, res) => {
     }
   }
 
-  const deleteAll = db.prepare('DELETE FROM schedules WHERE user_id = ?');
-  const insert = db.prepare(
-    'INSERT INTO schedules (user_id, day_of_week, start_time, end_time) VALUES (?, ?, ?, ?)'
-  );
-
-  const tx = db.transaction((slots) => {
-    deleteAll.run(req.user.id);
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('DELETE FROM schedules WHERE user_id = $1', [req.user.id]);
     for (const s of slots) {
-      insert.run(req.user.id, s.day_of_week, s.start_time, s.end_time);
+      await client.query(
+        'INSERT INTO schedules (user_id, day_of_week, start_time, end_time) VALUES ($1, $2, $3, $4)',
+        [req.user.id, s.day_of_week, s.start_time, s.end_time]
+      );
     }
-  });
-  tx(slots);
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
 
-  const rows = db.prepare(
-    'SELECT id, day_of_week, start_time, end_time FROM schedules WHERE user_id = ? ORDER BY day_of_week, start_time'
-  ).all(req.user.id);
-  res.json({ schedule: rows });
+  const result = await pool.query(
+    'SELECT id, day_of_week, start_time, end_time FROM schedules WHERE user_id = $1 ORDER BY day_of_week, start_time',
+    [req.user.id]
+  );
+  res.json({ schedule: result.rows });
 });
 
-// GET /api/schedule/overlap?day=1 — find members whose schedule overlaps mine on a given day
-// If no day given, checks overlap across all days.
-router.get('/overlap', (req, res) => {
-  const mySlots = db.prepare(
-    'SELECT day_of_week, start_time, end_time FROM schedules WHERE user_id = ?'
-  ).all(req.user.id);
+// GET /api/schedule/overlap
+router.get('/overlap', async (req, res) => {
+  const myResult = await pool.query(
+    'SELECT day_of_week, start_time, end_time FROM schedules WHERE user_id = $1',
+    [req.user.id]
+  );
+  const mySlots = myResult.rows;
 
   if (mySlots.length === 0) {
     return res.json({ matches: [], note: 'Set your own schedule first to see overlaps.' });
   }
 
-  const others = db.prepare(`
+  const othersResult = await pool.query(`
     SELECT s.id as schedule_id, s.day_of_week, s.start_time, s.end_time,
            u.id as user_id, u.name, u.training_type, u.bio
     FROM schedules s
     JOIN users u ON u.id = s.user_id
-    WHERE u.id != ?
-  `).all(req.user.id);
+    WHERE u.id != $1
+  `, [req.user.id]);
+  const others = othersResult.rows;
 
   const overlaps = (aStart, aEnd, bStart, bEnd) => aStart < bEnd && bStart < aEnd;
 
@@ -115,51 +123,52 @@ router.get('/overlap', (req, res) => {
   res.json({ matches: Array.from(matchesByUser.values()) });
 });
 
-// --- Live "I'm at the gym now" status ---
+// --- Live status ---
 
 const LIVE_STATUS_DURATION_HOURS = 2;
 
 // POST /api/schedule/checkin
-router.post('/checkin', (req, res) => {
+router.post('/checkin', async (req, res) => {
   const now = new Date();
   const expires = new Date(now.getTime() + LIVE_STATUS_DURATION_HOURS * 60 * 60 * 1000);
 
-  db.prepare(`
+  await pool.query(`
     INSERT INTO live_status (user_id, checked_in_at, expires_at)
-    VALUES (?, ?, ?)
-    ON CONFLICT(user_id) DO UPDATE SET checked_in_at = excluded.checked_in_at, expires_at = excluded.expires_at
-  `).run(req.user.id, now.toISOString(), expires.toISOString());
+    VALUES ($1, $2, $3)
+    ON CONFLICT(user_id) DO UPDATE SET checked_in_at = EXCLUDED.checked_in_at, expires_at = EXCLUDED.expires_at
+  `, [req.user.id, now.toISOString(), expires.toISOString()]);
 
   res.json({ checked_in_at: now.toISOString(), expires_at: expires.toISOString() });
 });
 
 // POST /api/schedule/checkout
-router.post('/checkout', (req, res) => {
-  db.prepare('DELETE FROM live_status WHERE user_id = ?').run(req.user.id);
+router.post('/checkout', async (req, res) => {
+  await pool.query('DELETE FROM live_status WHERE user_id = $1', [req.user.id]);
   res.json({ ok: true });
 });
 
-// GET /api/schedule/live — everyone currently checked in (not expired)
-router.get('/live', (req, res) => {
+// GET /api/schedule/live
+router.get('/live', async (req, res) => {
   const now = new Date().toISOString();
-  const rows = db.prepare(`
+  const result = await pool.query(`
     SELECT u.id as user_id, u.name, u.training_type, u.bio, l.checked_in_at, l.expires_at
     FROM live_status l
     JOIN users u ON u.id = l.user_id
-    WHERE l.expires_at > ? AND u.id != ?
+    WHERE l.expires_at > $1 AND u.id != $2
     ORDER BY l.checked_in_at DESC
-  `).all(now, req.user.id);
+  `, [now, req.user.id]);
 
-  res.json({ live: rows });
+  res.json({ live: result.rows });
 });
 
-// GET /api/schedule/my-status — am I currently checked in?
-router.get('/my-status', (req, res) => {
+// GET /api/schedule/my-status
+router.get('/my-status', async (req, res) => {
   const now = new Date().toISOString();
-  const row = db.prepare(
-    'SELECT checked_in_at, expires_at FROM live_status WHERE user_id = ? AND expires_at > ?'
-  ).get(req.user.id, now);
-  res.json({ status: row || null });
+  const result = await pool.query(
+    'SELECT checked_in_at, expires_at FROM live_status WHERE user_id = $1 AND expires_at > $2',
+    [req.user.id, now]
+  );
+  res.json({ status: result.rows[0] || null });
 });
 
 module.exports = router;
