@@ -1113,26 +1113,17 @@ input, select, textarea {
 .powered-by {
   margin-top: 48px;
   padding: 16px 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  font-size: 0.78rem;
+  text-align: center;
+  font-size: 0.82rem;
   color: var(--color-hint);
 }
-.powered-by a {
+.powered-by-link {
+  color: var(--color-accent);
+  font-weight: 700;
   text-decoration: none;
-  vertical-align: middle;
 }
-.powered-by-logo {
-  height: 24px;
-  width: auto;
-  display: block;
-  opacity: 0.85;
-  transition: opacity 0.15s;
-}
-.powered-by a:hover .powered-by-logo {
-  opacity: 1;
+.powered-by-link:hover {
+  text-decoration: underline;
 }
 
 .section-title {
