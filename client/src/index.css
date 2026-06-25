@@ -1798,6 +1798,57 @@ input, select, textarea {
   font-weight: 600;
 }
 
+.sched-custom-divider {
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--color-hint);
+  margin: 14px 0;
+  position: relative;
+}
+.sched-custom-divider::before,
+.sched-custom-divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 30%;
+  height: 1px;
+  background: var(--color-line);
+}
+.sched-custom-divider::before { left: 0; }
+.sched-custom-divider::after { right: 0; }
+.sched-custom-days {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.sched-custom-day {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--color-line);
+  background: var(--color-bg);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-hint);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.sched-custom-day.active {
+  background: var(--color-accent);
+  color: #fff;
+  border-color: var(--color-accent);
+}
+.sched-custom-day:hover:not(.active) {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+.sched-custom-time {
+  display: flex;
+  gap: 12px;
+}
+
 @media (max-width: 720px) {
   .sched-templates-grid { grid-template-columns: 1fr; }
 }

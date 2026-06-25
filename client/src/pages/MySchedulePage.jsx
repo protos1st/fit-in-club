@@ -95,6 +95,8 @@ export default function MySchedulePage() {
   const [draft, setDraft] = useState({ start_time: '06:00', end_time: '07:00' });
   const [draftError, setDraftError] = useState('');
   const [showTemplates, setShowTemplates] = useState(false);
+  const [customDays, setCustomDays] = useState([]);
+  const [customTime, setCustomTime] = useState({ start_time: '06:00', end_time: '07:00' });
 
   const [liveStatus, setLiveStatus] = useState(null);
   const [liveBusy, setLiveBusy] = useState(false);
@@ -207,6 +209,20 @@ export default function MySchedulePage() {
     showToast(`Applied "${template.label}" template`, 'success');
   }
 
+  function toggleCustomDay(d) {
+    setCustomDays(prev => prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d]);
+  }
+
+  function applyCustom() {
+    if (customDays.length === 0) return;
+    if (customTime.start_time >= customTime.end_time) { showToast('Start time must be before end time', 'error'); return; }
+    const newSlots = customDays.map(d => ({ day_of_week: d, start_time: customTime.start_time, end_time: customTime.end_time }));
+    persist(newSlots);
+    setShowTemplates(false);
+    setCustomDays([]);
+    showToast('Custom schedule applied', 'success');
+  }
+
   async function toggleLive() {
     setLiveBusy(true);
     try {
@@ -283,6 +299,27 @@ export default function MySchedulePage() {
                 <span className="sched-templates-days">{t.days.map(d => DAYS[d]).join(', ')}</span>
               </button>
             ))}
+          </div>
+          <div className="sched-custom-divider">or pick your own</div>
+          <div className="sched-custom">
+            <div className="sched-custom-days">
+              {DAYS.map((d, i) => (
+                <button key={i} className={`sched-custom-day ${customDays.includes(i) ? 'active' : ''}`} onClick={() => toggleCustomDay(i)}>{d}</button>
+              ))}
+            </div>
+            <div className="sched-custom-time">
+              <div className="sched-editor-field">
+                <label className="sched-editor-label">From</label>
+                <input type="time" value={customTime.start_time} onChange={e => setCustomTime(t => ({ ...t, start_time: e.target.value }))} />
+              </div>
+              <div className="sched-editor-field">
+                <label className="sched-editor-label">To</label>
+                <input type="time" value={customTime.end_time} onChange={e => setCustomTime(t => ({ ...t, end_time: e.target.value }))} />
+              </div>
+            </div>
+            <button className="btn btn-primary btn-sm" onClick={applyCustom} disabled={customDays.length === 0} style={{ borderRadius: 16, marginTop: 8 }}>
+              Apply to {customDays.length > 0 ? customDays.map(d => DAYS[d]).join(', ') : '...'}
+            </button>
           </div>
         </div>
       )}
