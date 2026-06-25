@@ -356,6 +356,7 @@ input, select, textarea {
 .auth-screen {
   min-height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   background: var(--color-navy);
@@ -373,19 +374,21 @@ input, select, textarea {
   height: 48px;
   width: auto;
   display: block;
-  margin-bottom: 12px;
+  margin: 0 auto 12px;
 }
 .auth-heading {
   font-size: 1.5rem;
   margin-bottom: 4px;
   text-transform: none;
   letter-spacing: 0;
+  text-align: center;
 }
 .auth-tagline {
   color: var(--color-muted);
   font-size: 0.88rem;
   margin-bottom: 24px;
   line-height: 1.5;
+  text-align: center;
 }
 
 .password-wrapper {
