@@ -108,6 +108,7 @@ export default function ChatPage() {
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Type a message…"
+            onFocus={() => setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 300)}
           />
           <button type="submit" className="btn btn-primary">Send</button>
         </form>
