@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useToast } from '../lib/ToastContext';
@@ -10,6 +10,7 @@ function initials(name) {
 export default function BlockedPage() {
   const [blocked, setBlocked] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
   const showToast = useToast();
   const navigate = useNavigate();
 
@@ -38,6 +39,21 @@ export default function BlockedPage() {
       <h1 className="page-title">Blocked users</h1>
       <p className="page-sub">{blocked.length} blocked user{blocked.length !== 1 ? 's' : ''}</p>
 
+      {blocked.length > 0 && (
+        <div className="filter-bar">
+          <div className="filter-search">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-hint)" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search blocked users…"
+              aria-label="Search blocked users"
+            />
+          </div>
+        </div>
+      )}
+
       <div className="card">
         {blocked.length === 0 ? (
           <div className="empty-state">
@@ -45,7 +61,7 @@ export default function BlockedPage() {
             <p>You haven't blocked anyone.</p>
           </div>
         ) : (
-          blocked.map((b) => (
+          blocked.filter((b) => !search || b.name.toLowerCase().includes(search.toLowerCase())).map((b) => (
             <div className="person-row" key={b.user_id}>
               <div className="person-avatar">{initials(b.name)}</div>
               <div className="person-info">
