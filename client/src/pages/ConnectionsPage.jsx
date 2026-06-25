@@ -79,7 +79,7 @@ export default function ConnectionsPage() {
 
   return (
     <div>
-      <div className="page-eyebrow">Your buddies</div>
+      <div className="page-eyebrow">Your Buddies</div>
       <h1 className="page-title">Messages</h1>
       <p className="page-sub">{connections.length} connection{connections.length !== 1 ? 's' : ''}{totalUnread > 0 ? ` · ${totalUnread} unread` : ''}</p>
 

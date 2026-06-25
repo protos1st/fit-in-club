@@ -36,7 +36,7 @@ export default function BlockedPage() {
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
         Profile
       </button>
-      <h1 className="page-title">Blocked users</h1>
+      <h1 className="page-title">Blocked Users</h1>
       <p className="page-sub">{blocked.length} blocked user{blocked.length !== 1 ? 's' : ''}</p>
 
       {blocked.length > 0 && (

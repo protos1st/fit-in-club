@@ -116,7 +116,7 @@ export default function DiscoverPage() {
   return (
     <div>
       <div className="page-eyebrow">Discover</div>
-      <h1 className="page-title">Find buddies</h1>
+      <h1 className="page-title">Find Buddies</h1>
       <p className="page-sub">People at the gym right now and members with matching schedules.</p>
 
       <div className="filter-bar">

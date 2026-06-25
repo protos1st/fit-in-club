@@ -36,7 +36,7 @@ export default function RequestsPage() {
 
   return (
     <div>
-      <div className="page-eyebrow">Buddy requests</div>
+      <div className="page-eyebrow">Buddy Requests</div>
       <h1 className="page-title">Requests</h1>
       <p className="page-sub">Accept a request to start chatting with your gym buddy.</p>
 
