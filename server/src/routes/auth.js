@@ -82,7 +82,7 @@ router.post('/login', async (req, res) => {
 
 // GET /api/auth/me
 router.get('/me', authMiddleware, async (req, res) => {
-  const result = await pool.query('SELECT id, name, email, training_type, bio, membership, workout_frequency, buddy_preference, onboarded FROM users WHERE id = $1', [req.user.id]);
+  const result = await pool.query('SELECT id, name, email, training_type, bio, membership, workout_frequency, buddy_preference, gender, onboarded FROM users WHERE id = $1', [req.user.id]);
   const user = result.rows[0];
   if (!user) return res.status(404).json({ error: 'User not found' });
   res.json({ user });
@@ -108,21 +108,22 @@ router.put('/profile', authMiddleware, async (req, res) => {
 
 // PUT /api/auth/onboarding
 router.put('/onboarding', authMiddleware, async (req, res) => {
-  const { membership, workoutFrequency, buddyPreference, trainingType, bio } = req.body;
+  const { membership, workoutFrequency, buddyPreference, trainingType, bio, gender } = req.body;
   if ((membership || '').length > 100) return res.status(400).json({ error: 'Membership is too long' });
   if ((workoutFrequency || '').length > 50) return res.status(400).json({ error: 'Invalid workout frequency' });
   if ((buddyPreference || '').length > 50) return res.status(400).json({ error: 'Invalid buddy preference' });
   if ((trainingType || '').length > 100) return res.status(400).json({ error: 'Training type is too long' });
   if ((bio || '').length > 500) return res.status(400).json({ error: 'Bio is too long' });
+  if ((gender || '').length > 30) return res.status(400).json({ error: 'Invalid gender' });
 
   await pool.query(
     `UPDATE users SET membership = $1, workout_frequency = $2, buddy_preference = $3,
-     training_type = $4, bio = $5, onboarded = TRUE WHERE id = $6`,
-    [membership || '', workoutFrequency || '', buddyPreference || '', trainingType || '', bio || '', req.user.id]
+     training_type = $4, bio = $5, gender = $6, onboarded = TRUE WHERE id = $7`,
+    [membership || '', workoutFrequency || '', buddyPreference || '', trainingType || '', bio || '', gender || '', req.user.id]
   );
 
   const result = await pool.query(
-    'SELECT id, name, email, training_type, bio, membership, workout_frequency, buddy_preference, onboarded FROM users WHERE id = $1',
+    'SELECT id, name, email, training_type, bio, membership, workout_frequency, buddy_preference, gender, onboarded FROM users WHERE id = $1',
     [req.user.id]
   );
   res.json({ user: result.rows[0] });

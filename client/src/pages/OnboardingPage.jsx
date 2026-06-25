@@ -4,17 +4,14 @@ import { api } from '../lib/api';
 import { useToast } from '../lib/ToastContext';
 
 const STEPS = [
-  { key: 'membership', title: 'Gym membership', subtitle: 'What type of membership do you have?' },
+  { key: 'gender', title: 'About you', subtitle: 'This helps others find the right training partner' },
   { key: 'workoutFrequency', title: 'Workout frequency', subtitle: 'How often do you train per week?' },
-  { key: 'buddyPreference', title: 'Buddy preference', subtitle: 'What are you looking for?' },
-  { key: 'trainingType', title: 'Training style', subtitle: 'What do you usually train?' },
-  { key: 'bio', title: 'About you', subtitle: 'A short intro so buddies know who you are' }
+  { key: 'trainingType', title: 'Training style', subtitle: 'What do you usually train?' }
 ];
 
 const OPTIONS = {
-  membership: ['Monthly', 'Quarterly', 'Yearly', 'Day pass', 'Other'],
-  workoutFrequency: ['1–2 times', '3–4 times', '5–6 times', 'Every day'],
-  buddyPreference: ['Looking for a buddy', 'Open to being a buddy', 'Both']
+  gender: ['Male', 'Female', 'Prefer not to say'],
+  workoutFrequency: ['1–2 times', '3–4 times', '5–6 times', 'Every day']
 };
 
 export default function OnboardingPage() {
@@ -22,17 +19,15 @@ export default function OnboardingPage() {
   const showToast = useToast();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState({
-    membership: '',
+    gender: '',
     workoutFrequency: '',
-    buddyPreference: '',
-    trainingType: '',
-    bio: ''
+    trainingType: ''
   });
   const [submitting, setSubmitting] = useState(false);
 
   const current = STEPS[step];
   const isLast = step === STEPS.length - 1;
-  const canProceed = current.key === 'bio' || current.key === 'trainingType' || form[current.key];
+  const canProceed = current.key === 'trainingType' || form[current.key];
 
   function select(key, value) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -77,15 +72,6 @@ export default function OnboardingPage() {
                 {opt}
               </button>
             ))
-          ) : current.key === 'bio' ? (
-            <textarea
-              value={form.bio}
-              onChange={(e) => select('bio', e.target.value)}
-              placeholder="e.g. I've been training for 2 years, looking for a consistent gym partner"
-              rows={3}
-              maxLength={500}
-              style={{ resize: 'vertical' }}
-            />
           ) : (
             <input
               type="text"
@@ -111,7 +97,7 @@ export default function OnboardingPage() {
           </button>
         </div>
 
-        {!isLast && current.key !== 'membership' && (
+        {!isLast && step > 0 && (
           <button className="onboarding-skip" onClick={() => setStep((s) => s + 1)}>Skip</button>
         )}
       </div>

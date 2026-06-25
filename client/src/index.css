@@ -816,6 +816,64 @@ input, select, textarea {
   color: var(--color-accent);
 }
 
+/* ---------- Filter bar ---------- */
+
+.filter-bar {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.filter-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-card);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  padding: 0 12px;
+}
+.filter-search input {
+  flex: 1;
+  border: none;
+  background: none;
+  padding: 10px 0;
+  color: var(--color-ink);
+  outline: none;
+}
+.filter-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.filter-select {
+  padding: 7px 12px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  background: var(--color-card);
+  color: var(--color-ink);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+.filter-select:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(251,163,39,0.25);
+}
+.filter-clear {
+  background: none;
+  border: none;
+  color: var(--color-accent);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0;
+  align-self: flex-start;
+}
+.filter-clear:hover {
+  text-decoration: underline;
+}
+
 /* ---------- Profile settings ---------- */
 
 .profile-setting {

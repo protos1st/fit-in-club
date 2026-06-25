@@ -151,7 +151,7 @@ router.post('/checkout', async (req, res) => {
 router.get('/live', async (req, res) => {
   const now = new Date().toISOString();
   const result = await pool.query(`
-    SELECT u.id as user_id, u.name, u.training_type, u.bio, l.checked_in_at, l.expires_at
+    SELECT u.id as user_id, u.name, u.training_type, u.bio, u.gender, l.checked_in_at, l.expires_at
     FROM live_status l
     JOIN users u ON u.id = l.user_id
     WHERE l.expires_at > $1 AND u.id != $2

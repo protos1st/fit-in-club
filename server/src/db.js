@@ -55,6 +55,7 @@ async function initDb() {
     ALTER TABLE users ADD COLUMN IF NOT EXISTS workout_frequency TEXT DEFAULT '';
     ALTER TABLE users ADD COLUMN IF NOT EXISTS buddy_preference TEXT DEFAULT '';
     ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT DEFAULT '';
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS gender TEXT DEFAULT '';
     ALTER TABLE users ADD COLUMN IF NOT EXISTS onboarded BOOLEAN DEFAULT FALSE;
 
     CREATE INDEX IF NOT EXISTS idx_schedules_user ON schedules(user_id);
