@@ -103,7 +103,7 @@ router.get('/outgoing', async (req, res) => {
 router.get('/connections', async (req, res) => {
   const result = await pool.query(`
     SELECT br.id as request_id, br.responded_at,
-           u.id as user_id, u.name, u.training_type, u.bio
+           u.id as user_id, u.name, u.training_type, u.bio, u.gender
     FROM buddy_requests br
     JOIN users u ON u.id = CASE WHEN br.from_user_id = $1 THEN br.to_user_id ELSE br.from_user_id END
     WHERE br.status = 'accepted' AND (br.from_user_id = $1 OR br.to_user_id = $1)

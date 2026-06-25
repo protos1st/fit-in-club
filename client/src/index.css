@@ -1682,6 +1682,55 @@ input, select, textarea {
   color: var(--color-accent);
   white-space: nowrap;
 }
+/* --- Chat profile peek --- */
+.chat-header-name-tap { cursor: pointer; }
+.chat-header-name-tap:hover { color: var(--color-accent); }
+.chat-profile-peek {
+  background: var(--color-card);
+  border-bottom: 1px solid var(--color-line);
+  padding: 14px 16px;
+  animation: slideDown 0.2s ease;
+}
+@keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+.chat-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.chat-profile-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.chat-profile-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 2px;
+}
+.chat-profile-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--color-hint);
+  cursor: pointer;
+  padding: 4px;
+}
+.chat-profile-bio {
+  font-size: 0.82rem;
+  color: var(--color-hint);
+  margin: 10px 0 0;
+  line-height: 1.5;
+}
+
 /* --- Admin dashboard v2 (premium) --- */
 @keyframes ad-fade-up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes ad-spin { to { transform: rotate(360deg); } }
