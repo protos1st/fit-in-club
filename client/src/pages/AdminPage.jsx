@@ -301,6 +301,68 @@ function DonutChart({ title, data, colors }) {
   );
 }
 
+function MemberModal({ member, onClose }) {
+  if (!member) return null;
+  const joined = new Date(member.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="ad-member-modal" onClick={e => e.stopPropagation()}>
+        <button className="modal-close" onClick={onClose} aria-label="Close">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+        <div className="ad-member-top">
+          <div className="ad-member-avatar">
+            {member.name.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase()}
+          </div>
+          <h2 className="ad-member-name">{member.name}</h2>
+          {member.is_live && <span className="ad-member-live-tag"><span className="pulse-dot" />At gym now</span>}
+        </div>
+        {member.bio && <p className="ad-member-bio">{member.bio}</p>}
+        <div className="ad-member-grid">
+          <div className="ad-member-field"><span className="ad-member-label">Email</span><span className="ad-member-val">{member.email}</span></div>
+          <div className="ad-member-field"><span className="ad-member-label">Gender</span><span className="ad-member-val">{member.gender || 'Not set'}</span></div>
+          <div className="ad-member-field"><span className="ad-member-label">Training</span><span className="ad-member-val">{member.training_type || 'Not set'}</span></div>
+          <div className="ad-member-field"><span className="ad-member-label">Joined</span><span className="ad-member-val">{joined}</span></div>
+        </div>
+        <div className="ad-member-stats">
+          <div className="ad-member-stat"><span className="ad-member-stat-val">{member.total_checkins}</span><span className="ad-member-stat-label">Check-ins</span></div>
+          <div className="ad-member-stat"><span className="ad-member-stat-val">{member.connections}</span><span className="ad-member-stat-label">Connections</span></div>
+          <div className="ad-member-stat"><span className="ad-member-stat-val">{member.messages_sent}</span><span className="ad-member-stat-label">Messages</span></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LiveMembersCard({ liveMembers, onSelect }) {
+  if (!liveMembers || liveMembers.length === 0) return null;
+  return (
+    <div className="ad-card ad-full ad-live-card">
+      <div className="ad-card-head">
+        <h3><span className="pulse-dot" />Live at gym now</h3>
+        <span className="ad-card-sub">{liveMembers.length} member{liveMembers.length !== 1 ? 's' : ''}</span>
+      </div>
+      <div className="ad-live-list">
+        {liveMembers.map(m => {
+          const mins = Math.max(0, Math.round((new Date(m.expires_at) - Date.now()) / 60000));
+          return (
+            <div key={m.id} className="ad-live-member" onClick={() => onSelect(m.id)}>
+              <div className="ad-live-avatar">{m.name.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase()}</div>
+              <div className="ad-live-info">
+                <div className="ad-live-name">{m.name}</div>
+                <div className="ad-live-meta">
+                  {m.status_tag && <span>{m.status_tag} · </span>}
+                  {mins > 0 ? `${mins}m left` : 'Expiring soon'}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function LoginGate({ onAuth }) {
   const [pw, setPw] = useState('');
   const [error, setError] = useState('');
@@ -343,6 +405,8 @@ export default function AdminPage() {
   const [stats, setStats] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [memberSearch, setMemberSearch] = useState('');
 
   function handleAuth(pw, data) { setPassword(pw); setStats(data); setLastUpdated(new Date()); }
 
@@ -363,7 +427,16 @@ export default function AdminPage() {
   if (!password) return <LoginGate onAuth={handleAuth} />;
   if (!stats) return <div className="spinner-text">Loading dashboard...</div>;
 
-  const { overview, trends, topMembers, trainingBreakdown, genderBreakdown, peakHours, recentSignups, funnel, heatmap, weeklyDelta } = stats;
+  const { overview, trends, topMembers, trainingBreakdown, genderBreakdown, peakHours, recentSignups, funnel, heatmap, weeklyDelta, liveMembers, allMembers } = stats;
+
+  function selectMemberById(id) {
+    const member = (allMembers || []).find(m => m.id === id);
+    if (member) setSelectedMember(member);
+  }
+
+  const filteredMembers = (allMembers || []).filter(m =>
+    !memberSearch || m.name.toLowerCase().includes(memberSearch.toLowerCase()) || m.email.toLowerCase().includes(memberSearch.toLowerCase())
+  );
   const trainingColors = ['#53603E', '#FBA327', '#6D412A', '#7C8A6E', '#D4922A', '#8B5E3C', '#A3B08E', '#E8B94D'];
   const genderColors = ['#53603E', '#FBA327', '#6D412A', '#999'];
 
@@ -409,6 +482,8 @@ export default function AdminPage() {
         <StatCard icon={icons.msg} label="Messages" value={overview.totalMessages} delta={weeklyDelta.newMessages} color="#6D412A" index={3} />
       </div>
 
+      <LiveMembersCard liveMembers={liveMembers} onSelect={selectMemberById} />
+
       <div className="ad-row-2">
         <TrendCard title="New signups" data={trends.signups} color="#53603E" />
         <TrendCard title="Check-ins" data={trends.checkins} color="#FBA327" />
@@ -437,7 +512,7 @@ export default function AdminPage() {
               <thead><tr><th>#</th><th>Name</th><th>Training</th><th>Check-ins</th><th>Consistency</th></tr></thead>
               <tbody>
                 {topMembers.map((m, i) => (
-                  <tr key={m.id}>
+                  <tr key={m.id} className="ad-clickable" onClick={() => selectMemberById(m.id)}>
                     <td><span className={`ad-rank ${i < 3 ? `ad-rank-${i+1}` : ''}`}>{i + 1}</span></td>
                     <td className="ad-name">{m.name}</td>
                     <td className="ad-meta">{m.training_type || '—'}</td>
@@ -452,19 +527,27 @@ export default function AdminPage() {
       </div>
 
       <div className="ad-card ad-full">
-        <div className="ad-card-head"><h3>Recent signups</h3><span className="ad-card-sub">{recentSignups.length} shown</span></div>
-        {recentSignups.length === 0 ? <div className="ad-empty">No members yet</div> : (
+        <div className="ad-card-head">
+          <h3>All members</h3>
+          <span className="ad-card-sub">{(allMembers || []).length} total</span>
+        </div>
+        <div className="ad-member-search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-hint)" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" value={memberSearch} onChange={e => setMemberSearch(e.target.value)} placeholder="Search members..." className="ad-member-search-input" />
+        </div>
+        {filteredMembers.length === 0 ? <div className="ad-empty">No members found</div> : (
           <div className="ad-tbl-wrap">
             <table className="ad-tbl">
-              <thead><tr><th>Name</th><th>Email</th><th>Training</th><th>Gender</th><th>Joined</th></tr></thead>
+              <thead><tr><th>Name</th><th>Email</th><th>Training</th><th>Check-ins</th><th>Connections</th><th>Status</th></tr></thead>
               <tbody>
-                {recentSignups.map(u => (
-                  <tr key={u.id}>
+                {filteredMembers.map(u => (
+                  <tr key={u.id} className="ad-clickable" onClick={() => setSelectedMember(u)}>
                     <td className="ad-name">{u.name}</td>
                     <td className="ad-meta">{u.email}</td>
                     <td className="ad-meta">{u.training_type || '—'}</td>
-                    <td className="ad-meta">{u.gender || '—'}</td>
-                    <td className="ad-meta">{new Date(u.created_at).toLocaleDateString()}</td>
+                    <td className="ad-bold">{u.total_checkins}</td>
+                    <td className="ad-meta">{u.connections}</td>
+                    <td>{u.is_live ? <span className="ad-status-live"><span className="pulse-dot" />Live</span> : <span className="ad-status-off">Offline</span>}</td>
                   </tr>
                 ))}
               </tbody>
@@ -472,6 +555,8 @@ export default function AdminPage() {
           </div>
         )}
       </div>
+
+      {selectedMember && <MemberModal member={selectedMember} onClose={() => setSelectedMember(null)} />}
     </div>
   );
 }

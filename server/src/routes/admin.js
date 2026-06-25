@@ -36,7 +36,9 @@ router.get('/stats', async (req, res) => {
     heatmapResult,
     newUsersWeekResult,
     newMessagesWeekResult,
-    newConnectionsWeekResult
+    newConnectionsWeekResult,
+    liveDetailsResult,
+    allMembersResult
   ] = await Promise.all([
     pool.query('SELECT COUNT(*)::int as total FROM users'),
     pool.query(`SELECT COUNT(DISTINCT user_id)::int as active FROM checkin_log WHERE checked_in_at >= NOW() - INTERVAL '7 days'`),
@@ -128,6 +130,24 @@ router.get('/stats', async (req, res) => {
     `),
     pool.query(`
       SELECT COUNT(*)::int as c FROM buddy_requests WHERE status = 'accepted' AND responded_at >= NOW() - INTERVAL '7 days'
+    `),
+
+    pool.query(`
+      SELECT u.id, u.name, u.training_type, l.status_tag, l.checked_in_at, l.expires_at
+      FROM live_status l
+      JOIN users u ON u.id = l.user_id
+      WHERE l.expires_at > NOW()
+      ORDER BY l.checked_in_at DESC
+    `),
+
+    pool.query(`
+      SELECT u.id, u.name, u.email, u.training_type, u.gender, u.bio, u.created_at,
+        (SELECT COUNT(*)::int FROM checkin_log cl WHERE cl.user_id = u.id) as total_checkins,
+        (SELECT COUNT(*)::int FROM buddy_requests br WHERE (br.from_user_id = u.id OR br.to_user_id = u.id) AND br.status = 'accepted') as connections,
+        (SELECT COUNT(*)::int FROM messages m WHERE m.from_user_id = u.id) as messages_sent,
+        EXISTS(SELECT 1 FROM live_status ls WHERE ls.user_id = u.id AND ls.expires_at > NOW()) as is_live
+      FROM users u
+      ORDER BY u.created_at DESC
     `)
   ]);
 
@@ -162,7 +182,9 @@ router.get('/stats', async (req, res) => {
       newUsers: newUsersWeekResult.rows[0].c,
       newMessages: newMessagesWeekResult.rows[0].c,
       newConnections: newConnectionsWeekResult.rows[0].c
-    }
+    },
+    liveMembers: liveDetailsResult.rows,
+    allMembers: allMembersResult.rows
   });
 });
 
