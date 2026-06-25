@@ -48,6 +48,10 @@
   --color-muted: #aaa;
   --color-hint: #888;
 }
+[data-theme="dark"] .sidebar-logo,
+[data-theme="dark"] .powered-by-logo {
+  filter: brightness(0) invert(0.92) sepia(0.1) saturate(0.5) hue-rotate(10deg);
+}
 
 * { box-sizing: border-box; }
 
