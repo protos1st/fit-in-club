@@ -251,7 +251,7 @@ input, select, textarea {
 }
 .page-title {
   font-size: 2rem;
-  margin-bottom: 6px;
+  margin-bottom: 16px;
 }
 @media (max-width: 720px) {
   .page-title { font-size: 1.6rem; }
@@ -260,7 +260,8 @@ input, select, textarea {
 .page-sub {
   color: var(--color-muted);
   font-size: 0.95rem;
-  margin-bottom: 28px;
+  margin-top: -8px;
+  margin-bottom: 20px;
 }
 
 /* ---------- Cards ---------- */

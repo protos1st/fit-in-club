@@ -166,16 +166,11 @@ export default function MySchedulePage() {
 
   return (
     <div>
-      <div className="page-eyebrow">Your Week</div>
       <h1 className="page-title">My Schedule</h1>
-      <p className="page-sub">Set when you train so others can find you. Today is <strong>{DAYS_FULL[today]}</strong>.</p>
 
       <LiveBanner liveStatus={liveStatus} liveBusy={liveBusy} onToggle={toggleLive} />
 
-      <div className="flex-between mb-md">
-        <div className="section-title no-margin">Weekly Schedule</div>
-        {saving && <span className="saving-indicator">Saving…</span>}
-      </div>
+      {saving && <div className="saving-indicator">Saving…</div>}
 
       {loading ? <SkeletonList /> : (
         <div className="schedule-list card">
