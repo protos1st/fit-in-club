@@ -254,7 +254,10 @@ export default function DiscoverPage() {
               <>
                 {(showAllLive ? filteredLive : filteredLive.slice(0, PREVIEW_COUNT)).map((p) => (
                   <div className="person-row person-row-clickable" key={p.user_id} onClick={() => { setSelectedPerson(p); setSelectedType('live'); }}>
-                    <div className="person-avatar">{initials(p.name)}</div>
+                    <div className="avatar-wrap">
+                      <div className="person-avatar">{initials(p.name)}</div>
+                      {connectedTo.has(p.user_id) && <span className="connected-badge" aria-label="Connected"><svg width="12" height="12" viewBox="0 0 24 24" fill="#fff" stroke="none"><path d="M20 6L9 17l-5-5" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg></span>}
+                    </div>
                     <div className="person-info">
                       <div className="person-name"><span className="pulse-dot" />{p.name}</div>
                       <div className="person-meta">
@@ -303,7 +306,10 @@ export default function DiscoverPage() {
               key={m.user_id}
               onClick={() => { setSelectedPerson(m); setSelectedType('match'); }}
             >
-              <div className="person-avatar">{initials(m.name)}</div>
+              <div className="avatar-wrap">
+                <div className="person-avatar">{initials(m.name)}</div>
+                {connectedTo.has(m.user_id) && <span className="connected-badge" aria-label="Connected"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>}
+              </div>
               <div className="person-info">
                 <div className="person-name">{m.name}</div>
                 <div className="person-meta">
