@@ -395,6 +395,12 @@ input, select, textarea {
 .auth-powered-by .powered-by-link {
   color: #fba327;
 }
+.auth-powered-by .powered-by-logo {
+  filter: brightness(0) invert(0.92) sepia(0.1) saturate(0.5) hue-rotate(10deg);
+}
+.auth-powered-by .powered-by-logo {
+  filter: brightness(0) invert(0.95);
+}
 
 .auth-logo-link {
   display: block;
