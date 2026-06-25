@@ -11,6 +11,7 @@ import RequestsPage from './pages/RequestsPage';
 import ConnectionsPage from './pages/ConnectionsPage';
 import ChatPage from './pages/ChatPage';
 import ProfilePage from './pages/ProfilePage';
+import OnboardingPage from './pages/OnboardingPage';
 
 function ProtectedRoutes() {
   const { user, loading } = useAuth();
@@ -23,6 +24,14 @@ function ProtectedRoutes() {
     return (
       <ToastProvider>
         <AuthPage />
+      </ToastProvider>
+    );
+  }
+
+  if (!user.onboarded) {
+    return (
+      <ToastProvider>
+        <OnboardingPage />
       </ToastProvider>
     );
   }

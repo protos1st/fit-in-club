@@ -47,10 +47,10 @@ export default function AppShell({ children }) {
         </nav>
         <div className="sidebar-foot">
           <div className="sidebar-user">{user?.name}</div>
-          <button className="sidebar-theme-toggle" onClick={toggleTheme}>{dark ? '☀ Light' : '● Dark'}</button>
-          <button className="sidebar-logout" onClick={logout}>Log out</button>
+          <button className="sidebar-theme-toggle" onClick={toggleTheme} aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}>{dark ? '☀ Light' : '● Dark'}</button>
+          <button className="sidebar-logout" onClick={logout} aria-label="Log out">Log out</button>
         </div>
-        <button className="sidebar-logout-mobile" onClick={logout}>Log out</button>
+        <button className="sidebar-logout-mobile" onClick={logout} aria-label="Log out">Log out</button>
       </aside>
       <main className="app-main">
         {children}

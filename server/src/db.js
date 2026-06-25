@@ -51,6 +51,12 @@ async function initDb() {
       read_at TIMESTAMPTZ
     );
 
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS membership TEXT DEFAULT '';
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS workout_frequency TEXT DEFAULT '';
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS buddy_preference TEXT DEFAULT '';
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT DEFAULT '';
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS onboarded BOOLEAN DEFAULT FALSE;
+
     CREATE INDEX IF NOT EXISTS idx_schedules_user ON schedules(user_id);
     CREATE INDEX IF NOT EXISTS idx_schedules_day ON schedules(day_of_week);
     CREATE INDEX IF NOT EXISTS idx_requests_to ON buddy_requests(to_user_id, status);
