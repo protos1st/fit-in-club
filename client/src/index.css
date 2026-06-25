@@ -200,11 +200,7 @@ input, select, textarea {
 @media (max-width: 720px) {
   .app-shell { flex-direction: column; }
   .sidebar { display: none; }
-  .app-main { padding: 16px 0 80px; max-width: none; }
-  .page-eyebrow, .page-title, .page-sub, .section-title, .powered-by, .filter-bar { padding-left: 16px; padding-right: 16px; }
-  .live-banner { margin: 0 16px; }
-  .schedule-list.card { margin: 0; }
-  .sched-editor { padding-left: 52px; }
+  .app-main { padding: 16px 16px 80px; max-width: none; }
 
   .bottom-bar {
     display: flex;
@@ -272,19 +268,6 @@ input, select, textarea {
 }
 .card + .card { margin-top: 16px; }
 
-@media (max-width: 720px) {
-  .card {
-    border-radius: 0;
-    border-left: none;
-    border-right: none;
-    box-shadow: none;
-  }
-  .filter-search {
-    border-radius: 0;
-    border-left: none;
-    border-right: none;
-  }
-}
 
 /* ---------- Buttons ---------- */
 
