@@ -130,4 +130,10 @@ router.put('/onboarding', authMiddleware, async (req, res) => {
   res.json({ user: result.rows[0] });
 });
 
+// DELETE /api/auth/account
+router.delete('/account', authMiddleware, async (req, res) => {
+  await pool.query('DELETE FROM users WHERE id = $1', [req.user.id]);
+  res.json({ ok: true });
+});
+
 module.exports = router;

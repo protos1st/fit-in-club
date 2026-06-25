@@ -18,6 +18,9 @@ export default function ChatPage() {
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportReason, setReportReason] = useState('');
   const bottomRef = useRef(null);
 
   function load() {
@@ -59,6 +62,29 @@ export default function ChatPage() {
     }
   }
 
+  async function handleBlock() {
+    if (!confirm(`Block ${otherName}? They won't be able to message you or see you.`)) return;
+    try {
+      await api.blockUser(otherId);
+      showToast(`${otherName} blocked`, 'info');
+      navigate('/connections');
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  }
+
+  async function handleReport() {
+    try {
+      await api.reportUser(otherId, reportReason);
+      showToast('Report submitted. We will review it.', 'success');
+      setReportOpen(false);
+      setReportReason('');
+      setMenuOpen(false);
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  }
+
   if (loading) return <div className="spinner-text">Loading conversation…</div>;
 
   if (error) {
@@ -80,7 +106,35 @@ export default function ChatPage() {
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <h1 className="chat-header-name">{otherName || 'Conversation'}</h1>
+        <div className="chat-menu-wrap">
+          <button className="chat-menu-btn" onClick={() => setMenuOpen(!menuOpen)} aria-label="Chat options">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="5" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1" fill="currentColor" stroke="none"/></svg>
+          </button>
+          {menuOpen && (
+            <div className="chat-menu-dropdown">
+              <button onClick={() => { setReportOpen(true); setMenuOpen(false); }}>Report</button>
+              <button className="chat-menu-danger" onClick={handleBlock}>Block</button>
+            </div>
+          )}
+        </div>
       </div>
+
+      {reportOpen && (
+        <div className="report-bar">
+          <p className="report-label">Why are you reporting this person?</p>
+          <textarea
+            value={reportReason}
+            onChange={(e) => setReportReason(e.target.value)}
+            placeholder="Describe the issue (optional)"
+            rows={2}
+            maxLength={1000}
+          />
+          <div className="report-actions">
+            <button className="btn btn-primary btn-sm" onClick={handleReport}>Submit report</button>
+            <button className="btn btn-ghost btn-sm" onClick={() => { setReportOpen(false); setReportReason(''); }}>Cancel</button>
+          </div>
+        </div>
+      )}
 
       <div className="chat-window">
         <div className="chat-messages">

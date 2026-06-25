@@ -51,6 +51,25 @@ async function initDb() {
       read_at TIMESTAMPTZ
     );
 
+    CREATE TABLE IF NOT EXISTS blocks (
+      id SERIAL PRIMARY KEY,
+      blocker_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      blocked_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      UNIQUE(blocker_id, blocked_id)
+    );
+
+    CREATE TABLE IF NOT EXISTS reports (
+      id SERIAL PRIMARY KEY,
+      reporter_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      reported_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      reason TEXT DEFAULT '',
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_blocks_blocker ON blocks(blocker_id);
+    CREATE INDEX IF NOT EXISTS idx_blocks_blocked ON blocks(blocked_id);
+
     ALTER TABLE users ADD COLUMN IF NOT EXISTS membership TEXT DEFAULT '';
     ALTER TABLE users ADD COLUMN IF NOT EXISTS workout_frequency TEXT DEFAULT '';
     ALTER TABLE users ADD COLUMN IF NOT EXISTS buddy_preference TEXT DEFAULT '';

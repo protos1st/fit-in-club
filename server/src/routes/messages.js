@@ -6,6 +6,12 @@ const router = express.Router();
 router.use(authMiddleware);
 
 async function areConnected(userA, userB) {
+  const blocked = await pool.query(
+    'SELECT 1 FROM blocks WHERE (blocker_id = $1 AND blocked_id = $2) OR (blocker_id = $2 AND blocked_id = $1)',
+    [userA, userB]
+  );
+  if (blocked.rows.length > 0) return false;
+
   const result = await pool.query(`
     SELECT 1 FROM buddy_requests
     WHERE status = 'accepted'

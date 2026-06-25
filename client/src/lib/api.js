@@ -46,6 +46,7 @@ export const api = {
   login: (payload) => request('/api/auth/login', { method: 'POST', body: payload, auth: false }),
   me: () => request('/api/auth/me'),
   updateProfile: (payload) => request('/api/auth/profile', { method: 'PUT', body: payload }),
+  deleteAccount: () => request('/api/auth/account', { method: 'DELETE' }),
   completeOnboarding: (payload) => request('/api/auth/onboarding', { method: 'PUT', body: payload }),
 
   getMySchedule: () => request('/api/schedule/me'),
@@ -64,7 +65,12 @@ export const api = {
 
   getConversations: () => request('/api/messages'),
   getMessages: (userId) => request(`/api/messages/${userId}`),
-  sendMessage: (userId, body) => request(`/api/messages/${userId}`, { method: 'POST', body: { body } })
+  sendMessage: (userId, body) => request(`/api/messages/${userId}`, { method: 'POST', body: { body } }),
+
+  blockUser: (userId) => request('/api/moderation/block', { method: 'POST', body: { userId } }),
+  unblockUser: (userId) => request(`/api/moderation/block/${userId}`, { method: 'DELETE' }),
+  getBlocked: () => request('/api/moderation/blocked'),
+  reportUser: (userId, reason) => request('/api/moderation/report', { method: 'POST', body: { userId, reason } })
 };
 
 export { getToken, API_BASE };

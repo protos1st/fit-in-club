@@ -48,7 +48,7 @@ export default function ProfilePage() {
       <h1 className="page-title">Profile</h1>
       <p className="page-sub">Update your name, training style, and bio visible to other members.</p>
 
-      <div className="card" style={{ maxWidth: 480 }}>
+      <div className="card card-narrow">
         <form onSubmit={handleSubmit}>
           <div className="field">
             <label>Full name</label>
@@ -100,7 +100,7 @@ export default function ProfilePage() {
       </div>
 
       <div className="section-title mt-md">Preferences</div>
-      <div className="card" style={{ maxWidth: 480 }}>
+      <div className="card card-narrow">
         <div className="profile-setting">
           <div>
             <div className="profile-setting-title">Dark mode</div>
@@ -113,13 +113,29 @@ export default function ProfilePage() {
       </div>
 
       <div className="section-title mt-md">Account</div>
-      <div className="card" style={{ maxWidth: 480 }}>
+      <div className="card card-narrow">
         <div className="profile-setting">
           <div>
             <div className="profile-setting-title">Log out</div>
             <div className="profile-setting-desc">{user?.email}</div>
           </div>
           <button className="btn btn-danger-outline btn-sm" onClick={logout}>Log out</button>
+        </div>
+        <div className="profile-setting" style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--color-line)' }}>
+          <div>
+            <div className="profile-setting-title" style={{ color: 'var(--color-danger)' }}>Delete account</div>
+            <div className="profile-setting-desc">Permanently delete your account and all data</div>
+          </div>
+          <button className="btn btn-danger-outline btn-sm" onClick={async () => {
+            if (!confirm('Are you sure? This will permanently delete your account, messages, connections, and all data. This cannot be undone.')) return;
+            if (!confirm('Really delete? Type OK to confirm.')) return;
+            try {
+              await api.deleteAccount();
+              logout();
+            } catch (err) {
+              showToast(err.message, 'error');
+            }
+          }}>Delete</button>
         </div>
       </div>
     </div>
