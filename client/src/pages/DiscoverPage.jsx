@@ -260,10 +260,7 @@ export default function DiscoverPage() {
                     </div>
                     <div className="person-info">
                       <div className="person-name"><span className="pulse-dot" />{p.name}</div>
-                      <div className="person-meta">
-                        {p.training_type && <span className="tag tag-spaced">{p.training_type}</span>}
-                        {timeAgo(p.checked_in_at)}
-                      </div>
+                      <div className="person-meta">{timeAgo(p.checked_in_at)}</div>
                     </div>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-hint)" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
                   </div>
@@ -313,7 +310,6 @@ export default function DiscoverPage() {
               <div className="person-info">
                 <div className="person-name">{m.name}</div>
                 <div className="person-meta">
-                  {m.training_type && <span className="tag tag-spaced">{m.training_type}</span>}
                   {m.overlapping_slots.length} overlapping slot{m.overlapping_slots.length !== 1 ? 's' : ''}
                 </div>
               </div>
