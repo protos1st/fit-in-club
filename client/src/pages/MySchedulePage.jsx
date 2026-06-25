@@ -75,7 +75,6 @@ export default function MySchedulePage() {
   const [liveStatus, setLiveStatus] = useState(null);
   const [liveBusy, setLiveBusy] = useState(false);
   const [statusTag, setStatusTag] = useState('');
-  const [leaderboard, setLeaderboard] = useState([]);
   const showToast = useToast();
 
   const today = new Date().getDay();
@@ -87,7 +86,6 @@ export default function MySchedulePage() {
   useEffect(() => {
     loadSchedule();
     api.getMyStatus().then((data) => setLiveStatus(data.status)).catch(() => {});
-    api.getLeaderboard().then((data) => setLeaderboard(data.leaderboard || [])).catch(() => {});
   }, [loadSchedule]);
 
   async function persist(newSlots) {
@@ -251,27 +249,6 @@ export default function MySchedulePage() {
         </div>
       )}
 
-      {leaderboard.length > 0 && (
-        <>
-          <div className="section-title mt-md">
-            This week's most consistent
-            <span className="schedule-count">{leaderboard.length}</span>
-          </div>
-          <div className="card">
-            {leaderboard.map((u, i) => (
-              <div className="person-row" key={u.user_id}>
-                <div className="leaderboard-rank">{i + 1}</div>
-                <div className="person-avatar">{u.name.split(' ').map((p) => p[0]).slice(0, 2).join('').toUpperCase()}</div>
-                <div className="person-info">
-                  <div className="person-name">{u.name}</div>
-                  {u.training_type && <div className="person-meta">{u.training_type}</div>}
-                </div>
-                <div className="leaderboard-count">{u.checkins} day{u.checkins !== 1 ? 's' : ''}</div>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
     </div>
   );
 }

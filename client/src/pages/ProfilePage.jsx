@@ -1,8 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/AuthContext';
 import { api } from '../lib/api';
 import { useToast } from '../lib/ToastContext';
+
+function initials(name) {
+  return name.split(' ').map((p) => p[0]).slice(0, 2).join('').toUpperCase();
+}
 
 export default function ProfilePage() {
   const { user, setUser, logout } = useAuth();
@@ -15,6 +19,11 @@ export default function ProfilePage() {
     gender: user?.gender || ''
   });
   const [saving, setSaving] = useState(false);
+  const [leaderboard, setLeaderboard] = useState([]);
+
+  useEffect(() => {
+    api.getLeaderboard().then((data) => setLeaderboard(data.leaderboard || [])).catch(() => {});
+  }, []);
 
   const dark = localStorage.getItem('theme') === 'dark';
   function toggleTheme() {
@@ -111,6 +120,28 @@ export default function ProfilePage() {
           </button>
         </div>
       </div>
+
+      {leaderboard.length > 0 && (
+        <>
+          <div className="section-title mt-md">
+            This week's most consistent
+            <span className="schedule-count">{leaderboard.length}</span>
+          </div>
+          <div className="card card-narrow">
+            {leaderboard.map((u, i) => (
+              <div className="person-row" key={u.user_id}>
+                <div className="leaderboard-rank">{i + 1}</div>
+                <div className="person-avatar">{initials(u.name)}</div>
+                <div className="person-info">
+                  <div className="person-name">{u.name}</div>
+                  {u.training_type && <div className="person-meta">{u.training_type}</div>}
+                </div>
+                <div className="leaderboard-count">{u.checkins} day{u.checkins !== 1 ? 's' : ''}</div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       <div className="section-title mt-md">Others</div>
       <div className="card card-narrow">
