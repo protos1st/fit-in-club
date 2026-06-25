@@ -704,6 +704,20 @@ input, select, textarea {
 
 /* ---------- Chat ---------- */
 
+.chat-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: var(--color-accent);
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 4px 0;
+  margin-bottom: 8px;
+}
+.chat-back-btn:hover { opacity: 0.8; }
+
 .chat-window {
   display: flex;
   flex-direction: column;
