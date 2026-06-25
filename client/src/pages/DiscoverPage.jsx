@@ -100,6 +100,9 @@ export default function DiscoverPage() {
   const [genderFilter, setGenderFilter] = useState('');
   const [trainingFilter, setTrainingFilter] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [showAllLive, setShowAllLive] = useState(false);
+  const [showAllMatches, setShowAllMatches] = useState(false);
+  const PREVIEW_COUNT = 4;
 
   useEffect(() => {
     Promise.all([
@@ -248,19 +251,26 @@ export default function DiscoverPage() {
             {filteredLive.length === 0 ? (
               <div className="empty-state"><p>No one matches your filters.</p></div>
             ) : (
-              filteredLive.map((p) => (
-                <div className="person-row person-row-clickable" key={p.user_id} onClick={() => { setSelectedPerson(p); setSelectedType('live'); }}>
-                  <div className="person-avatar">{initials(p.name)}</div>
-                  <div className="person-info">
-                    <div className="person-name"><span className="pulse-dot" />{p.name}</div>
-                    <div className="person-meta">
-                      {p.training_type && <span className="tag tag-spaced">{p.training_type}</span>}
-                      {timeAgo(p.checked_in_at)}
+              <>
+                {(showAllLive ? filteredLive : filteredLive.slice(0, PREVIEW_COUNT)).map((p) => (
+                  <div className="person-row person-row-clickable" key={p.user_id} onClick={() => { setSelectedPerson(p); setSelectedType('live'); }}>
+                    <div className="person-avatar">{initials(p.name)}</div>
+                    <div className="person-info">
+                      <div className="person-name"><span className="pulse-dot" />{p.name}</div>
+                      <div className="person-meta">
+                        {p.training_type && <span className="tag tag-spaced">{p.training_type}</span>}
+                        {timeAgo(p.checked_in_at)}
+                      </div>
                     </div>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-hint)" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
                   </div>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-hint)" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
-                </div>
-              ))
+                ))}
+                {!showAllLive && filteredLive.length > PREVIEW_COUNT && (
+                  <button className="show-more-btn" onClick={() => setShowAllLive(true)}>
+                    Show all ({filteredLive.length})
+                  </button>
+                )}
+              </>
             )}
           </div>
         </>
@@ -287,9 +297,9 @@ export default function DiscoverPage() {
         </div>
       ) : (
         <div className="card">
-          {filteredMatches.map((m, idx) => (
+          {(showAllMatches ? filteredMatches : filteredMatches.slice(0, PREVIEW_COUNT)).map((m, idx, arr) => (
             <div
-              className={`person-row person-row-clickable ${idx < filteredMatches.length - 1 ? '' : 'person-row-last'}`}
+              className={`person-row person-row-clickable ${idx < arr.length - 1 ? '' : 'person-row-last'}`}
               key={m.user_id}
               onClick={() => { setSelectedPerson(m); setSelectedType('match'); }}
             >
@@ -304,6 +314,11 @@ export default function DiscoverPage() {
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-hint)" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
             </div>
           ))}
+          {!showAllMatches && filteredMatches.length > PREVIEW_COUNT && (
+            <button className="show-more-btn" onClick={() => setShowAllMatches(true)}>
+              Show all ({filteredMatches.length})
+            </button>
+          )}
         </div>
       )}
 

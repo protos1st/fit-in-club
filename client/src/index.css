@@ -1345,6 +1345,21 @@ input, select, textarea {
 
 .person-row-last { border-bottom: none; }
 
+.show-more-btn {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  background: none;
+  border: none;
+  border-top: 1px solid var(--color-line);
+  color: var(--color-accent);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+}
+.show-more-btn:hover { background: rgba(251,163,39,0.06); }
+
 /* ---------- Profile settings ---------- */
 
 .profile-setting {
