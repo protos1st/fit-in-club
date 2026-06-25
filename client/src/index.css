@@ -1113,6 +1113,112 @@ input, select, textarea {
   text-decoration: underline;
 }
 
+/* ---------- Profile modal ---------- */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-card {
+  background: var(--color-card);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 400px;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 28px 24px;
+  position: relative;
+}
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: var(--color-hint);
+  padding: 4px;
+}
+.modal-close:hover { color: var(--color-ink); }
+
+.modal-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.modal-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--color-navy);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0 auto 12px;
+}
+.modal-name {
+  font-size: 1.3rem;
+  margin-bottom: 8px;
+}
+.modal-bio {
+  font-size: 0.88rem;
+  color: var(--color-muted);
+  text-align: center;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+.modal-detail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--color-accent);
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+.modal-section-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-muted);
+  margin-bottom: 10px;
+}
+.modal-slots {
+  margin-bottom: 20px;
+}
+.modal-slot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-line);
+  font-size: 0.88rem;
+}
+.modal-slot:last-child { border-bottom: none; }
+.modal-slot-day {
+  width: 36px;
+  font-weight: 600;
+  color: var(--color-navy);
+}
+.modal-slot-time {
+  color: var(--color-muted);
+}
+.modal-action {
+  margin-top: 8px;
+}
+
+.person-row-last { border-bottom: none; }
+
 /* ---------- Profile settings ---------- */
 
 .profile-setting {

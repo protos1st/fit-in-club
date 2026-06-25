@@ -23,15 +23,64 @@ function timeAgo(iso) {
   return `${hrs} hr ago`;
 }
 
-function BuddyButton({ userId, connectedTo, pendingTo, sentTo, onSend }) {
-  if (connectedTo.has(userId)) {
-    return <span className="btn btn-ghost btn-sm" style={{ cursor: 'default' }}>Connected</span>;
-  }
-  const sent = sentTo.has(userId) || pendingTo.has(userId);
+function ProfileModal({ person, type, connectedTo, pendingTo, sentTo, onSend, onClose }) {
+  const isConnected = connectedTo.has(person.user_id);
+  const isSent = sentTo.has(person.user_id) || pendingTo.has(person.user_id);
+
   return (
-    <button className="btn btn-primary btn-sm" onClick={() => onSend(userId)} disabled={sent}>
-      {sent ? 'Sent' : 'Send request'}
-    </button>
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+        <button className="modal-close" onClick={onClose} aria-label="Close">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+
+        <div className="modal-header">
+          <div className="modal-avatar">{initials(person.name)}</div>
+          <h2 className="modal-name">{person.name}</h2>
+          {person.training_type && <span className="tag">{person.training_type}</span>}
+          {person.gender && person.gender !== 'Prefer not to say' && (
+            <span className="tag" style={{ marginLeft: 4 }}>{person.gender}</span>
+          )}
+        </div>
+
+        {person.bio && <p className="modal-bio">{person.bio}</p>}
+
+        {type === 'live' && (
+          <div className="modal-detail">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7" strokeDasharray="2 3"/></svg>
+            <span>Checked in {timeAgo(person.checked_in_at)}</span>
+          </div>
+        )}
+
+        {person.overlapping_slots && person.overlapping_slots.length > 0 && (
+          <>
+            <div className="modal-section-title">Overlapping Schedule</div>
+            <div className="modal-slots">
+              {person.overlapping_slots.map((s, i) => (
+                <div className="modal-slot" key={i}>
+                  <span className="modal-slot-day">{DAYS[s.day_of_week]}</span>
+                  <span className="modal-slot-time">{formatTime(s.start_time)} – {formatTime(s.end_time)}</span>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        <div className="modal-action">
+          {isConnected ? (
+            <span className="btn btn-ghost btn-block" style={{ cursor: 'default' }}>Already Connected</span>
+          ) : (
+            <button
+              className="btn btn-primary btn-block"
+              onClick={() => { onSend(person.user_id); }}
+              disabled={isSent}
+            >
+              {isSent ? 'Request Sent' : 'Send Buddy Request'}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -43,6 +92,8 @@ export default function DiscoverPage() {
   const [sentTo, setSentTo] = useState(new Set());
   const [connectedTo, setConnectedTo] = useState(new Set());
   const [pendingTo, setPendingTo] = useState(new Set());
+  const [selectedPerson, setSelectedPerson] = useState(null);
+  const [selectedType, setSelectedType] = useState(null);
   const showToast = useToast();
 
   const [search, setSearch] = useState('');
@@ -162,7 +213,7 @@ export default function DiscoverPage() {
               <div className="empty-state"><p>No one matches your filters.</p></div>
             ) : (
               filteredLive.map((p) => (
-                <div className="person-row" key={p.user_id}>
+                <div className="person-row person-row-clickable" key={p.user_id} onClick={() => { setSelectedPerson(p); setSelectedType('live'); }}>
                   <div className="person-avatar">{initials(p.name)}</div>
                   <div className="person-info">
                     <div className="person-name"><span className="pulse-dot" />{p.name}</div>
@@ -171,7 +222,7 @@ export default function DiscoverPage() {
                       {timeAgo(p.checked_in_at)}
                     </div>
                   </div>
-                  <BuddyButton userId={p.user_id} connectedTo={connectedTo} pendingTo={pendingTo} sentTo={sentTo} onSend={sendRequest} />
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-hint)" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
                 </div>
               ))
             )}
@@ -199,26 +250,37 @@ export default function DiscoverPage() {
           </div>
         </div>
       ) : (
-        filteredMatches.map((m) => (
-          <div className="card" key={m.user_id}>
-            <div className="person-row person-row-tight">
+        <div className="card">
+          {filteredMatches.map((m, idx) => (
+            <div
+              className={`person-row person-row-clickable ${idx < filteredMatches.length - 1 ? '' : 'person-row-last'}`}
+              key={m.user_id}
+              onClick={() => { setSelectedPerson(m); setSelectedType('match'); }}
+            >
               <div className="person-avatar">{initials(m.name)}</div>
               <div className="person-info">
                 <div className="person-name">{m.name}</div>
-                {m.training_type && <div className="person-meta"><span className="tag">{m.training_type}</span></div>}
-                {m.bio && <div className="person-meta">{m.bio}</div>}
+                <div className="person-meta">
+                  {m.training_type && <span className="tag tag-spaced">{m.training_type}</span>}
+                  {m.overlapping_slots.length} overlapping slot{m.overlapping_slots.length !== 1 ? 's' : ''}
+                </div>
               </div>
-              <BuddyButton userId={m.user_id} connectedTo={connectedTo} pendingTo={pendingTo} sentTo={sentTo} onSend={sendRequest} />
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-hint)" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
             </div>
-            <div className="overlap-slots">
-              {m.overlapping_slots.map((s, i) => (
-                <span className="match-slot-chip" key={i}>
-                  {DAYS[s.day_of_week]} {formatTime(s.start_time)}–{formatTime(s.end_time)}
-                </span>
-              ))}
-            </div>
-          </div>
-        ))
+          ))}
+        </div>
+      )}
+
+      {selectedPerson && (
+        <ProfileModal
+          person={selectedPerson}
+          type={selectedType}
+          connectedTo={connectedTo}
+          pendingTo={pendingTo}
+          sentTo={sentTo}
+          onSend={sendRequest}
+          onClose={() => setSelectedPerson(null)}
+        />
       )}
     </div>
   );
