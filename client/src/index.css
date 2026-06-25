@@ -589,6 +589,15 @@ input, select, textarea {
   animation: skeleton-pulse 1.2s ease-in-out infinite;
 }
 
+.schedule-count {
+  font-weight: 400;
+  color: var(--color-hint);
+  margin-left: 8px;
+  font-size: 0.72rem;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
 .saving-indicator {
   font-size: 0.78rem;
   color: var(--color-accent);

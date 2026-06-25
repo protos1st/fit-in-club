@@ -5,8 +5,7 @@ import { ToastProvider } from './lib/ToastContext';
 import AppShell from './components/AppShell';
 import AuthPage from './pages/AuthPage';
 import MySchedulePage from './pages/MySchedulePage';
-import FindBuddiesPage from './pages/FindBuddiesPage';
-import LiveNowPage from './pages/LiveNowPage';
+import DiscoverPage from './pages/DiscoverPage';
 import RequestsPage from './pages/RequestsPage';
 import ConnectionsPage from './pages/ConnectionsPage';
 import ChatPage from './pages/ChatPage';
@@ -42,12 +41,13 @@ function ProtectedRoutes() {
         <AppShell>
           <Routes>
             <Route path="/" element={<MySchedulePage />} />
-            <Route path="/find" element={<FindBuddiesPage />} />
-            <Route path="/live" element={<LiveNowPage />} />
+            <Route path="/discover" element={<DiscoverPage />} />
             <Route path="/requests" element={<RequestsPage />} />
             <Route path="/connections" element={<ConnectionsPage />} />
             <Route path="/connections/:userId" element={<ChatPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/find" element={<Navigate to="/discover" replace />} />
+            <Route path="/live" element={<Navigate to="/discover" replace />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </AppShell>
