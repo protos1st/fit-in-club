@@ -833,11 +833,20 @@ input, select, textarea {
 
 .chat-menu-wrap { position: relative; }
 .chat-menu-btn {
-  background: none;
-  border: none;
-  color: var(--color-hint);
-  padding: 8px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-line);
+  color: var(--color-text);
+  padding: 8px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  min-width: 40px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
 }
+.chat-menu-btn:hover { background: var(--color-line); }
 .chat-menu-dropdown {
   position: absolute;
   right: 0;
