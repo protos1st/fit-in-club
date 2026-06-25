@@ -12,6 +12,7 @@ import ChatPage from './pages/ChatPage';
 import ProfilePage from './pages/ProfilePage';
 import OnboardingPage from './pages/OnboardingPage';
 import BlockedPage from './pages/BlockedPage';
+import AdminPage from './pages/AdminPage';
 
 function ProtectedRoutes() {
   const { user, loading } = useAuth();
@@ -59,5 +60,8 @@ function ProtectedRoutes() {
 }
 
 export default function App() {
+  if (window.location.pathname === '/admin') {
+    return <AdminPage />;
+  }
   return <ProtectedRoutes />;
 }

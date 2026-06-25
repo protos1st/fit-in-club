@@ -71,7 +71,17 @@ export const api = {
   blockUser: (userId) => request('/api/moderation/block', { method: 'POST', body: { userId } }),
   unblockUser: (userId) => request(`/api/moderation/block/${userId}`, { method: 'DELETE' }),
   getBlocked: () => request('/api/moderation/blocked'),
-  reportUser: (userId, reason) => request('/api/moderation/report', { method: 'POST', body: { userId, reason } })
+  reportUser: (userId, reason) => request('/api/moderation/report', { method: 'POST', body: { userId, reason } }),
+
+  getAdminStats: (password) => {
+    return fetch(`${API_BASE}/api/admin/stats`, {
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': password }
+    }).then(async (res) => {
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed');
+      return data;
+    });
+  }
 };
 
 export { getToken, API_BASE };
