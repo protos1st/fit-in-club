@@ -1113,7 +1113,10 @@ input, select, textarea {
 .powered-by {
   margin-top: 48px;
   padding: 16px 0;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   font-size: 0.78rem;
   color: var(--color-hint);
 }
@@ -1122,10 +1125,9 @@ input, select, textarea {
   vertical-align: middle;
 }
 .powered-by-logo {
-  height: 28px;
+  height: 34px;
   width: auto;
-  vertical-align: middle;
-  margin-left: 4px;
+  display: block;
   opacity: 0.7;
   transition: opacity 0.15s;
 }
