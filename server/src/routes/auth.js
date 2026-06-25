@@ -99,11 +99,11 @@ router.put('/profile', authMiddleware, async (req, res) => {
   if ((bio || '').length > 500) return res.status(400).json({ error: 'Bio is too long' });
   if ((gender || '').length > 30) return res.status(400).json({ error: 'Invalid gender' });
   await pool.query(
-    'UPDATE users SET name = $1, training_type = $2, bio = $3, gender = $4 WHERE id = $5',
+    'UPDATE users SET name = $1, training_type = $2, bio = $3, gender = $4, onboarded = TRUE WHERE id = $5',
     [name.trim(), trainingType || '', bio || '', gender || '', req.user.id]
   );
 
-  const result = await pool.query('SELECT id, name, email, training_type, bio, gender FROM users WHERE id = $1', [req.user.id]);
+  const result = await pool.query('SELECT id, name, email, training_type, bio, gender, onboarded FROM users WHERE id = $1', [req.user.id]);
   res.json({ user: result.rows[0] });
 });
 
