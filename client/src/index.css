@@ -194,28 +194,50 @@ input, select, textarea {
 
 .sidebar-logout:hover { border-color: var(--color-accent); color: var(--color-accent); }
 
-.sidebar-logout-mobile {
+/* ---------- Bottom tab bar (mobile) ---------- */
+
+.bottom-bar {
   display: none;
-  background: none;
-  border: 1px solid var(--color-line);
-  color: var(--color-navy);
-  padding: 8px 12px;
-  border-radius: var(--radius);
-  font-size: 0.82rem;
-  white-space: nowrap;
-  flex-shrink: 0;
 }
 
 @media (max-width: 720px) {
   .app-shell { flex-direction: column; }
-  .sidebar { width: 100%; height: auto; position: static; flex-direction: row; align-items: center; padding: 12px 16px; overflow-x: auto; }
-  .sidebar-brand { padding: 0 16px 0 0; }
-  .sidebar-logo { height: 28px; }
-  .sidebar-nav { flex-direction: row; flex: none; }
-  .sidebar-link { padding: 8px 12px; border-left: none; border-bottom: 3px solid transparent; white-space: nowrap; }
-  .sidebar-link.active { border-left: none; border-bottom-color: var(--color-accent); }
-  .sidebar-foot { display: none; }
-  .sidebar-logout-mobile { display: block; }
+  .sidebar { display: none; }
+  .app-main { padding-bottom: 80px; }
+
+  .bottom-bar {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--color-card);
+    border-top: 1px solid var(--color-line);
+    z-index: 50;
+    padding: 6px 0;
+    padding-bottom: max(6px, env(safe-area-inset-bottom));
+  }
+
+  .bottom-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 0;
+    text-decoration: none;
+    color: var(--color-hint);
+    transition: color 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .bottom-tab-active {
+    color: var(--color-accent);
+  }
+  .bottom-tab-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
 }
 
 /* ---------- Page header ---------- */
@@ -792,6 +814,24 @@ input, select, textarea {
 }
 .onboarding-skip:hover {
   color: var(--color-accent);
+}
+
+/* ---------- Profile settings ---------- */
+
+.profile-setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.profile-setting-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.profile-setting-desc {
+  font-size: 0.8rem;
+  color: var(--color-muted);
+  margin-top: 2px;
 }
 
 .powered-by {
