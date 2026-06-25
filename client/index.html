@@ -13,14 +13,22 @@
   <body>
     <div id="root"></div>
     <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function(regs) {
-        for (var r of regs) r.unregister();
-      });
-      caches.keys().then(function(names) {
-        for (var n of names) caches.delete(n);
-      });
-    }
+    (function(){
+      var v = '2';
+      if (localStorage.getItem('app_v') !== v) {
+        localStorage.setItem('app_v', v);
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(regs) {
+            for (var r of regs) r.unregister();
+          });
+          caches.keys().then(function(names) {
+            for (var n of names) caches.delete(n);
+          }).then(function() {
+            location.reload(true);
+          });
+        }
+      }
+    })();
     </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
