@@ -82,6 +82,16 @@ async function initDb() {
     CREATE INDEX IF NOT EXISTS idx_requests_to ON buddy_requests(to_user_id, status);
     CREATE INDEX IF NOT EXISTS idx_requests_from ON buddy_requests(from_user_id, status);
     CREATE INDEX IF NOT EXISTS idx_messages_pair ON messages(from_user_id, to_user_id);
+
+    ALTER TABLE live_status ADD COLUMN IF NOT EXISTS status_tag TEXT DEFAULT '';
+
+    CREATE TABLE IF NOT EXISTS checkin_log (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      checked_in_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_checkin_log_user ON checkin_log(user_id);
+    CREATE INDEX IF NOT EXISTS idx_checkin_log_time ON checkin_log(checked_in_at);
   `);
 }
 

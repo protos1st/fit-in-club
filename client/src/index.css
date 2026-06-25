@@ -1644,4 +1644,42 @@ input, select, textarea {
     transition-duration: 0.01ms !important;
   }
 }
+/* --- Status tag picker --- */
+.status-tag-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.status-tag-picker .filter-pill {
+  font-size: 0.75rem;
+  padding: 4px 10px;
+}
+.status-tag-label {
+  color: var(--color-accent);
+  font-weight: 500;
+}
+.tag-sm { font-size: 0.7rem; padding: 2px 8px; }
+
+/* --- Leaderboard --- */
+.leaderboard-rank {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: 8px;
+}
+.leaderboard-count {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  white-space: nowrap;
+}
 /* v2 */

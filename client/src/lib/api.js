@@ -52,10 +52,11 @@ export const api = {
   getMySchedule: () => request('/api/schedule/me'),
   saveMySchedule: (slots) => request('/api/schedule/me', { method: 'PUT', body: { slots } }),
   getOverlap: () => request('/api/schedule/overlap'),
-  checkIn: () => request('/api/schedule/checkin', { method: 'POST' }),
+  checkIn: (status_tag) => request('/api/schedule/checkin', { method: 'POST', body: { status_tag } }),
   checkOut: () => request('/api/schedule/checkout', { method: 'POST' }),
   getLive: () => request('/api/schedule/live'),
   getMyStatus: () => request('/api/schedule/my-status'),
+  getLeaderboard: () => request('/api/schedule/leaderboard'),
 
   sendBuddyRequest: (to_user_id) => request('/api/buddies/request', { method: 'POST', body: { to_user_id } }),
   respondToRequest: (requestId, action) => request(`/api/buddies/${requestId}/respond`, { method: 'POST', body: { action } }),

@@ -25,7 +25,9 @@ function SkeletonList() {
   );
 }
 
-function LiveBanner({ liveStatus, liveBusy, onToggle }) {
+const STATUS_TAGS = ['Looking for a spotter', 'Open to join', 'Solo session', 'Cardio buddy wanted'];
+
+function LiveBanner({ liveStatus, liveBusy, statusTag, setStatusTag, onToggle }) {
   const expiresAt = liveStatus?.expires_at;
   const timeLeft = expiresAt ? Math.max(0, Math.round((new Date(expiresAt) - Date.now()) / 60000)) : 0;
 
@@ -36,11 +38,17 @@ function LiveBanner({ liveStatus, liveBusy, onToggle }) {
           <>
             <strong><span className="pulse-dot" />You're at the gym</strong>
             <span>{timeLeft > 0 ? `Visible for ${timeLeft} more min` : 'Expiring soon'}</span>
+            {liveStatus.status_tag && <span className="tag tag-sm" style={{ marginTop: 4 }}>{liveStatus.status_tag}</span>}
           </>
         ) : (
           <>
             <strong>Not checked in</strong>
             <span>Let others know you're at the gym</span>
+            <div className="status-tag-picker">
+              {STATUS_TAGS.map((t) => (
+                <button key={t} className={`filter-pill ${statusTag === t ? 'filter-pill-active' : ''}`} onClick={() => setStatusTag(statusTag === t ? '' : t)}>{t}</button>
+              ))}
+            </div>
           </>
         )}
       </div>
@@ -66,6 +74,8 @@ export default function MySchedulePage() {
 
   const [liveStatus, setLiveStatus] = useState(null);
   const [liveBusy, setLiveBusy] = useState(false);
+  const [statusTag, setStatusTag] = useState('');
+  const [leaderboard, setLeaderboard] = useState([]);
   const showToast = useToast();
 
   const today = new Date().getDay();
@@ -77,6 +87,7 @@ export default function MySchedulePage() {
   useEffect(() => {
     loadSchedule();
     api.getMyStatus().then((data) => setLiveStatus(data.status)).catch(() => {});
+    api.getLeaderboard().then((data) => setLeaderboard(data.leaderboard || [])).catch(() => {});
   }, [loadSchedule]);
 
   async function persist(newSlots) {
@@ -154,8 +165,9 @@ export default function MySchedulePage() {
           }
         });
       } else {
-        const data = await api.checkIn();
+        const data = await api.checkIn(statusTag);
         setLiveStatus(data);
+        setStatusTag('');
       }
     } catch (err) {
       showToast(err.message, 'error');
@@ -168,7 +180,7 @@ export default function MySchedulePage() {
     <div>
       <h1 className="page-title">My Schedule</h1>
 
-      <LiveBanner liveStatus={liveStatus} liveBusy={liveBusy} onToggle={toggleLive} />
+      <LiveBanner liveStatus={liveStatus} liveBusy={liveBusy} statusTag={statusTag} setStatusTag={setStatusTag} onToggle={toggleLive} />
 
       {saving && <div className="saving-indicator">Saving…</div>}
 
@@ -237,6 +249,28 @@ export default function MySchedulePage() {
             );
           })}
         </div>
+      )}
+
+      {leaderboard.length > 0 && (
+        <>
+          <div className="section-title mt-md">
+            This week's most consistent
+            <span className="schedule-count">{leaderboard.length}</span>
+          </div>
+          <div className="card">
+            {leaderboard.map((u, i) => (
+              <div className="person-row" key={u.user_id}>
+                <div className="leaderboard-rank">{i + 1}</div>
+                <div className="person-avatar">{u.name.split(' ').map((p) => p[0]).slice(0, 2).join('').toUpperCase()}</div>
+                <div className="person-info">
+                  <div className="person-name">{u.name}</div>
+                  {u.training_type && <div className="person-meta">{u.training_type}</div>}
+                </div>
+                <div className="leaderboard-count">{u.checkins} day{u.checkins !== 1 ? 's' : ''}</div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

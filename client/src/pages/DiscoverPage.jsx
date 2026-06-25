@@ -48,7 +48,7 @@ function ProfileModal({ person, type, connectedTo, pendingTo, sentTo, onSend, on
         {type === 'live' && (
           <div className="modal-detail">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7" strokeDasharray="2 3"/></svg>
-            <span>Checked in {timeAgo(person.checked_in_at)}</span>
+            <span>Checked in {timeAgo(person.checked_in_at)}{person.status_tag && ` · ${person.status_tag}`}</span>
           </div>
         )}
 
@@ -260,7 +260,7 @@ export default function DiscoverPage() {
                     </div>
                     <div className="person-info">
                       <div className="person-name"><span className="pulse-dot" />{p.name}</div>
-                      <div className="person-meta">{timeAgo(p.checked_in_at)}</div>
+                      <div className="person-meta">{timeAgo(p.checked_in_at)}{p.status_tag && <span className="status-tag-label"> · {p.status_tag}</span>}</div>
                     </div>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-hint)" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
                   </div>

@@ -128,18 +128,27 @@ router.get('/overlap', async (req, res) => {
 
 const LIVE_STATUS_DURATION_HOURS = 1;
 
+const VALID_STATUS_TAGS = ['Looking for a spotter', 'Open to join', 'Solo session', 'Cardio buddy wanted', ''];
+
 // POST /api/schedule/checkin
 router.post('/checkin', async (req, res) => {
   const now = new Date();
   const expires = new Date(now.getTime() + LIVE_STATUS_DURATION_HOURS * 60 * 60 * 1000);
+  const statusTag = VALID_STATUS_TAGS.includes(req.body?.status_tag) ? req.body.status_tag : '';
 
   await pool.query(`
-    INSERT INTO live_status (user_id, checked_in_at, expires_at)
-    VALUES ($1, $2, $3)
-    ON CONFLICT(user_id) DO UPDATE SET checked_in_at = EXCLUDED.checked_in_at, expires_at = EXCLUDED.expires_at
-  `, [req.user.id, now.toISOString(), expires.toISOString()]);
+    INSERT INTO live_status (user_id, checked_in_at, expires_at, status_tag)
+    VALUES ($1, $2, $3, $4)
+    ON CONFLICT(user_id) DO UPDATE SET checked_in_at = EXCLUDED.checked_in_at, expires_at = EXCLUDED.expires_at, status_tag = EXCLUDED.status_tag
+  `, [req.user.id, now.toISOString(), expires.toISOString(), statusTag]);
 
-  res.json({ checked_in_at: now.toISOString(), expires_at: expires.toISOString() });
+  await pool.query(`
+    INSERT INTO checkin_log (user_id, checked_in_at)
+    SELECT $1, $2
+    WHERE (SELECT COUNT(*) FROM checkin_log WHERE user_id = $1 AND checked_in_at::date = $2::date) < 2
+  `, [req.user.id, now.toISOString()]);
+
+  res.json({ checked_in_at: now.toISOString(), expires_at: expires.toISOString(), status_tag: statusTag });
 });
 
 // POST /api/schedule/checkout
@@ -152,7 +161,7 @@ router.post('/checkout', async (req, res) => {
 router.get('/live', async (req, res) => {
   const now = new Date().toISOString();
   const result = await pool.query(`
-    SELECT u.id as user_id, u.name, u.training_type, u.bio, u.gender, l.checked_in_at, l.expires_at
+    SELECT u.id as user_id, u.name, u.training_type, u.bio, u.gender, l.checked_in_at, l.expires_at, l.status_tag
     FROM live_status l
     JOIN users u ON u.id = l.user_id
     WHERE l.expires_at > $1 AND u.id != $2
@@ -167,10 +176,25 @@ router.get('/live', async (req, res) => {
 router.get('/my-status', async (req, res) => {
   const now = new Date().toISOString();
   const result = await pool.query(
-    'SELECT checked_in_at, expires_at FROM live_status WHERE user_id = $1 AND expires_at > $2',
+    'SELECT checked_in_at, expires_at, status_tag FROM live_status WHERE user_id = $1 AND expires_at > $2',
     [req.user.id, now]
   );
   res.json({ status: result.rows[0] || null });
+});
+
+// GET /api/schedule/leaderboard
+router.get('/leaderboard', async (req, res) => {
+  const result = await pool.query(`
+    SELECT u.id as user_id, u.name, u.training_type, COUNT(cl.id)::int as checkins
+    FROM checkin_log cl
+    JOIN users u ON u.id = cl.user_id
+    WHERE cl.checked_in_at >= NOW() - INTERVAL '7 days'
+      AND NOT EXISTS (SELECT 1 FROM blocks WHERE (blocker_id = $1 AND blocked_id = u.id) OR (blocker_id = u.id AND blocked_id = $1))
+    GROUP BY u.id, u.name, u.training_type
+    ORDER BY checkins DESC
+    LIMIT 20
+  `, [req.user.id]);
+  res.json({ leaderboard: result.rows });
 });
 
 module.exports = router;
