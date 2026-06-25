@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../lib/AuthContext';
+import { api } from '../lib/api';
 import fitinLogo from '../assets/fitin-logo-green.png';
 
 function useTheme() {
@@ -36,7 +37,6 @@ function TabIcon({ icon, active }) {
   switch (icon) {
     case 'cal': return <svg {...props}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>;
     case 'search': return <svg {...props}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>;
-    case 'live': return <svg {...props}><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7" strokeDasharray="2 3"/></svg>;
     case 'chat': return <svg {...props}><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>;
     case 'bell': return <svg {...props}><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>;
     case 'more': return <svg {...props}><circle cx="12" cy="5" r="1" fill={color} stroke="none"/><circle cx="12" cy="12" r="1" fill={color} stroke="none"/><circle cx="12" cy="19" r="1" fill={color} stroke="none"/></svg>;
@@ -48,8 +48,33 @@ export default function AppShell({ children }) {
   const { user, logout } = useAuth();
   const [dark, toggleTheme] = useTheme();
   const location = useLocation();
+  const [badges, setBadges] = useState({ unreadMessages: 0, pendingRequests: 0 });
+
+  const fetchBadges = useCallback(() => {
+    Promise.all([api.getConversations(), api.getIncoming()])
+      .then(([conv, inc]) => {
+        const unread = (conv.conversations || []).reduce((sum, c) => sum + (c.unread_count || 0), 0);
+        const pending = (inc.incoming || []).length;
+        setBadges({ unreadMessages: unread, pendingRequests: pending });
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    fetchBadges();
+    const interval = setInterval(fetchBadges, 30000);
+    return () => clearInterval(interval);
+  }, [fetchBadges]);
+
+  useEffect(() => { fetchBadges(); }, [location.pathname, fetchBadges]);
 
   const isChat = location.pathname.startsWith('/connections/');
+
+  function getBadge(tabTo) {
+    if (tabTo === '/connections' && badges.unreadMessages > 0) return badges.unreadMessages;
+    if (tabTo === '/requests' && badges.pendingRequests > 0) return badges.pendingRequests;
+    return 0;
+  }
 
   return (
     <div className="app-shell">
@@ -68,6 +93,8 @@ export default function AppShell({ children }) {
               end={l.to === '/'}
             >
               {l.label}
+              {l.to === '/connections' && badges.unreadMessages > 0 && <span className="sidebar-badge">{badges.unreadMessages}</span>}
+              {l.to === '/requests' && badges.pendingRequests > 0 && <span className="sidebar-badge">{badges.pendingRequests}</span>}
             </NavLink>
           ))}
         </nav>
@@ -96,6 +123,7 @@ export default function AppShell({ children }) {
             const isActive = tab.to === '/'
               ? location.pathname === '/'
               : location.pathname.startsWith(tab.to);
+            const badge = getBadge(tab.to);
             return (
               <NavLink
                 key={tab.to}
@@ -104,7 +132,10 @@ export default function AppShell({ children }) {
                 end={tab.to === '/'}
                 aria-label={tab.label}
               >
-                <TabIcon icon={tab.icon} active={isActive} />
+                <div className="bottom-tab-icon-wrap">
+                  <TabIcon icon={tab.icon} active={isActive} />
+                  {badge > 0 && <span className="tab-badge">{badge > 9 ? '9+' : badge}</span>}
+                </div>
                 <span className="bottom-tab-label">{tab.label}</span>
               </NavLink>
             );
