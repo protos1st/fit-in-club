@@ -200,7 +200,7 @@ input, select, textarea {
 @media (max-width: 720px) {
   .app-shell { flex-direction: column; }
   .sidebar { display: none; }
-  .app-main { padding: 16px 16px 80px; max-width: none; }
+  .app-main { padding: 16px 16px 80px; max-width: none; margin: 0; width: 100%; }
 
   .bottom-bar {
     display: flex;
