@@ -910,6 +910,7 @@ input, select, textarea {
   border: 1.5px solid var(--color-line);
 }
 .chat-input-row input:focus { outline: none; border-color: var(--color-accent); box-shadow: none; }
+.chat-input-row .btn { border-radius: 22px; }
 
 /* ---------- Misc ---------- */
 
