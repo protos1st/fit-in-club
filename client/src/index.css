@@ -278,7 +278,14 @@ input, select, textarea {
 @media (max-width: 720px) {
   .card {
     border-radius: 0;
+    border-left: none;
+    border-right: none;
     box-shadow: none;
+  }
+  .filter-search {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
   }
 }
 
