@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useToast } from '../lib/ToastContext';
 
@@ -18,14 +19,27 @@ function initials(name) {
 function timeAgo(iso) {
   const mins = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
   if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins} min ago`;
+  if (mins < 60) return `${mins}m ago`;
   const hrs = Math.round(mins / 60);
-  return `${hrs} hr ago`;
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.round(hrs / 24);
+  return `${days}d ago`;
 }
 
-function ProfileModal({ person, type, connectedTo, pendingTo, sentTo, onSend, onClose }) {
+function lastActiveLabel(iso) {
+  if (!iso) return null;
+  const days = Math.round((Date.now() - new Date(iso).getTime()) / 86400000);
+  if (days === 0) return 'Active today';
+  if (days === 1) return 'Active yesterday';
+  if (days <= 7) return `Active ${days}d ago`;
+  if (days <= 30) return `Active ${Math.round(days / 7)}w ago`;
+  return 'Inactive';
+}
+
+function ProfileModal({ person, type, connectedTo, pendingTo, sentTo, onSend, onClose, onMessage }) {
   const isConnected = connectedTo.has(person.user_id);
   const isSent = sentTo.has(person.user_id) || pendingTo.has(person.user_id);
+  const activity = lastActiveLabel(person.last_active);
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -41,6 +55,9 @@ function ProfileModal({ person, type, connectedTo, pendingTo, sentTo, onSend, on
           {person.gender && person.gender !== 'Prefer not to say' && (
             <span className="tag" style={{ marginLeft: 4 }}>{person.gender}</span>
           )}
+          {activity && type === 'match' && (
+            <div className="modal-activity">{activity}</div>
+          )}
         </div>
 
         {person.bio && <p className="modal-bio">{person.bio}</p>}
@@ -54,7 +71,7 @@ function ProfileModal({ person, type, connectedTo, pendingTo, sentTo, onSend, on
 
         {person.overlapping_slots && person.overlapping_slots.length > 0 && (
           <>
-            <div className="modal-section-title">Overlapping Schedule</div>
+            <div className="modal-section-title">Overlapping schedule</div>
             <div className="modal-slots">
               {person.overlapping_slots.map((s, i) => (
                 <div className="modal-slot" key={i}>
@@ -68,7 +85,10 @@ function ProfileModal({ person, type, connectedTo, pendingTo, sentTo, onSend, on
 
         <div className="modal-action">
           {isConnected ? (
-            <span className="btn btn-ghost btn-block" style={{ cursor: 'default' }}>Already Connected</span>
+            <button className="btn btn-primary btn-block" onClick={() => onMessage(person.user_id)}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ marginRight: 6, verticalAlign: -2 }}><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              Message
+            </button>
           ) : (
             <button
               className="btn btn-primary btn-block"
@@ -95,10 +115,13 @@ export default function DiscoverPage() {
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [selectedType, setSelectedType] = useState(null);
   const showToast = useToast();
+  const navigate = useNavigate();
 
   const [search, setSearch] = useState('');
   const [genderFilter, setGenderFilter] = useState('');
   const [trainingFilter, setTrainingFilter] = useState('');
+  const [dayFilter, setDayFilter] = useState('');
+  const [sortBy, setSortBy] = useState('overlaps');
   const [showFilters, setShowFilters] = useState(false);
   const [showAllLive, setShowAllLive] = useState(false);
   const [showAllMatches, setShowAllMatches] = useState(false);
@@ -134,6 +157,10 @@ export default function DiscoverPage() {
     }
   }
 
+  function goToChat(userId) {
+    navigate(`/connections/${userId}`);
+  }
+
   const genders = useMemo(() => {
     const all = [...live, ...matches];
     const g = new Set();
@@ -161,11 +188,19 @@ export default function DiscoverPage() {
     if (search) result = result.filter((m) => m.name.toLowerCase().includes(search.toLowerCase()));
     if (genderFilter) result = result.filter((m) => m.gender === genderFilter);
     if (trainingFilter) result = result.filter((m) => m.training_type === trainingFilter);
+    if (dayFilter !== '') {
+      const day = Number(dayFilter);
+      result = result.filter((m) => m.overlapping_slots.some((s) => s.day_of_week === day));
+    }
+    if (sortBy === 'overlaps') result.sort((a, b) => b.overlapping_slots.length - a.overlapping_slots.length);
+    else if (sortBy === 'name') result.sort((a, b) => a.name.localeCompare(b.name));
+    else if (sortBy === 'recent') result.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+    else if (sortBy === 'active') result.sort((a, b) => new Date(b.last_active || 0) - new Date(a.last_active || 0));
     return result;
-  }, [matches, search, genderFilter, trainingFilter]);
+  }, [matches, search, genderFilter, trainingFilter, dayFilter, sortBy]);
 
-  const hasFilters = genderFilter || trainingFilter;
-  const activeFilterCount = (genderFilter ? 1 : 0) + (trainingFilter ? 1 : 0);
+  const hasFilters = genderFilter || trainingFilter || dayFilter !== '';
+  const activeFilterCount = (genderFilter ? 1 : 0) + (trainingFilter ? 1 : 0) + (dayFilter !== '' ? 1 : 0);
 
   if (loading) return <div className="spinner-text">Finding gym buddies…</div>;
 
@@ -196,6 +231,7 @@ export default function DiscoverPage() {
         <div className="active-filters">
           {genderFilter && <button className="active-filter-chip" onClick={() => setGenderFilter('')}>{genderFilter} ×</button>}
           {trainingFilter && <button className="active-filter-chip" onClick={() => setTrainingFilter('')}>{trainingFilter} ×</button>}
+          {dayFilter !== '' && <button className="active-filter-chip" onClick={() => setDayFilter('')}>{DAYS[dayFilter]} ×</button>}
         </div>
       )}
 
@@ -223,7 +259,7 @@ export default function DiscoverPage() {
 
             {trainingTypes.length > 0 && (
               <div className="filter-sheet-section">
-                <div className="filter-sheet-label">Training Type</div>
+                <div className="filter-sheet-label">Training type</div>
                 <div className="filter-sheet-options">
                   <button className={`filter-pill ${trainingFilter === '' ? 'filter-pill-active' : ''}`} onClick={() => setTrainingFilter('')}>All</button>
                   {trainingTypes.map((t) => (
@@ -233,8 +269,18 @@ export default function DiscoverPage() {
               </div>
             )}
 
+            <div className="filter-sheet-section">
+              <div className="filter-sheet-label">Day</div>
+              <div className="filter-sheet-options">
+                <button className={`filter-pill ${dayFilter === '' ? 'filter-pill-active' : ''}`} onClick={() => setDayFilter('')}>All</button>
+                {DAYS.map((d, i) => (
+                  <button key={i} className={`filter-pill ${dayFilter === String(i) ? 'filter-pill-active' : ''}`} onClick={() => setDayFilter(String(i))}>{d}</button>
+                ))}
+              </div>
+            </div>
+
             <div className="filter-sheet-actions">
-              <button className="btn btn-ghost" onClick={() => { setGenderFilter(''); setTrainingFilter(''); }}>Clear all</button>
+              <button className="btn btn-ghost" onClick={() => { setGenderFilter(''); setTrainingFilter(''); setDayFilter(''); }}>Clear all</button>
               <button className="btn btn-primary" onClick={() => setShowFilters(false)} style={{ borderRadius: 22 }}>Show results</button>
             </div>
           </div>
@@ -252,19 +298,28 @@ export default function DiscoverPage() {
               <div className="empty-state"><p>No one matches your filters.</p></div>
             ) : (
               <>
-                {(showAllLive ? filteredLive : filteredLive.slice(0, PREVIEW_COUNT)).map((p) => (
-                  <div className="person-row person-row-clickable" key={p.user_id} onClick={() => { setSelectedPerson(p); setSelectedType('live'); }}>
-                    <div className="avatar-wrap">
-                      <div className="person-avatar">{initials(p.name)}</div>
-                      {connectedTo.has(p.user_id) && <span className="connected-badge" aria-label="Connected"><svg width="12" height="12" viewBox="0 0 24 24" fill="#fff" stroke="none"><path d="M20 6L9 17l-5-5" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg></span>}
+                {(showAllLive ? filteredLive : filteredLive.slice(0, PREVIEW_COUNT)).map((p) => {
+                  const isConn = connectedTo.has(p.user_id);
+                  const isSent = sentTo.has(p.user_id) || pendingTo.has(p.user_id);
+                  return (
+                    <div className="person-row person-row-clickable" key={p.user_id} onClick={() => { setSelectedPerson(p); setSelectedType('live'); }}>
+                      <div className="avatar-wrap">
+                        <div className="person-avatar">{initials(p.name)}</div>
+                        {isConn && <span className="connected-badge" aria-label="Connected"><svg width="12" height="12" viewBox="0 0 24 24" fill="#fff" stroke="none"><path d="M20 6L9 17l-5-5" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg></span>}
+                      </div>
+                      <div className="person-info">
+                        <div className="person-name"><span className="pulse-dot" />{p.name}</div>
+                        <div className="person-meta">{timeAgo(p.checked_in_at)}{p.status_tag && <span className="status-tag-label"> · {p.status_tag}</span>}</div>
+                      </div>
+                      {!isConn && !isSent && (
+                        <button className="disc-quick-add" onClick={(e) => { e.stopPropagation(); sendRequest(p.user_id); }} aria-label={`Send request to ${p.name}`} title="Send buddy request">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        </button>
+                      )}
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-hint)" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
                     </div>
-                    <div className="person-info">
-                      <div className="person-name"><span className="pulse-dot" />{p.name}</div>
-                      <div className="person-meta">{timeAgo(p.checked_in_at)}{p.status_tag && <span className="status-tag-label"> · {p.status_tag}</span>}</div>
-                    </div>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-hint)" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
-                  </div>
-                ))}
+                  );
+                })}
                 {!showAllLive && filteredLive.length > PREVIEW_COUNT && (
                   <button className="show-more-btn" onClick={() => setShowAllLive(true)}>
                     Show all ({filteredLive.length})
@@ -277,9 +332,20 @@ export default function DiscoverPage() {
       )}
 
       <div className="section-title mt-md">
-        Schedule matches
+        <span>Schedule matches</span>
         <span className="schedule-count">{filteredMatches.length}</span>
       </div>
+
+      {!matchNote && filteredMatches.length > 0 && (
+        <div className="disc-sort-row">
+          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="disc-sort-select" aria-label="Sort matches">
+            <option value="overlaps">Most overlaps</option>
+            <option value="active">Most active</option>
+            <option value="name">Name A–Z</option>
+            <option value="recent">Recently joined</option>
+          </select>
+        </div>
+      )}
 
       {matchNote ? (
         <div className="card">
@@ -297,25 +363,36 @@ export default function DiscoverPage() {
         </div>
       ) : (
         <div className="card">
-          {(showAllMatches ? filteredMatches : filteredMatches.slice(0, PREVIEW_COUNT)).map((m, idx, arr) => (
-            <div
-              className={`person-row person-row-clickable ${idx < arr.length - 1 ? '' : 'person-row-last'}`}
-              key={m.user_id}
-              onClick={() => { setSelectedPerson(m); setSelectedType('match'); }}
-            >
-              <div className="avatar-wrap">
-                <div className="person-avatar">{initials(m.name)}</div>
-                {connectedTo.has(m.user_id) && <span className="connected-badge" aria-label="Connected"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>}
-              </div>
-              <div className="person-info">
-                <div className="person-name">{m.name}</div>
-                <div className="person-meta">
-                  {m.overlapping_slots.length} overlapping slot{m.overlapping_slots.length !== 1 ? 's' : ''}
+          {(showAllMatches ? filteredMatches : filteredMatches.slice(0, PREVIEW_COUNT)).map((m, idx, arr) => {
+            const isConn = connectedTo.has(m.user_id);
+            const isSent = sentTo.has(m.user_id) || pendingTo.has(m.user_id);
+            const activity = lastActiveLabel(m.last_active);
+            return (
+              <div
+                className={`person-row person-row-clickable ${idx < arr.length - 1 ? '' : 'person-row-last'}`}
+                key={m.user_id}
+                onClick={() => { setSelectedPerson(m); setSelectedType('match'); }}
+              >
+                <div className="avatar-wrap">
+                  <div className="person-avatar">{initials(m.name)}</div>
+                  {isConn && <span className="connected-badge" aria-label="Connected"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>}
                 </div>
+                <div className="person-info">
+                  <div className="person-name">{m.name}</div>
+                  <div className="person-meta">
+                    {m.overlapping_slots.length} slot{m.overlapping_slots.length !== 1 ? 's' : ''}
+                    {activity && <span className="disc-activity"> · {activity}</span>}
+                  </div>
+                </div>
+                {!isConn && !isSent && (
+                  <button className="disc-quick-add" onClick={(e) => { e.stopPropagation(); sendRequest(m.user_id); }} aria-label={`Send request to ${m.name}`} title="Send buddy request">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  </button>
+                )}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-hint)" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
               </div>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-hint)" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
-            </div>
-          ))}
+            );
+          })}
           {!showAllMatches && filteredMatches.length > PREVIEW_COUNT && (
             <button className="show-more-btn" onClick={() => setShowAllMatches(true)}>
               Show all ({filteredMatches.length})
@@ -332,6 +409,7 @@ export default function DiscoverPage() {
           pendingTo={pendingTo}
           sentTo={sentTo}
           onSend={sendRequest}
+          onMessage={goToChat}
           onClose={() => setSelectedPerson(null)}
         />
       )}

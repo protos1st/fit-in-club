@@ -87,7 +87,8 @@ router.get('/overlap', async (req, res) => {
 
   const othersResult = await pool.query(`
     SELECT s.id as schedule_id, s.day_of_week, s.start_time, s.end_time,
-           u.id as user_id, u.name, u.training_type, u.bio
+           u.id as user_id, u.name, u.training_type, u.bio, u.gender, u.created_at,
+           (SELECT MAX(cl.checked_in_at) FROM checkin_log cl WHERE cl.user_id = u.id) as last_active
     FROM schedules s
     JOIN users u ON u.id = s.user_id
     WHERE u.id != $1
@@ -110,6 +111,9 @@ router.get('/overlap', async (req, res) => {
           name: theirs.name,
           training_type: theirs.training_type,
           bio: theirs.bio,
+          gender: theirs.gender,
+          created_at: theirs.created_at,
+          last_active: theirs.last_active,
           overlapping_slots: []
         });
       }
