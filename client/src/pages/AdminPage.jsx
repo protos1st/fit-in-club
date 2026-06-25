@@ -1,122 +1,301 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { api } from '../lib/api';
 import fitinLogo from '../assets/fitin-logo-green.png';
 
 const DAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 function formatDate(d) {
   const date = new Date(d);
-  return `${DAYS_SHORT[date.getDay()]} ${date.getDate()}/${date.getMonth() + 1}`;
+  return `${date.getDate()} ${MONTHS_SHORT[date.getMonth()]}`;
 }
-
 function formatHour(h) {
-  if (h === 0) return '12 AM';
-  if (h < 12) return `${h} AM`;
-  if (h === 12) return '12 PM';
-  return `${h - 12} PM`;
+  if (h === 0) return '12a';
+  if (h < 12) return `${h}a`;
+  if (h === 12) return '12p';
+  return `${h - 12}p`;
 }
 
-function StatCard({ icon, label, value, sub, accent }) {
+function useCountUp(target, duration = 800) {
+  const [val, setVal] = useState(0);
+  const ref = useRef(null);
+  useEffect(() => {
+    if (target === 0) { setVal(0); return; }
+    const start = performance.now();
+    const from = 0;
+    function tick(now) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setVal(Math.round(from + (target - from) * eased));
+      if (progress < 1) ref.current = requestAnimationFrame(tick);
+    }
+    ref.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(ref.current);
+  }, [target, duration]);
+  return val;
+}
+
+function StatCard({ icon, label, value, delta, sub, color, index }) {
+  const animVal = useCountUp(value);
   return (
-    <div className="admin-stat-card">
-      <div className="admin-stat-icon" style={{ background: accent + '18', color: accent }}>
-        {icon}
+    <div className="ad-stat" style={{ animationDelay: `${index * 80}ms` }}>
+      <div className="ad-stat-top">
+        <div className="ad-stat-icon" style={{ background: color + '15', color }}>{icon}</div>
+        {delta !== undefined && delta !== null && (
+          <span className={`ad-delta ${delta >= 0 ? 'up' : 'down'}`}>
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
+              {delta >= 0
+                ? <path d="M5 1L9 6H1z" />
+                : <path d="M5 9L1 4h8z" />}
+            </svg>
+            {delta >= 0 ? '+' : ''}{delta}
+          </span>
+        )}
       </div>
-      <div className="admin-stat-value">{value}</div>
-      <div className="admin-stat-label">{label}</div>
-      {sub && <div className="admin-stat-sub">{sub}</div>}
+      <div className="ad-stat-val">{animVal.toLocaleString()}</div>
+      <div className="ad-stat-label">{label}</div>
+      {sub && <div className="ad-stat-sub">{sub}</div>}
     </div>
   );
 }
 
-function MiniBar({ data, maxVal, color }) {
-  return (
-    <div className="admin-minibar-row">
-      {data.map((d, i) => (
-        <div key={i} className="admin-minibar-col">
-          <div
-            className="admin-minibar-bar"
-            style={{
-              height: `${maxVal > 0 ? (d.count / maxVal) * 100 : 0}%`,
-              background: color
-            }}
-            title={`${d.label}: ${d.count}`}
-          />
-          <span className="admin-minibar-label">{d.label}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function TrendChart({ data, color, label }) {
-  if (!data || data.length === 0) return <div className="admin-empty">No data yet</div>;
-  const max = Math.max(...data.map((d) => d.count), 1);
-  const points = data.map((d, i) => {
-    const x = (i / Math.max(data.length - 1, 1)) * 100;
-    const y = 100 - (d.count / max) * 100;
+function Sparkline({ data, color, height = 32 }) {
+  if (!data || data.length < 2) return null;
+  const max = Math.max(...data.map(d => d.count), 1);
+  const w = 100, h = height;
+  const pts = data.map((d, i) => {
+    const x = (i / (data.length - 1)) * w;
+    const y = h - (d.count / max) * (h - 4) - 2;
     return `${x},${y}`;
-  }).join(' ');
-  const areaPoints = `0,100 ${points} 100,100`;
+  });
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" style={{ width: '100%', height, display: 'block' }}>
+      <defs>
+        <linearGradient id={`sg-${color.replace('#','')}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.25" />
+          <stop offset="100%" stopColor={color} stopOpacity="0.02" />
+        </linearGradient>
+      </defs>
+      <polygon points={`0,${h} ${pts.join(' ')} ${w},${h}`} fill={`url(#sg-${color.replace('#','')})`} />
+      <polyline points={pts.join(' ')} fill="none" stroke={color} strokeWidth="2" vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx={pts[pts.length-1].split(',')[0]} cy={pts[pts.length-1].split(',')[1]} r="3" fill={color} />
+    </svg>
+  );
+}
+
+function TrendCard({ title, data, color }) {
+  if (!data || data.length === 0) return (
+    <div className="ad-card">
+      <div className="ad-card-head"><h3>{title}</h3></div>
+      <div className="ad-empty">No data yet</div>
+    </div>
+  );
+  const total = data.reduce((s, d) => s + d.count, 0);
+  const max = Math.max(...data.map(d => d.count), 1);
+  const w = 400, h = 120;
+  const pts = data.map((d, i) => {
+    const x = (i / Math.max(data.length - 1, 1)) * w;
+    const y = h - (d.count / max) * (h - 20) - 10;
+    return `${x},${y}`;
+  });
 
   return (
-    <div className="admin-trend">
-      <div className="admin-trend-header">
-        <span className="admin-trend-label">{label}</span>
-        <span className="admin-trend-total">{data.reduce((s, d) => s + d.count, 0)} total</span>
+    <div className="ad-card">
+      <div className="ad-card-head">
+        <h3>{title}</h3>
+        <span className="ad-card-metric">{total}</span>
       </div>
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="admin-trend-svg">
-        <polygon points={areaPoints} fill={color} fillOpacity="0.1" />
-        <polyline points={points} fill="none" stroke={color} strokeWidth="2" vectorEffect="non-scaling-stroke" />
+      <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="ad-chart-svg">
+        <defs>
+          <linearGradient id={`tg-${color.replace('#','')}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity="0.2" />
+            <stop offset="100%" stopColor={color} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <polygon points={`0,${h} ${pts.join(' ')} ${w},${h}`} fill={`url(#tg-${color.replace('#','')})`} />
+        <polyline points={pts.join(' ')} fill="none" stroke={color} strokeWidth="2.5" vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" />
+        {data.map((d, i) => {
+          const x = (i / Math.max(data.length - 1, 1)) * w;
+          const y = h - (d.count / max) * (h - 20) - 10;
+          return <circle key={i} cx={x} cy={y} r="3" fill="var(--color-card)" stroke={color} strokeWidth="2" className="ad-dot" />;
+        })}
       </svg>
-      <div className="admin-trend-dates">
+      <div className="ad-chart-axis">
         <span>{formatDate(data[0].date)}</span>
+        {data.length > 2 && <span>{formatDate(data[Math.floor(data.length / 2)].date)}</span>}
         <span>{formatDate(data[data.length - 1].date)}</span>
       </div>
     </div>
   );
 }
 
-function DonutChart({ data, colors }) {
-  const total = data.reduce((s, d) => s + d.count, 0);
-  if (total === 0) return <div className="admin-empty">No data</div>;
-  let cumulative = 0;
-  const segments = data.map((d, i) => {
-    const pct = d.count / total;
-    const start = cumulative;
-    cumulative += pct;
-    return { ...d, pct, start, color: colors[i % colors.length] };
-  });
-
-  const size = 120;
-  const cx = size / 2, cy = size / 2, r = 44, strokeW = 16;
-  const circumference = 2 * Math.PI * r;
+function FunnelChart({ funnel }) {
+  const steps = [
+    { label: 'Signed up', value: funnel.signedUp, color: '#53603E' },
+    { label: 'Set schedule', value: funnel.scheduled, color: '#7C8A6E' },
+    { label: 'Checked in', value: funnel.checkedIn, color: '#FBA327' },
+    { label: 'Connected', value: funnel.connected, color: '#D4922A' },
+    { label: 'Messaged', value: funnel.messaged, color: '#6D412A' },
+  ];
+  const max = Math.max(steps[0].value, 1);
 
   return (
-    <div className="admin-donut-wrap">
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="admin-donut-svg">
-        {segments.map((seg, i) => (
-          <circle
-            key={i}
-            cx={cx} cy={cy} r={r}
-            fill="none"
-            stroke={seg.color}
-            strokeWidth={strokeW}
-            strokeDasharray={`${seg.pct * circumference} ${circumference}`}
-            strokeDashoffset={-seg.start * circumference}
-            transform={`rotate(-90 ${cx} ${cy})`}
-          />
-        ))}
-        <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central" className="admin-donut-total">{total}</text>
-      </svg>
-      <div className="admin-donut-legend">
-        {segments.map((seg, i) => (
-          <div key={i} className="admin-donut-legend-item">
-            <span className="admin-donut-dot" style={{ background: seg.color }} />
-            <span className="admin-donut-name">{seg.type || seg.gender}</span>
-            <span className="admin-donut-count">{seg.count}</span>
+    <div className="ad-card">
+      <div className="ad-card-head"><h3>Engagement funnel</h3></div>
+      <div className="ad-funnel">
+        {steps.map((s, i) => {
+          const pct = max > 0 ? (s.value / max) * 100 : 0;
+          const convRate = i > 0 && steps[i - 1].value > 0
+            ? Math.round((s.value / steps[i - 1].value) * 100) : null;
+          return (
+            <div key={i} className="ad-funnel-step">
+              <div className="ad-funnel-label">
+                <span>{s.label}</span>
+                <span className="ad-funnel-val">{s.value}</span>
+              </div>
+              <div className="ad-funnel-bar-bg">
+                <div className="ad-funnel-bar" style={{ width: `${Math.max(pct, 3)}%`, background: s.color }} />
+              </div>
+              {convRate !== null && (
+                <span className="ad-funnel-rate">{convRate}%</span>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function Heatmap({ data }) {
+  const today = new Date();
+  const days = 90;
+  const grid = [];
+  const dateMap = {};
+  data.forEach(d => { dateMap[new Date(d.date).toISOString().slice(0, 10)] = d.count; });
+
+  for (let i = days - 1; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    const key = date.toISOString().slice(0, 10);
+    grid.push({ date: key, count: dateMap[key] || 0, day: date.getDay() });
+  }
+  const max = Math.max(...grid.map(g => g.count), 1);
+
+  function intensity(count) {
+    if (count === 0) return 'var(--color-line)';
+    const level = Math.ceil((count / max) * 4);
+    const colors = ['#c6d5a0', '#9ab86b', '#6d9b37', '#4a7c1b'];
+    return colors[Math.min(level - 1, 3)];
+  }
+
+  const weeks = [];
+  let week = [];
+  grid.forEach((g, i) => {
+    week.push(g);
+    if (week.length === 7 || i === grid.length - 1) {
+      weeks.push(week);
+      week = [];
+    }
+  });
+
+  return (
+    <div className="ad-card">
+      <div className="ad-card-head"><h3>Check-in activity</h3><span className="ad-card-sub">Last 90 days</span></div>
+      <div className="ad-heatmap">
+        {weeks.map((w, wi) => (
+          <div key={wi} className="ad-heatmap-week">
+            {w.map((d, di) => (
+              <div
+                key={di}
+                className="ad-heatmap-cell"
+                style={{ background: intensity(d.count) }}
+                title={`${d.date}: ${d.count} check-in${d.count !== 1 ? 's' : ''}`}
+              />
+            ))}
           </div>
         ))}
+      </div>
+      <div className="ad-heatmap-legend">
+        <span>Less</span>
+        <div className="ad-heatmap-cell" style={{ background: 'var(--color-line)' }} />
+        <div className="ad-heatmap-cell" style={{ background: '#c6d5a0' }} />
+        <div className="ad-heatmap-cell" style={{ background: '#9ab86b' }} />
+        <div className="ad-heatmap-cell" style={{ background: '#6d9b37' }} />
+        <div className="ad-heatmap-cell" style={{ background: '#4a7c1b' }} />
+        <span>More</span>
+      </div>
+    </div>
+  );
+}
+
+function PeakHours({ data }) {
+  const hours = Array.from({ length: 24 }, (_, h) => {
+    const found = data.find(p => Number(p.hour) === h);
+    return { hour: h, count: found ? found.count : 0 };
+  });
+  const max = Math.max(...hours.map(h => h.count), 1);
+
+  return (
+    <div className="ad-card">
+      <div className="ad-card-head"><h3>Peak hours</h3></div>
+      <div className="ad-peak">
+        {hours.map((h, i) => (
+          <div key={i} className="ad-peak-col" title={`${formatHour(h.hour)}: ${h.count}`}>
+            <div className="ad-peak-bar-wrap">
+              <div
+                className="ad-peak-bar"
+                style={{
+                  height: `${max > 0 ? (h.count / max) * 100 : 0}%`,
+                  background: h.count === max && h.count > 0 ? '#FBA327' : '#53603E',
+                  opacity: h.count === 0 ? 0.15 : 0.4 + (h.count / max) * 0.6
+                }}
+              />
+            </div>
+            {h.hour % 4 === 0 && <span className="ad-peak-label">{formatHour(h.hour)}</span>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DonutChart({ title, data, colors }) {
+  const total = data.reduce((s, d) => s + d.count, 0);
+  if (total === 0) return <div className="ad-card"><div className="ad-card-head"><h3>{title}</h3></div><div className="ad-empty">No data</div></div>;
+  let cum = 0;
+  const segs = data.map((d, i) => {
+    const pct = d.count / total;
+    const start = cum;
+    cum += pct;
+    return { ...d, pct, start, color: colors[i % colors.length] };
+  });
+  const r = 42, sw = 14, circ = 2 * Math.PI * r;
+
+  return (
+    <div className="ad-card">
+      <div className="ad-card-head"><h3>{title}</h3></div>
+      <div className="ad-donut-wrap">
+        <svg width="110" height="110" viewBox="0 0 110 110">
+          {segs.map((s, i) => (
+            <circle key={i} cx="55" cy="55" r={r} fill="none" stroke={s.color} strokeWidth={sw}
+              strokeDasharray={`${s.pct * circ} ${circ}`}
+              strokeDashoffset={-s.start * circ}
+              transform="rotate(-90 55 55)"
+              className="ad-donut-seg" />
+          ))}
+          <text x="55" y="55" textAnchor="middle" dominantBaseline="central" className="ad-donut-total">{total}</text>
+        </svg>
+        <div className="ad-donut-list">
+          {segs.map((s, i) => (
+            <div key={i} className="ad-donut-item">
+              <span className="ad-donut-dot" style={{ background: s.color }} />
+              <span className="ad-donut-name">{s.type || s.gender}</span>
+              <span className="ad-donut-pct">{Math.round(s.pct * 100)}%</span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -148,17 +327,10 @@ function LoginGate({ onAuth }) {
         <h1 className="admin-login-title">Admin dashboard</h1>
         <p className="admin-login-sub">Enter the admin password to view analytics.</p>
         <form onSubmit={handleSubmit}>
-          <input
-            type="password"
-            value={pw}
-            onChange={(e) => setPw(e.target.value)}
-            placeholder="Admin password"
-            className="admin-login-input"
-            autoFocus
-          />
+          <input type="password" value={pw} onChange={e => setPw(e.target.value)} placeholder="Admin password" className="admin-login-input" autoFocus />
           {error && <div className="admin-login-error">{error}</div>}
           <button type="submit" className="btn btn-primary admin-login-btn" disabled={loading || !pw}>
-            {loading ? 'Checking…' : 'Enter dashboard'}
+            {loading ? 'Checking...' : 'Enter dashboard'}
           </button>
         </form>
       </div>
@@ -170,158 +342,107 @@ export default function AdminPage() {
   const [password, setPassword] = useState(null);
   const [stats, setStats] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
-  const intervalRef = useRef(null);
+  const [lastUpdated, setLastUpdated] = useState(null);
 
-  function handleAuth(pw, data) {
-    setPassword(pw);
-    setStats(data);
-  }
+  function handleAuth(pw, data) { setPassword(pw); setStats(data); setLastUpdated(new Date()); }
 
   useEffect(() => {
     if (!password) return;
-    intervalRef.current = setInterval(() => {
-      api.getAdminStats(password).then(setStats).catch(() => {});
+    const interval = setInterval(() => {
+      api.getAdminStats(password).then(d => { setStats(d); setLastUpdated(new Date()); }).catch(() => {});
     }, 60000);
-    return () => clearInterval(intervalRef.current);
+    return () => clearInterval(interval);
   }, [password]);
 
-  async function refresh() {
+  const refresh = useCallback(async () => {
     setRefreshing(true);
-    try {
-      const data = await api.getAdminStats(password);
-      setStats(data);
-    } catch { /* ignore */ }
+    try { const d = await api.getAdminStats(password); setStats(d); setLastUpdated(new Date()); } catch {}
     setRefreshing(false);
-  }
+  }, [password]);
 
   if (!password) return <LoginGate onAuth={handleAuth} />;
-  if (!stats) return <div className="spinner-text">Loading dashboard…</div>;
+  if (!stats) return <div className="spinner-text">Loading dashboard...</div>;
 
-  const { overview, trends, topMembers, trainingBreakdown, genderBreakdown, peakHours, recentSignups } = stats;
-
-  const peakData = Array.from({ length: 24 }, (_, h) => {
-    const found = peakHours.find((p) => Number(p.hour) === h);
-    return { label: h % 6 === 0 ? formatHour(h) : '', count: found ? found.count : 0 };
-  });
-  const peakMax = Math.max(...peakData.map((d) => d.count), 1);
-
+  const { overview, trends, topMembers, trainingBreakdown, genderBreakdown, peakHours, recentSignups, funnel, heatmap, weeklyDelta } = stats;
   const trainingColors = ['#53603E', '#FBA327', '#6D412A', '#7C8A6E', '#D4922A', '#8B5E3C', '#A3B08E', '#E8B94D'];
   const genderColors = ['#53603E', '#FBA327', '#6D412A', '#999'];
 
+  const icons = {
+    users: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>,
+    active: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>,
+    connect: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>,
+    msg: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>,
+  };
+
   return (
-    <div className="admin-page">
-      <header className="admin-header">
-        <div className="admin-header-left">
-          <img src={fitinLogo} alt="FitIn" className="admin-header-logo" />
+    <div className="ad-page">
+      <header className="ad-header">
+        <div className="ad-header-left">
+          <img src={fitinLogo} alt="FitIn" className="ad-header-logo" />
           <div>
-            <h1 className="admin-header-title">Dashboard</h1>
-            <p className="admin-header-sub">Gym analytics overview</p>
+            <h1 className="ad-header-title">Dashboard</h1>
+            <p className="ad-header-sub">
+              {lastUpdated && `Updated ${lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
+            </p>
           </div>
         </div>
-        <div className="admin-header-right">
+        <div className="ad-header-right">
           {overview.liveNow > 0 && (
-            <span className="admin-live-badge">
-              <span className="pulse-dot" />{overview.liveNow} live now
-            </span>
+            <span className="ad-live"><span className="pulse-dot" />{overview.liveNow} at gym now</span>
           )}
-          <button className="btn btn-outline btn-sm" onClick={refresh} disabled={refreshing}>
-            {refreshing ? 'Refreshing…' : 'Refresh'}
+          {overview.totalReports > 0 && (
+            <span className="ad-reports-badge">{overview.totalReports} report{overview.totalReports !== 1 ? 's' : ''}</span>
+          )}
+          <button className="btn btn-outline btn-sm ad-refresh" onClick={refresh} disabled={refreshing}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className={refreshing ? 'ad-spin' : ''}>
+              <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+            </svg>
           </button>
         </div>
       </header>
 
-      <div className="admin-stats-grid">
-        <StatCard
-          icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>}
-          label="Total members"
-          value={overview.totalUsers}
-          accent="#53603E"
-        />
-        <StatCard
-          icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>}
-          label="Active this week"
-          value={overview.activeThisWeek}
-          sub={overview.totalUsers > 0 ? `${Math.round((overview.activeThisWeek / overview.totalUsers) * 100)}% of members` : ''}
-          accent="#FBA327"
-        />
-        <StatCard
-          icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>}
-          label="Buddy connections"
-          value={overview.totalConnections}
-          accent="#53603E"
-        />
-        <StatCard
-          icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>}
-          label="Messages sent"
-          value={overview.totalMessages}
-          accent="#6D412A"
-        />
+      <div className="ad-stats">
+        <StatCard icon={icons.users} label="Total members" value={overview.totalUsers} delta={weeklyDelta.newUsers} color="#53603E" index={0} />
+        <StatCard icon={icons.active} label="Active this week" value={overview.activeThisWeek}
+          sub={overview.totalUsers > 0 ? `${Math.round((overview.activeThisWeek / overview.totalUsers) * 100)}% engagement` : ''} color="#FBA327" index={1} />
+        <StatCard icon={icons.connect} label="Connections" value={overview.totalConnections} delta={weeklyDelta.newConnections} color="#53603E" index={2} />
+        <StatCard icon={icons.msg} label="Messages" value={overview.totalMessages} delta={weeklyDelta.newMessages} color="#6D412A" index={3} />
       </div>
 
-      <div className="admin-grid-2">
-        <div className="admin-card">
-          <h2 className="admin-card-title">New signups</h2>
-          <TrendChart data={trends.signups} color="#53603E" label="Last 30 days" />
-        </div>
-        <div className="admin-card">
-          <h2 className="admin-card-title">Check-ins</h2>
-          <TrendChart data={trends.checkins} color="#FBA327" label="Last 30 days" />
-        </div>
+      <div className="ad-row-2">
+        <TrendCard title="New signups" data={trends.signups} color="#53603E" />
+        <TrendCard title="Check-ins" data={trends.checkins} color="#FBA327" />
       </div>
 
-      <div className="admin-grid-2">
-        <div className="admin-card">
-          <h2 className="admin-card-title">Messages</h2>
-          <TrendChart data={trends.messages} color="#6D412A" label="Last 30 days" />
-        </div>
-        <div className="admin-card">
-          <h2 className="admin-card-title">Peak hours</h2>
-          <MiniBar data={peakData} maxVal={peakMax} color="#FBA327" />
-        </div>
+      <div className="ad-row-2">
+        <TrendCard title="Messages" data={trends.messages} color="#6D412A" />
+        <PeakHours data={peakHours} />
       </div>
 
-      <div className="admin-grid-2">
-        <div className="admin-card">
-          <h2 className="admin-card-title">Training types</h2>
-          <DonutChart data={trainingBreakdown} colors={trainingColors} />
-        </div>
-        <div className="admin-card">
-          <h2 className="admin-card-title">Gender split</h2>
-          <DonutChart data={genderBreakdown} colors={genderColors} />
-        </div>
+      <div className="ad-row-2">
+        <FunnelChart funnel={funnel} />
+        <Heatmap data={heatmap} />
       </div>
 
-      <div className="admin-card admin-full">
-        <h2 className="admin-card-title">Top members this month</h2>
-        {topMembers.length === 0 ? (
-          <div className="admin-empty">No check-ins yet</div>
-        ) : (
-          <div className="admin-table-wrap">
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Name</th>
-                  <th>Training</th>
-                  <th>Check-ins</th>
-                  <th>Consistency</th>
-                </tr>
-              </thead>
+      <div className="ad-row-2">
+        <DonutChart title="Training types" data={trainingBreakdown} colors={trainingColors} />
+        <DonutChart title="Gender split" data={genderBreakdown} colors={genderColors} />
+      </div>
+
+      <div className="ad-card ad-full">
+        <div className="ad-card-head"><h3>Top members</h3><span className="ad-card-sub">Last 30 days</span></div>
+        {topMembers.length === 0 ? <div className="ad-empty">No check-ins yet</div> : (
+          <div className="ad-tbl-wrap">
+            <table className="ad-tbl">
+              <thead><tr><th>#</th><th>Name</th><th>Training</th><th>Check-ins</th><th>Consistency</th></tr></thead>
               <tbody>
                 {topMembers.map((m, i) => (
                   <tr key={m.id}>
-                    <td><span className="admin-rank">{i + 1}</span></td>
-                    <td className="admin-member-name">{m.name}</td>
-                    <td>{m.training_type || '—'}</td>
-                    <td className="admin-checkin-count">{m.checkins}</td>
-                    <td>
-                      <div className="admin-bar-bg">
-                        <div
-                          className="admin-bar-fill"
-                          style={{ width: `${(m.checkins / topMembers[0].checkins) * 100}%` }}
-                        />
-                      </div>
-                    </td>
+                    <td><span className={`ad-rank ${i < 3 ? `ad-rank-${i+1}` : ''}`}>{i + 1}</span></td>
+                    <td className="ad-name">{m.name}</td>
+                    <td className="ad-meta">{m.training_type || '—'}</td>
+                    <td className="ad-bold">{m.checkins}</td>
+                    <td><div className="ad-bar-bg"><div className="ad-bar-fill" style={{ width: `${(m.checkins / topMembers[0].checkins) * 100}%` }} /></div></td>
                   </tr>
                 ))}
               </tbody>
@@ -330,30 +451,20 @@ export default function AdminPage() {
         )}
       </div>
 
-      <div className="admin-card admin-full">
-        <h2 className="admin-card-title">Recent signups</h2>
-        {recentSignups.length === 0 ? (
-          <div className="admin-empty">No members yet</div>
-        ) : (
-          <div className="admin-table-wrap">
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Training</th>
-                  <th>Gender</th>
-                  <th>Joined</th>
-                </tr>
-              </thead>
+      <div className="ad-card ad-full">
+        <div className="ad-card-head"><h3>Recent signups</h3><span className="ad-card-sub">{recentSignups.length} shown</span></div>
+        {recentSignups.length === 0 ? <div className="ad-empty">No members yet</div> : (
+          <div className="ad-tbl-wrap">
+            <table className="ad-tbl">
+              <thead><tr><th>Name</th><th>Email</th><th>Training</th><th>Gender</th><th>Joined</th></tr></thead>
               <tbody>
-                {recentSignups.map((u) => (
+                {recentSignups.map(u => (
                   <tr key={u.id}>
-                    <td className="admin-member-name">{u.name}</td>
-                    <td className="admin-email">{u.email}</td>
-                    <td>{u.training_type || '—'}</td>
-                    <td>{u.gender || '—'}</td>
-                    <td className="admin-date">{new Date(u.created_at).toLocaleDateString()}</td>
+                    <td className="ad-name">{u.name}</td>
+                    <td className="ad-meta">{u.email}</td>
+                    <td className="ad-meta">{u.training_type || '—'}</td>
+                    <td className="ad-meta">{u.gender || '—'}</td>
+                    <td className="ad-meta">{new Date(u.created_at).toLocaleDateString()}</td>
                   </tr>
                 ))}
               </tbody>
@@ -361,13 +472,6 @@ export default function AdminPage() {
           </div>
         )}
       </div>
-
-      {overview.totalReports > 0 && (
-        <div className="admin-alert">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          <span>{overview.totalReports} report{overview.totalReports !== 1 ? 's' : ''} submitted — review flagged users</span>
-        </div>
-      )}
     </div>
   );
 }

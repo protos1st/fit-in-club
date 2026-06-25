@@ -28,7 +28,15 @@ router.get('/stats', async (req, res) => {
     trainingBreakdownResult,
     genderBreakdownResult,
     peakHoursResult,
-    recentSignupsResult
+    recentSignupsResult,
+    funnelScheduledResult,
+    funnelCheckedInResult,
+    funnelConnectedResult,
+    funnelMessagedResult,
+    heatmapResult,
+    newUsersWeekResult,
+    newMessagesWeekResult,
+    newConnectionsWeekResult
   ] = await Promise.all([
     pool.query('SELECT COUNT(*)::int as total FROM users'),
     pool.query(`SELECT COUNT(DISTINCT user_id)::int as active FROM checkin_log WHERE checked_in_at >= NOW() - INTERVAL '7 days'`),
@@ -97,6 +105,29 @@ router.get('/stats', async (req, res) => {
       FROM users
       ORDER BY created_at DESC
       LIMIT 20
+    `),
+
+    pool.query('SELECT COUNT(DISTINCT user_id)::int as c FROM schedules'),
+    pool.query(`SELECT COUNT(DISTINCT user_id)::int as c FROM checkin_log`),
+    pool.query(`SELECT COUNT(DISTINCT from_user_id)::int as c FROM buddy_requests WHERE status = 'accepted'`),
+    pool.query(`SELECT COUNT(DISTINCT from_user_id)::int as c FROM messages`),
+
+    pool.query(`
+      SELECT DATE(checked_in_at) as date, COUNT(*)::int as count
+      FROM checkin_log
+      WHERE checked_in_at >= NOW() - INTERVAL '90 days'
+      GROUP BY DATE(checked_in_at)
+      ORDER BY date
+    `),
+
+    pool.query(`
+      SELECT COUNT(*)::int as c FROM users WHERE created_at >= NOW() - INTERVAL '7 days'
+    `),
+    pool.query(`
+      SELECT COUNT(*)::int as c FROM messages WHERE created_at >= NOW() - INTERVAL '7 days'
+    `),
+    pool.query(`
+      SELECT COUNT(*)::int as c FROM buddy_requests WHERE status = 'accepted' AND responded_at >= NOW() - INTERVAL '7 days'
     `)
   ]);
 
@@ -118,7 +149,20 @@ router.get('/stats', async (req, res) => {
     trainingBreakdown: trainingBreakdownResult.rows,
     genderBreakdown: genderBreakdownResult.rows,
     peakHours: peakHoursResult.rows,
-    recentSignups: recentSignupsResult.rows
+    recentSignups: recentSignupsResult.rows,
+    funnel: {
+      signedUp: usersResult.rows[0].total,
+      scheduled: funnelScheduledResult.rows[0].c,
+      checkedIn: funnelCheckedInResult.rows[0].c,
+      connected: funnelConnectedResult.rows[0].c,
+      messaged: funnelMessagedResult.rows[0].c
+    },
+    heatmap: heatmapResult.rows,
+    weeklyDelta: {
+      newUsers: newUsersWeekResult.rows[0].c,
+      newMessages: newMessagesWeekResult.rows[0].c,
+      newConnections: newConnectionsWeekResult.rows[0].c
+    }
   });
 });
 
