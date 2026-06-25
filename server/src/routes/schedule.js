@@ -142,11 +142,12 @@ router.post('/checkin', async (req, res) => {
     ON CONFLICT(user_id) DO UPDATE SET checked_in_at = EXCLUDED.checked_in_at, expires_at = EXCLUDED.expires_at, status_tag = EXCLUDED.status_tag
   `, [req.user.id, now.toISOString(), expires.toISOString(), statusTag]);
 
+  const today = now.toISOString().slice(0, 10);
   await pool.query(`
     INSERT INTO checkin_log (user_id, checked_in_at)
-    SELECT $1, $2
-    WHERE (SELECT COUNT(*) FROM checkin_log WHERE user_id = $1 AND checked_in_at::date = $2::date) < 2
-  `, [req.user.id, now.toISOString()]);
+    SELECT $1, $2::timestamptz
+    WHERE (SELECT COUNT(*) FROM checkin_log WHERE user_id = $1 AND checked_in_at::date = $3::date) < 2
+  `, [req.user.id, now.toISOString(), today]);
 
   res.json({ checked_in_at: now.toISOString(), expires_at: expires.toISOString(), status_tag: statusTag });
 });
