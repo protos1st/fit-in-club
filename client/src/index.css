@@ -52,8 +52,12 @@
 [data-theme="dark"] .powered-by-logo {
   filter: brightness(0) invert(0.92) sepia(0.1) saturate(0.5) hue-rotate(10deg);
 }
-[data-theme="dark"] .sched-templates-item { background: #2a2a26; border-color: #444; }
+[data-theme="dark"] .sched-templates-item { background: #2a2a26; border-color: #444; color: #e0ddd0; }
 [data-theme="dark"] .sched-templates-item:hover { border-color: var(--color-accent); background: #333; }
+[data-theme="dark"] .sched-templates-name { color: #e0ddd0; }
+[data-theme="dark"] .sched-templates-days { color: #aaa; }
+[data-theme="dark"] .sched-templates-title { color: #e0ddd0; }
+[data-theme="dark"] .sched-templates-sub { color: #999; }
 [data-theme="dark"] .sched-custom-day { background: #2a2a26; border-color: #444; color: #aaa; }
 [data-theme="dark"] .sched-custom-day.active { background: var(--color-accent); color: #1a1a1a; border-color: var(--color-accent); }
 [data-theme="dark"] .sched-custom-day:hover:not(.active) { border-color: var(--color-accent); color: var(--color-accent); }
