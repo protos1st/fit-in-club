@@ -943,6 +943,11 @@ input, select, textarea {
   background: rgba(251,163,39,0.04);
 }
 
+.person-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 .msg-preview {
   overflow: hidden;
   text-overflow: ellipsis;

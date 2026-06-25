@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/AuthContext';
 import { api } from '../lib/api';
 import { useToast } from '../lib/ToastContext';
@@ -6,6 +7,7 @@ import { useToast } from '../lib/ToastContext';
 export default function ProfilePage() {
   const { user, setUser, logout } = useAuth();
   const showToast = useToast();
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     name: user?.name || '',
     trainingType: user?.training_type || '',
@@ -95,6 +97,17 @@ export default function ProfilePage() {
             {saving ? 'Saving…' : 'Save changes'}
           </button>
         </form>
+      </div>
+
+      <div className="section-title mt-md">Activity</div>
+      <div className="card" style={{ maxWidth: 480 }}>
+        <div className="profile-setting" onClick={() => navigate('/requests')} style={{ cursor: 'pointer' }}>
+          <div>
+            <div className="profile-setting-title">Buddy requests</div>
+            <div className="profile-setting-desc">View incoming and sent requests</div>
+          </div>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-hint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
       </div>
 
       <div className="section-title mt-md">Preferences</div>

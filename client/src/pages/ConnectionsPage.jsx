@@ -133,7 +133,7 @@ export default function ConnectionsPage() {
                   {c.name}
                   {c.unread > 0 && <span className="badge-count">{c.unread}</span>}
                 </div>
-                <div className="person-meta" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div className="person-meta person-meta-row">
                   <span className="msg-preview">{c.conv?.last_message ? c.conv.last_message.body : 'Say hello'}</span>
                   {c.conv?.last_message && (
                     <span className="msg-time">{timeAgo(c.conv.last_message.created_at)}</span>
