@@ -447,6 +447,62 @@ input, select, textarea {
 }
 .slot-add-btn:hover { border-color: var(--color-accent); color: var(--color-accent); }
 
+.schedule-count {
+  font-weight: 400;
+  color: var(--color-hint);
+  margin-left: 8px;
+  font-size: 0.72rem;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.saving-indicator {
+  font-size: 0.78rem;
+  color: var(--color-accent);
+  font-weight: 500;
+}
+
+.day-col-today {
+  border-color: var(--color-accent);
+}
+.day-col-head-today {
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+}
+.today-badge {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.8;
+  margin-left: 4px;
+}
+
+.day-empty {
+  font-size: 0.72rem;
+  color: var(--color-hint);
+  text-align: center;
+  padding: 8px 0;
+}
+
+.slot-editor-label {
+  font-size: 0.68rem;
+  color: var(--color-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.skeleton-slot {
+  height: 32px;
+  border-radius: var(--radius);
+  background: var(--color-line);
+  animation: skeleton-pulse 1.2s ease-in-out infinite;
+}
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
 .match-slot-chip {
   background: var(--color-sage-bg);
   color: var(--color-navy);

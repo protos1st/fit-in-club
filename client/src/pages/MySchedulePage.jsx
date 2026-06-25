@@ -3,12 +3,59 @@ import { api } from '../lib/api';
 import { useToast } from '../lib/ToastContext';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DAYS_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 function formatTime(t) {
   const [h, m] = t.split(':').map(Number);
   const period = h >= 12 ? 'PM' : 'AM';
   const hour12 = h % 12 === 0 ? 12 : h % 12;
   return `${hour12}:${String(m).padStart(2, '0')} ${period}`;
+}
+
+function SkeletonGrid() {
+  return (
+    <div className="week-grid">
+      {DAYS.map((label, i) => (
+        <div className="day-col" key={i}>
+          <div className="day-col-head">{label}</div>
+          <div className="day-col-body">
+            <div className="skeleton-slot" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function LiveBanner({ liveStatus, liveBusy, onToggle }) {
+  const expiresAt = liveStatus?.expires_at;
+  const timeLeft = expiresAt ? Math.max(0, Math.round((new Date(expiresAt) - Date.now()) / 60000)) : 0;
+
+  return (
+    <div className={`live-banner ${liveStatus ? 'on' : 'off'}`}>
+      <div className="live-banner-text">
+        {liveStatus ? (
+          <>
+            <strong><span className="pulse-dot" />You're at the gym</strong>
+            <span>{timeLeft > 0 ? `Visible for ${timeLeft} more min` : 'Expiring soon'}</span>
+          </>
+        ) : (
+          <>
+            <strong>Not checked in</strong>
+            <span>Let others know you're at the gym</span>
+          </>
+        )}
+      </div>
+      <button
+        className={liveStatus ? 'btn btn-outline live-banner-action-on' : 'btn btn-primary'}
+        onClick={onToggle}
+        disabled={liveBusy}
+        aria-label={liveStatus ? 'Check out of the gym' : 'Check in at the gym'}
+      >
+        {liveBusy ? 'Please wait…' : liveStatus ? 'Check out' : "I'm here now"}
+      </button>
+    </div>
+  );
 }
 
 export default function MySchedulePage() {
@@ -22,6 +69,9 @@ export default function MySchedulePage() {
   const [liveStatus, setLiveStatus] = useState(null);
   const [liveBusy, setLiveBusy] = useState(false);
   const showToast = useToast();
+
+  const today = new Date().getDay();
+  const totalSlots = slots.length;
 
   const loadSchedule = useCallback(() => {
     api.getMySchedule().then((data) => setSlots(data.schedule)).finally(() => setLoading(false));
@@ -51,6 +101,7 @@ export default function MySchedulePage() {
 
   function startAdding(day) {
     setDraftError('');
+    setDraft({ start_time: '06:00', end_time: '07:00' });
     setAddingDay(day);
   }
 
@@ -116,82 +167,76 @@ export default function MySchedulePage() {
     }
   }
 
-  if (loading) return <div className="spinner-text">Loading your schedule…</div>;
-
   return (
     <div>
       <div className="page-eyebrow">Your week</div>
       <h1 className="page-title">My Schedule</h1>
-      <p className="page-sub">Set the days and times you usually train. Other members can find you by matching overlaps.</p>
+      <p className="page-sub">Set when you train so others can find you. Today is <strong>{DAYS_FULL[today]}</strong>.</p>
 
-      <div className={`live-banner ${liveStatus ? 'on' : 'off'}`}>
-        <div className="live-banner-text">
-          {liveStatus ? (
-            <>
-              <strong><span className="pulse-dot" />You're checked in</strong>
-              <span>Visible on Live Now for the next 2 hours</span>
-            </>
-          ) : (
-            <>
-              <strong>Not checked in</strong>
-              <span>Toggle this on when you arrive at the gym</span>
-            </>
-          )}
-        </div>
-        <button
-          className={liveStatus ? 'btn btn-outline live-banner-action-on' : 'btn btn-primary'}
-          onClick={toggleLive}
-          disabled={liveBusy}
-        >
-          {liveStatus ? 'Check out' : "I'm here now"}
-        </button>
-      </div>
+      <LiveBanner liveStatus={liveStatus} liveBusy={liveBusy} onToggle={toggleLive} />
 
       <div className="flex-between mb-md">
-        <div className="section-title no-margin">Weekly training schedule</div>
-        {saving && <span className="spinner-text no-padding">Saving…</span>}
+        <div className="section-title no-margin">
+          Weekly training schedule
+          {!loading && <span className="schedule-count">{totalSlots} slot{totalSlots !== 1 ? 's' : ''}</span>}
+        </div>
+        {saving && <span className="saving-indicator">Saving…</span>}
       </div>
 
-      <div className="week-grid">
-        {DAYS.map((label, dayIndex) => {
-          const daySlots = slots.filter((s) => s.day_of_week === dayIndex);
-          return (
-            <div className="day-col" key={dayIndex}>
-              <div className="day-col-head">{label}</div>
-              <div className="day-col-body">
-                {daySlots.map((s) => (
-                  <div className="slot-chip" key={s.id}>
-                    <span>{formatTime(s.start_time)}–{formatTime(s.end_time)}</span>
-                    <button onClick={() => removeSlot(s.id)} aria-label="Remove slot">×</button>
-                  </div>
-                ))}
-
-                {addingDay === dayIndex ? (
-                  <div className="slot-editor">
-                    <input
-                      type="time"
-                      value={draft.start_time}
-                      onChange={(e) => setDraft((d) => ({ ...d, start_time: e.target.value }))}
-                    />
-                    <input
-                      type="time"
-                      value={draft.end_time}
-                      onChange={(e) => setDraft((d) => ({ ...d, end_time: e.target.value }))}
-                    />
-                    {draftError && <div className="slot-editor-error">{draftError}</div>}
-                    <div className="slot-editor-actions">
-                      <button className="btn btn-primary btn-sm" onClick={() => addSlot(dayIndex)}>Add</button>
-                      <button className="btn btn-ghost btn-sm" onClick={() => { setAddingDay(null); setDraftError(''); }}>Cancel</button>
+      {loading ? <SkeletonGrid /> : (
+        <div className="week-grid">
+          {DAYS.map((label, dayIndex) => {
+            const daySlots = slots.filter((s) => s.day_of_week === dayIndex);
+            const isToday = dayIndex === today;
+            return (
+              <div className={`day-col ${isToday ? 'day-col-today' : ''}`} key={dayIndex}>
+                <div className={`day-col-head ${isToday ? 'day-col-head-today' : ''}`}>
+                  {label}
+                  {isToday && <span className="today-badge">today</span>}
+                </div>
+                <div className="day-col-body">
+                  {daySlots.map((s) => (
+                    <div className="slot-chip" key={s.id}>
+                      <span>{formatTime(s.start_time)}–{formatTime(s.end_time)}</span>
+                      <button onClick={() => removeSlot(s.id)} aria-label={`Remove ${DAYS_FULL[dayIndex]} ${formatTime(s.start_time)} slot`}>×</button>
                     </div>
-                  </div>
-                ) : daySlots.length < 2 ? (
-                  <button className="slot-add-btn" onClick={() => startAdding(dayIndex)}>+ Add time</button>
-                ) : null}
+                  ))}
+
+                  {daySlots.length === 0 && addingDay !== dayIndex && (
+                    <div className="day-empty">No slots</div>
+                  )}
+
+                  {addingDay === dayIndex ? (
+                    <div className="slot-editor">
+                      <label className="slot-editor-label">From</label>
+                      <input
+                        type="time"
+                        value={draft.start_time}
+                        onChange={(e) => setDraft((d) => ({ ...d, start_time: e.target.value }))}
+                        aria-label="Start time"
+                      />
+                      <label className="slot-editor-label">To</label>
+                      <input
+                        type="time"
+                        value={draft.end_time}
+                        onChange={(e) => setDraft((d) => ({ ...d, end_time: e.target.value }))}
+                        aria-label="End time"
+                      />
+                      {draftError && <div className="slot-editor-error">{draftError}</div>}
+                      <div className="slot-editor-actions">
+                        <button className="btn btn-primary btn-sm" onClick={() => addSlot(dayIndex)}>Add</button>
+                        <button className="btn btn-ghost btn-sm" onClick={() => { setAddingDay(null); setDraftError(''); }}>Cancel</button>
+                      </div>
+                    </div>
+                  ) : daySlots.length < 2 ? (
+                    <button className="slot-add-btn" onClick={() => startAdding(dayIndex)}>+ Add time</button>
+                  ) : null}
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
