@@ -63,6 +63,7 @@ export const api = {
 
   sendBuddyRequest: (to_user_id) => request('/api/buddies/request', { method: 'POST', body: { to_user_id } }),
   respondToRequest: (requestId, action) => request(`/api/buddies/${requestId}/respond`, { method: 'POST', body: { action } }),
+  cancelRequest: (requestId) => request(`/api/buddies/${requestId}/cancel`, { method: 'DELETE' }),
   getIncoming: () => request('/api/buddies/incoming'),
   getOutgoing: () => request('/api/buddies/outgoing'),
   getConnections: () => request('/api/buddies/connections'),

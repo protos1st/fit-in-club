@@ -36,9 +36,10 @@ function lastActiveLabel(iso) {
   return 'Inactive';
 }
 
-function ProfileModal({ person, type, connectedTo, pendingTo, sentTo, onSend, onClose, onMessage }) {
+function ProfileModal({ person, type, connectedTo, pendingTo, sentTo, onSend, onClose, onMessage, onCancel, outgoing }) {
   const isConnected = connectedTo.has(person.user_id);
   const isSent = sentTo.has(person.user_id) || pendingTo.has(person.user_id);
+  const pendingRequest = (outgoing || []).find(r => r.user_id === person.user_id);
   const activity = lastActiveLabel(person.last_active);
 
   return (
@@ -89,6 +90,10 @@ function ProfileModal({ person, type, connectedTo, pendingTo, sentTo, onSend, on
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ marginRight: 6, verticalAlign: -2 }}><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
               Message
             </button>
+          ) : isSent && pendingRequest ? (
+            <button className="btn btn-danger-outline btn-block" onClick={() => onCancel(pendingRequest.id)}>
+              Cancel Request
+            </button>
           ) : (
             <button
               className="btn btn-primary btn-block"
@@ -112,6 +117,7 @@ export default function DiscoverPage() {
   const [sentTo, setSentTo] = useState(new Set());
   const [connectedTo, setConnectedTo] = useState(new Set());
   const [pendingTo, setPendingTo] = useState(new Set());
+  const [outgoing, setOutgoing] = useState([]);
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [selectedType, setSelectedType] = useState(null);
   const showToast = useToast();
@@ -138,6 +144,7 @@ export default function DiscoverPage() {
       setMatches(overlap.matches || []);
       setMatchNote(overlap.note || '');
       setConnectedTo(new Set((conn.connections || []).map((c) => c.user_id)));
+      setOutgoing(out.outgoing || []);
       setPendingTo(new Set((out.outgoing || []).map((r) => r.user_id)));
     }).finally(() => setLoading(false));
 
@@ -152,6 +159,19 @@ export default function DiscoverPage() {
       const data = await api.sendBuddyRequest(userId);
       setSentTo((prev) => new Set(prev).add(userId));
       if (data.note) showToast(data.note, 'success');
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  }
+
+  async function cancelRequest(requestId) {
+    try {
+      await api.cancelRequest(requestId);
+      const updated = outgoing.filter(r => r.id !== requestId);
+      setOutgoing(updated);
+      setPendingTo(new Set(updated.map(r => r.user_id)));
+      setSentTo(prev => { const s = new Set(prev); updated.forEach(r => s.delete(r.user_id)); return s; });
+      showToast('Request cancelled', 'info');
     } catch (err) {
       showToast(err.message, 'error');
     }
@@ -409,7 +429,9 @@ export default function DiscoverPage() {
           pendingTo={pendingTo}
           sentTo={sentTo}
           onSend={sendRequest}
+          onCancel={cancelRequest}
           onMessage={goToChat}
+          outgoing={outgoing}
           onClose={() => setSelectedPerson(null)}
         />
       )}

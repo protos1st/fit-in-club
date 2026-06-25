@@ -75,6 +75,19 @@ router.post('/:requestId/respond', async (req, res) => {
   res.json({ request: updated.rows[0] });
 });
 
+// DELETE /api/buddies/:requestId/cancel
+router.delete('/:requestId/cancel', async (req, res) => {
+  const { requestId } = req.params;
+  const result = await pool.query('SELECT * FROM buddy_requests WHERE id = $1', [requestId]);
+  const reqRow = result.rows[0];
+  if (!reqRow) return res.status(404).json({ error: 'Request not found' });
+  if (reqRow.from_user_id !== req.user.id) return res.status(403).json({ error: 'You can only cancel your own requests' });
+  if (reqRow.status !== 'pending') return res.status(409).json({ error: `Request already ${reqRow.status}` });
+
+  await pool.query('DELETE FROM buddy_requests WHERE id = $1', [requestId]);
+  res.json({ ok: true });
+});
+
 // GET /api/buddies/incoming
 router.get('/incoming', async (req, res) => {
   const result = await pool.query(`

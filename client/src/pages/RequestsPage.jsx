@@ -34,6 +34,16 @@ export default function RequestsPage() {
     }
   }
 
+  async function cancel(requestId) {
+    try {
+      await api.cancelRequest(requestId);
+      load();
+      showToast('Request cancelled', 'info');
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  }
+
   if (loading) return <div className="spinner-text">Loading requests…</div>;
 
   const isEmpty = incoming.length === 0 && outgoing.length === 0;
@@ -89,6 +99,7 @@ export default function RequestsPage() {
                   <div className="person-name">{r.name}</div>
                   <div className="person-meta">Waiting for response…</div>
                 </div>
+                <button className="btn btn-danger-outline btn-sm" onClick={() => cancel(r.id)}>Cancel</button>
               </div>
             ))}
           </div>
