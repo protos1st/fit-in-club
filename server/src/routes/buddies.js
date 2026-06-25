@@ -125,4 +125,17 @@ router.get('/connections', async (req, res) => {
   res.json({ connections: result.rows });
 });
 
+// DELETE /api/buddies/disconnect/:userId
+router.delete('/disconnect/:userId', async (req, res) => {
+  const otherId = Number(req.params.userId);
+  const result = await pool.query(`
+    DELETE FROM buddy_requests
+    WHERE status = 'accepted'
+      AND ((from_user_id = $1 AND to_user_id = $2) OR (from_user_id = $2 AND to_user_id = $1))
+    RETURNING id
+  `, [req.user.id, otherId]);
+  if (result.rows.length === 0) return res.status(404).json({ error: 'Connection not found' });
+  res.json({ ok: true });
+});
+
 module.exports = router;

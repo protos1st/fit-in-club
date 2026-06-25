@@ -1904,6 +1904,100 @@ input, select, textarea {
   .sched-templates-grid { grid-template-columns: 1fr; }
 }
 
+/* --- Chat improvements --- */
+.chat-header-info {
+  flex: 1;
+  cursor: pointer;
+  min-width: 0;
+}
+.chat-typing-indicator {
+  font-size: 0.7rem;
+  color: var(--color-accent);
+  font-weight: 500;
+  font-style: italic;
+}
+.chat-date-sep {
+  text-align: center;
+  margin: 16px 0 8px;
+}
+.chat-date-sep span {
+  font-size: 0.68rem;
+  color: var(--color-hint);
+  background: var(--color-bg);
+  padding: 3px 12px;
+  border-radius: 10px;
+  font-weight: 500;
+}
+.chat-starter {
+  text-align: center;
+  padding: 30px 16px 10px;
+}
+.chat-starter-text {
+  font-size: 0.85rem;
+  color: var(--color-hint);
+  margin: 0 0 14px;
+}
+.chat-starter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+.chat-starter-chip {
+  font-size: 0.75rem;
+  padding: 8px 14px;
+  border: 1px solid var(--color-line);
+  border-radius: 18px;
+  background: var(--color-card);
+  color: var(--color-text);
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s, background 0.15s;
+}
+.chat-starter-chip:hover {
+  border-color: var(--color-accent);
+  background: rgba(83,96,62,0.04);
+}
+.chat-bubble { position: relative; }
+.chat-bubble-selected { outline: 2px solid var(--color-accent); outline-offset: 2px; border-radius: 14px; }
+.chat-delete-btn {
+  position: absolute;
+  top: -28px;
+  right: 0;
+  background: var(--color-card);
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  padding: 4px 12px;
+  font-size: 0.7rem;
+  color: #dc2626;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.chat-bubble-typing {
+  padding: 10px 16px;
+  max-width: 60px;
+}
+.typing-dots {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.typing-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-hint);
+  animation: typingBounce 1.2s infinite;
+}
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingBounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-4px); }
+}
+
 /* --- Chat profile peek --- */
 .chat-header-name-tap { cursor: pointer; }
 .chat-header-name-tap:hover { color: var(--color-accent); }

@@ -88,6 +88,22 @@ io.on('connection', (socket) => {
   if (!onlineUsers.has(userId)) onlineUsers.set(userId, new Set());
   onlineUsers.get(userId).add(socket.id);
 
+  socket.on('typing:start', ({ toUserId }) => {
+    if (onlineUsers.has(toUserId)) {
+      for (const sid of onlineUsers.get(toUserId)) {
+        io.to(sid).emit('typing:start', { userId });
+      }
+    }
+  });
+
+  socket.on('typing:stop', ({ toUserId }) => {
+    if (onlineUsers.has(toUserId)) {
+      for (const sid of onlineUsers.get(toUserId)) {
+        io.to(sid).emit('typing:stop', { userId });
+      }
+    }
+  });
+
   socket.on('disconnect', () => {
     const set = onlineUsers.get(userId);
     if (set) {

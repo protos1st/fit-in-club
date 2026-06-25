@@ -1,9 +1,41 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useAuth } from '../lib/AuthContext';
 import { useSocket } from '../lib/SocketContext';
 import { useToast } from '../lib/ToastContext';
+
+const STARTERS = [
+  "Hey! When do you usually train?",
+  "Want to work out together sometime?",
+  "What's your routine like?",
+  "Looking for a gym buddy!"
+];
+
+function formatDateLabel(iso) {
+  const d = new Date(iso);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  if (d.toDateString() === today.toDateString()) return 'Today';
+  if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
+  return d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+}
+
+function groupByDate(messages) {
+  const groups = [];
+  let currentDate = null;
+  for (const m of messages) {
+    const dateStr = new Date(m.created_at).toDateString();
+    if (dateStr !== currentDate) {
+      currentDate = dateStr;
+      groups.push({ type: 'date', label: formatDateLabel(m.created_at), key: `date-${dateStr}` });
+    }
+    groups.push({ type: 'msg', msg: m, key: `msg-${m.id}` });
+  }
+  return groups;
+}
 
 export default function ChatPage() {
   const { userId } = useParams();
@@ -23,7 +55,11 @@ export default function ChatPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportReason, setReportReason] = useState('');
+  const [selectedMsg, setSelectedMsg] = useState(null);
   const bottomRef = useRef(null);
+  const typingTimer = useRef(null);
+
+  const isTyping = socketCtx?.typingUsers?.has(otherId);
 
   function load() {
     api.getMessages(otherId)
@@ -55,13 +91,40 @@ export default function ChatPage() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  const handleTextChange = useCallback((e) => {
+    setText(e.target.value);
+    if (socketCtx?.emitTyping) {
+      socketCtx.emitTyping(otherId, true);
+      clearTimeout(typingTimer.current);
+      typingTimer.current = setTimeout(() => {
+        socketCtx.emitTyping(otherId, false);
+      }, 2000);
+    }
+  }, [otherId, socketCtx]);
+
   async function handleSend(e) {
     e.preventDefault();
     if (!text.trim()) return;
     try {
+      if (socketCtx?.emitTyping) socketCtx.emitTyping(otherId, false);
       const data = await api.sendMessage(otherId, text);
       setMessages((prev) => [...prev, data.message]);
       setText('');
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  }
+
+  function sendStarter(msg) {
+    setText(msg);
+  }
+
+  async function handleDeleteMessage(msgId) {
+    try {
+      await api.deleteMessage(msgId);
+      setMessages(prev => prev.filter(m => m.id !== msgId));
+      setSelectedMsg(null);
+      showToast('Message deleted', 'info');
     } catch (err) {
       showToast(err.message, 'error');
     }
@@ -72,6 +135,17 @@ export default function ChatPage() {
     try {
       await api.blockUser(otherId);
       showToast(`${otherName} blocked`, 'info');
+      navigate('/connections');
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  }
+
+  async function handleDisconnect() {
+    if (!confirm(`Disconnect from ${otherName}? You won't be able to message each other. They can send a new request.`)) return;
+    try {
+      await api.disconnectBuddy(otherId);
+      showToast(`Disconnected from ${otherName}`, 'info');
       navigate('/connections');
     } catch (err) {
       showToast(err.message, 'error');
@@ -104,13 +178,18 @@ export default function ChatPage() {
     );
   }
 
+  const grouped = groupByDate(messages);
+
   return (
     <div className="chat-page">
       <div className="chat-header">
         <button className="chat-back-btn" onClick={() => navigate('/connections')} aria-label="Back to messages">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
-        <h1 className="chat-header-name chat-header-name-tap" onClick={() => otherProfile && setProfileOpen(true)}>{otherName || 'Conversation'}</h1>
+        <div className="chat-header-info" onClick={() => otherProfile && setProfileOpen(true)}>
+          <h1 className="chat-header-name chat-header-name-tap">{otherName || 'Conversation'}</h1>
+          {isTyping && <span className="chat-typing-indicator">typing...</span>}
+        </div>
         <div className="chat-menu-wrap">
           <button className="chat-menu-btn" onClick={() => setMenuOpen(!menuOpen)} aria-label="Chat options">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="5" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1" fill="currentColor" stroke="none"/></svg>
@@ -118,6 +197,7 @@ export default function ChatPage() {
           {menuOpen && (
             <div className="chat-menu-dropdown">
               <button onClick={() => { setReportOpen(true); setMenuOpen(false); }}>Report</button>
+              <button onClick={() => { setMenuOpen(false); handleDisconnect(); }}>Disconnect</button>
               <button className="chat-menu-danger" onClick={handleBlock}>Block</button>
             </div>
           )}
@@ -165,29 +245,52 @@ export default function ChatPage() {
       <div className="chat-window">
         <div className="chat-messages">
           {messages.length === 0 && (
-            <div className="empty-state">
-              <p>No messages yet. Say hello!</p>
+            <div className="chat-starter">
+              <p className="chat-starter-text">No messages yet. Break the ice!</p>
+              <div className="chat-starter-chips">
+                {STARTERS.map((s, i) => (
+                  <button key={i} className="chat-starter-chip" onClick={() => sendStarter(s)}>{s}</button>
+                ))}
+              </div>
             </div>
           )}
-          {messages.map((m) => {
+          {grouped.map((item) => {
+            if (item.type === 'date') {
+              return <div key={item.key} className="chat-date-sep"><span>{item.label}</span></div>;
+            }
+            const m = item.msg;
             const mine = m.from_user_id === user.id;
             return (
-              <div key={m.id} className={`chat-bubble ${mine ? 'mine' : 'theirs'}`}>
+              <div
+                key={item.key}
+                className={`chat-bubble ${mine ? 'mine' : 'theirs'} ${selectedMsg === m.id ? 'chat-bubble-selected' : ''}`}
+                onClick={() => setSelectedMsg(selectedMsg === m.id ? null : m.id)}
+              >
                 {m.body}
                 <div className="chat-time">
                   {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   {mine && <span className="chat-read-status">{m.read_at ? ' ✓✓' : ' ✓'}</span>}
                 </div>
+                {selectedMsg === m.id && (
+                  <button className="chat-delete-btn" onClick={(e) => { e.stopPropagation(); handleDeleteMessage(m.id); }}>
+                    Delete
+                  </button>
+                )}
               </div>
             );
           })}
+          {isTyping && (
+            <div className="chat-bubble theirs chat-bubble-typing">
+              <span className="typing-dots"><span /><span /><span /></span>
+            </div>
+          )}
           <div ref={bottomRef} />
         </div>
         <form className="chat-input-row" onSubmit={handleSend}>
           <input
             type="text"
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={handleTextChange}
             placeholder="Type a message…"
             onFocus={() => setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 300)}
           />

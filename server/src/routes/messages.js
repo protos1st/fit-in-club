@@ -76,6 +76,19 @@ router.post('/:userId', async (req, res) => {
   res.status(201).json({ message });
 });
 
+// DELETE /api/messages/:messageId
+router.delete('/:messageId', async (req, res) => {
+  const msgId = Number(req.params.messageId);
+  const result = await pool.query('SELECT * FROM messages WHERE id = $1', [msgId]);
+  if (result.rows.length === 0) return res.status(404).json({ error: 'Message not found' });
+  const msg = result.rows[0];
+  if (msg.from_user_id !== req.user.id && msg.to_user_id !== req.user.id) {
+    return res.status(403).json({ error: 'Not your message' });
+  }
+  await pool.query('DELETE FROM messages WHERE id = $1', [msgId]);
+  res.json({ ok: true });
+});
+
 // GET /api/messages
 router.get('/', async (req, res) => {
   const connResult = await pool.query(`

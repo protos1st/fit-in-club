@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import { io } from 'socket.io-client';
 import { getToken, API_BASE } from '../lib/api';
 import { useAuth } from './AuthContext';
@@ -9,6 +9,8 @@ export function SocketProvider({ children }) {
   const { user } = useAuth();
   const socketRef = useRef(null);
   const [lastMessage, setLastMessage] = useState(null);
+  const [typingUsers, setTypingUsers] = useState(new Set());
+  const typingTimers = useRef({});
 
   useEffect(() => {
     if (!user) {
@@ -27,14 +29,34 @@ export function SocketProvider({ children }) {
       setLastMessage(message);
     });
 
+    socket.on('typing:start', ({ userId }) => {
+      setTypingUsers(prev => new Set(prev).add(userId));
+      clearTimeout(typingTimers.current[userId]);
+      typingTimers.current[userId] = setTimeout(() => {
+        setTypingUsers(prev => { const s = new Set(prev); s.delete(userId); return s; });
+      }, 3000);
+    });
+
+    socket.on('typing:stop', ({ userId }) => {
+      clearTimeout(typingTimers.current[userId]);
+      setTypingUsers(prev => { const s = new Set(prev); s.delete(userId); return s; });
+    });
+
     return () => {
       socket.disconnect();
       socketRef.current = null;
+      Object.values(typingTimers.current).forEach(clearTimeout);
     };
   }, [user]);
 
+  const emitTyping = useCallback((toUserId, isTyping) => {
+    if (socketRef.current) {
+      socketRef.current.emit(isTyping ? 'typing:start' : 'typing:stop', { toUserId });
+    }
+  }, []);
+
   return (
-    <SocketContext.Provider value={{ lastMessage }}>
+    <SocketContext.Provider value={{ lastMessage, typingUsers, emitTyping }}>
       {children}
     </SocketContext.Provider>
   );
