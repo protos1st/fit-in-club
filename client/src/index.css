@@ -833,7 +833,7 @@ input, select, textarea {
   border-radius: 22px;
   border: 1.5px solid var(--color-line);
 }
-.chat-input-row input:focus { outline: none; border-color: var(--color-accent); box-shadow: 0 0 0 3px rgba(251,163,39,0.25); }
+.chat-input-row input:focus { outline: none; border-color: var(--color-accent); box-shadow: none; }
 
 /* ---------- Misc ---------- */
 
