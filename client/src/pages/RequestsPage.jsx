@@ -69,7 +69,7 @@ export default function RequestsPage() {
         {outgoing.length === 0 ? (
           <div className="empty-state">
             <div className="empty-state-title">No pending sent requests</div>
-            <p>Find a buddy and send a request from the Find Buddies or Live Now pages.</p>
+            <p>Find a buddy and send a request from the Discover page.</p>
           </div>
         ) : (
           outgoing.map((r) => (
