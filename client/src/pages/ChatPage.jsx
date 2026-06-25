@@ -1,44 +1,9 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useAuth } from '../lib/AuthContext';
 import { useSocket } from '../lib/SocketContext';
 import { useToast } from '../lib/ToastContext';
-
-function useSwipeBack(onBack) {
-  const startX = useRef(0);
-  const startY = useRef(0);
-  const swiping = useRef(false);
-
-  const handleTouchStart = useCallback((e) => {
-    const touch = e.touches[0];
-    if (touch.clientX < 30) {
-      startX.current = touch.clientX;
-      startY.current = touch.clientY;
-      swiping.current = true;
-    }
-  }, []);
-
-  const handleTouchEnd = useCallback((e) => {
-    if (!swiping.current) return;
-    swiping.current = false;
-    const touch = e.changedTouches[0];
-    const dx = touch.clientX - startX.current;
-    const dy = Math.abs(touch.clientY - startY.current);
-    if (dx > 80 && dy < 100) {
-      onBack();
-    }
-  }, [onBack]);
-
-  useEffect(() => {
-    document.addEventListener('touchstart', handleTouchStart, { passive: true });
-    document.addEventListener('touchend', handleTouchEnd, { passive: true });
-    return () => {
-      document.removeEventListener('touchstart', handleTouchStart);
-      document.removeEventListener('touchend', handleTouchEnd);
-    };
-  }, [handleTouchStart, handleTouchEnd]);
-}
 
 export default function ChatPage() {
   const { userId } = useParams();
@@ -54,8 +19,6 @@ export default function ChatPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const bottomRef = useRef(null);
-
-  useSwipeBack(() => navigate('/connections'));
 
   function load() {
     api.getMessages(otherId)
