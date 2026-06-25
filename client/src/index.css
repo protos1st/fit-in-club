@@ -333,10 +333,8 @@ input, select, textarea {
 .field { margin-bottom: 16px; }
 .field label {
   display: block;
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
   color: var(--color-muted);
   margin-bottom: 6px;
 }
@@ -390,6 +388,14 @@ input, select, textarea {
   padding: 36px 32px;
   box-shadow: 0 20px 60px rgba(42,42,34,0.35);
 }
+.auth-powered-by {
+  color: rgba(255,255,255,0.4);
+  margin-top: 24px;
+}
+.auth-powered-by .powered-by-link {
+  color: #fba327;
+}
+
 .auth-logo-link {
   display: block;
   text-align: center;
@@ -403,7 +409,7 @@ input, select, textarea {
 .auth-heading {
   font-size: 1.5rem;
   margin-bottom: 4px;
-  text-transform: none;
+
   letter-spacing: 0;
   text-align: center;
 }
@@ -572,11 +578,9 @@ input, select, textarea {
   gap: 2px;
 }
 .sched-editor-label {
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   color: var(--color-muted);
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
 }
 .sched-editor input[type="time"] {
   font-size: 0.85rem;
@@ -614,7 +618,7 @@ input, select, textarea {
   color: var(--color-hint);
   margin-left: 8px;
   font-size: 0.72rem;
-  text-transform: none;
+
   letter-spacing: 0;
 }
 
@@ -711,12 +715,10 @@ input, select, textarea {
   display: inline-block;
   background: var(--color-sage-bg);
   color: var(--color-navy);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  padding: 2px 8px;
+  padding: 3px 10px;
   border-radius: 20px;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
 }
 
 .empty-state {
@@ -747,7 +749,7 @@ input, select, textarea {
 }
 .chat-header-name {
   font-size: 1.1rem;
-  text-transform: none;
+
   letter-spacing: 0;
 }
 
@@ -1135,12 +1137,10 @@ input, select, textarea {
 }
 
 .section-title {
-  font-size: 0.78rem;
-  letter-spacing: 0.08em;
-  color: var(--color-hint);
+  font-size: 0.85rem;
+  color: var(--color-muted);
   margin-bottom: 12px;
   font-weight: 600;
-  text-transform: uppercase;
 }
 
 .flex-between {

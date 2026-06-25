@@ -178,8 +178,8 @@ export default function AuthPage() {
           )}
         </div>
       </div>
-      <div className="powered-by" style={{ color: 'rgba(255,255,255,0.5)' }}>
-        Powered by <a href="https://fitin.club/" target="_blank" rel="noopener noreferrer" style={{ color: '#fba327' }}>FitIn</a>
+      <div className="powered-by auth-powered-by">
+        Powered by <a href="https://fitin.club/" target="_blank" rel="noopener noreferrer" className="powered-by-link">FitIn</a>
       </div>
     </div>
   );
