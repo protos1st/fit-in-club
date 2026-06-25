@@ -90,19 +90,20 @@ router.get('/me', authMiddleware, async (req, res) => {
 
 // PUT /api/auth/profile
 router.put('/profile', authMiddleware, async (req, res) => {
-  const { name, trainingType, bio } = req.body;
+  const { name, trainingType, bio, gender } = req.body;
   if (!name || !name.trim()) {
     return res.status(400).json({ error: 'Name is required' });
   }
   if (name.length > 100) return res.status(400).json({ error: 'Name is too long' });
   if ((trainingType || '').length > 100) return res.status(400).json({ error: 'Training type is too long' });
   if ((bio || '').length > 500) return res.status(400).json({ error: 'Bio is too long' });
+  if ((gender || '').length > 30) return res.status(400).json({ error: 'Invalid gender' });
   await pool.query(
-    'UPDATE users SET name = $1, training_type = $2, bio = $3 WHERE id = $4',
-    [name.trim(), trainingType || '', bio || '', req.user.id]
+    'UPDATE users SET name = $1, training_type = $2, bio = $3, gender = $4 WHERE id = $5',
+    [name.trim(), trainingType || '', bio || '', gender || '', req.user.id]
   );
 
-  const result = await pool.query('SELECT id, name, email, training_type, bio FROM users WHERE id = $1', [req.user.id]);
+  const result = await pool.query('SELECT id, name, email, training_type, bio, gender FROM users WHERE id = $1', [req.user.id]);
   res.json({ user: result.rows[0] });
 });
 

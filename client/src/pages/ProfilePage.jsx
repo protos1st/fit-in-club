@@ -9,7 +9,8 @@ export default function ProfilePage() {
   const [form, setForm] = useState({
     name: user?.name || '',
     trainingType: user?.training_type || '',
-    bio: user?.bio || ''
+    bio: user?.bio || '',
+    gender: user?.gender || ''
   });
   const [saving, setSaving] = useState(false);
 
@@ -56,6 +57,18 @@ export default function ProfilePage() {
               required
               maxLength={100}
             />
+          </div>
+          <div className="field">
+            <label>Gender</label>
+            <select
+              value={form.gender}
+              onChange={(e) => update('gender', e.target.value)}
+            >
+              <option value="">Not set</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Prefer not to say">Prefer not to say</option>
+            </select>
           </div>
           <div className="field">
             <label>What do you train?</label>
