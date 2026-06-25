@@ -99,6 +99,7 @@ export default function DiscoverPage() {
   const [search, setSearch] = useState('');
   const [genderFilter, setGenderFilter] = useState('');
   const [trainingFilter, setTrainingFilter] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -160,7 +161,8 @@ export default function DiscoverPage() {
     return result;
   }, [matches, search, genderFilter, trainingFilter]);
 
-  const hasFilters = search || genderFilter || trainingFilter;
+  const hasFilters = genderFilter || trainingFilter;
+  const activeFilterCount = (genderFilter ? 1 : 0) + (trainingFilter ? 1 : 0);
 
   if (loading) return <div className="spinner-text">Finding gym buddies…</div>;
 
@@ -170,7 +172,7 @@ export default function DiscoverPage() {
       <h1 className="page-title">Find Buddies</h1>
       <p className="page-sub">People at the gym right now and members with matching schedules.</p>
 
-      <div className="filter-bar">
+      <div className="search-row">
         <div className="filter-search">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-hint)" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <input
@@ -181,26 +183,60 @@ export default function DiscoverPage() {
             aria-label="Search members"
           />
         </div>
-        <div className="filter-chips">
-          {genders.length > 0 && (
-            <select value={genderFilter} onChange={(e) => setGenderFilter(e.target.value)} className="filter-select" aria-label="Filter by gender">
-              <option value="">All genders</option>
-              {genders.map((g) => <option key={g} value={g}>{g}</option>)}
-            </select>
-          )}
-          {trainingTypes.length > 0 && (
-            <select value={trainingFilter} onChange={(e) => setTrainingFilter(e.target.value)} className="filter-select" aria-label="Filter by training">
-              <option value="">All training</option>
-              {trainingTypes.map((t) => <option key={t} value={t}>{t}</option>)}
-            </select>
-          )}
-        </div>
-        {hasFilters && (
-          <button className="filter-clear" onClick={() => { setSearch(''); setGenderFilter(''); setTrainingFilter(''); }}>
-            Clear filters
-          </button>
-        )}
+        <button className={`filter-icon-btn ${hasFilters ? 'filter-icon-active' : ''}`} onClick={() => setShowFilters(true)} aria-label="Filters">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+          {activeFilterCount > 0 && <span className="filter-badge">{activeFilterCount}</span>}
+        </button>
       </div>
+
+      {hasFilters && (
+        <div className="active-filters">
+          {genderFilter && <button className="active-filter-chip" onClick={() => setGenderFilter('')}>{genderFilter} ×</button>}
+          {trainingFilter && <button className="active-filter-chip" onClick={() => setTrainingFilter('')}>{trainingFilter} ×</button>}
+        </div>
+      )}
+
+      {showFilters && (
+        <div className="modal-overlay" onClick={() => setShowFilters(false)}>
+          <div className="filter-sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="filter-sheet-header">
+              <h3 className="filter-sheet-title">Filters</h3>
+              <button className="modal-close" onClick={() => setShowFilters(false)} aria-label="Close">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+
+            {genders.length > 0 && (
+              <div className="filter-sheet-section">
+                <div className="filter-sheet-label">Gender</div>
+                <div className="filter-sheet-options">
+                  <button className={`filter-pill ${genderFilter === '' ? 'filter-pill-active' : ''}`} onClick={() => setGenderFilter('')}>All</button>
+                  {genders.map((g) => (
+                    <button key={g} className={`filter-pill ${genderFilter === g ? 'filter-pill-active' : ''}`} onClick={() => setGenderFilter(g)}>{g}</button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {trainingTypes.length > 0 && (
+              <div className="filter-sheet-section">
+                <div className="filter-sheet-label">Training Type</div>
+                <div className="filter-sheet-options">
+                  <button className={`filter-pill ${trainingFilter === '' ? 'filter-pill-active' : ''}`} onClick={() => setTrainingFilter('')}>All</button>
+                  {trainingTypes.map((t) => (
+                    <button key={t} className={`filter-pill ${trainingFilter === t ? 'filter-pill-active' : ''}`} onClick={() => setTrainingFilter(t)}>{t}</button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="filter-sheet-actions">
+              <button className="btn btn-ghost" onClick={() => { setGenderFilter(''); setTrainingFilter(''); }}>Clear all</button>
+              <button className="btn btn-primary" onClick={() => setShowFilters(false)} style={{ borderRadius: 22 }}>Show results</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {live.length > 0 && (
         <>
@@ -245,8 +281,8 @@ export default function DiscoverPage() {
       ) : filteredMatches.length === 0 ? (
         <div className="card">
           <div className="empty-state">
-            <div className="empty-state-title">{hasFilters ? 'No matches' : 'No overlaps yet'}</div>
-            <p>{hasFilters ? 'Try broadening your filters.' : 'No one else trains during your current time slots yet.'}</p>
+            <div className="empty-state-title">{(hasFilters || search) ? 'No matches' : 'No overlaps yet'}</div>
+            <p>{(hasFilters || search) ? 'Try broadening your filters.' : 'No one else trains during your current time slots yet.'}</p>
           </div>
         </div>
       ) : (

@@ -1116,6 +1116,129 @@ input, select, textarea {
   text-decoration: underline;
 }
 
+/* ---------- Search + filter row ---------- */
+
+.search-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.search-row .filter-search { flex: 1; }
+
+.filter-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  background: var(--color-card);
+  color: var(--color-muted);
+  flex-shrink: 0;
+  position: relative;
+}
+.filter-icon-btn:hover { border-color: var(--color-accent); color: var(--color-accent); }
+.filter-icon-active { border-color: var(--color-accent); color: var(--color-accent); }
+.filter-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  font-size: 0.65rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.active-filters {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.active-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: none;
+}
+
+/* ---------- Filter bottom sheet ---------- */
+
+.filter-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--color-card);
+  border-radius: 16px 16px 0 0;
+  padding: 24px 20px;
+  max-height: 70vh;
+  overflow-y: auto;
+  z-index: 61;
+}
+.filter-sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.filter-sheet-title {
+  font-size: 1.1rem;
+  margin: 0;
+}
+.filter-sheet-section {
+  margin-bottom: 20px;
+}
+.filter-sheet-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-muted);
+  margin-bottom: 10px;
+}
+.filter-sheet-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.filter-pill {
+  padding: 8px 16px;
+  border-radius: 22px;
+  border: 1.5px solid var(--color-line);
+  background: var(--color-card);
+  color: var(--color-ink);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.filter-pill:hover { border-color: var(--color-accent); }
+.filter-pill-active {
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  border-color: var(--color-accent);
+}
+.filter-sheet-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-line);
+  margin-top: 8px;
+}
+
 /* ---------- Profile modal ---------- */
 
 .modal-overlay {
