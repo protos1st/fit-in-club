@@ -12,15 +12,13 @@ function formatTime(t) {
   return `${hour12}:${String(m).padStart(2, '0')} ${period}`;
 }
 
-function SkeletonGrid() {
+function SkeletonList() {
   return (
-    <div className="week-grid">
-      {DAYS.map((label, i) => (
-        <div className="day-col" key={i}>
-          <div className="day-col-head">{label}</div>
-          <div className="day-col-body">
-            <div className="skeleton-slot" />
-          </div>
+    <div className="schedule-list card">
+      {DAYS.map((d, i) => (
+        <div className="sched-row" key={i}>
+          <span className="sched-day">{d}</span>
+          <div className="sched-slots"><div className="skeleton-chip" /></div>
         </div>
       ))}
     </div>
@@ -71,7 +69,6 @@ export default function MySchedulePage() {
   const showToast = useToast();
 
   const today = new Date().getDay();
-  const totalSlots = slots.length;
 
   const loadSchedule = useCallback(() => {
     api.getMySchedule().then((data) => setSlots(data.schedule)).finally(() => setLoading(false));
@@ -176,62 +173,71 @@ export default function MySchedulePage() {
       <LiveBanner liveStatus={liveStatus} liveBusy={liveBusy} onToggle={toggleLive} />
 
       <div className="flex-between mb-md">
-        <div className="section-title no-margin">
-          Weekly training schedule
-          {!loading && <span className="schedule-count">{totalSlots} slot{totalSlots !== 1 ? 's' : ''}</span>}
-        </div>
+        <div className="section-title no-margin">Weekly schedule</div>
         {saving && <span className="saving-indicator">Saving…</span>}
       </div>
 
-      {loading ? <SkeletonGrid /> : (
-        <div className="week-grid">
+      {loading ? <SkeletonList /> : (
+        <div className="schedule-list card">
           {DAYS.map((label, dayIndex) => {
             const daySlots = slots.filter((s) => s.day_of_week === dayIndex);
             const isToday = dayIndex === today;
             return (
-              <div className={`day-col ${isToday ? 'day-col-today' : ''}`} key={dayIndex}>
-                <div className={`day-col-head ${isToday ? 'day-col-head-today' : ''}`}>
-                  {label}
-                  {isToday && <span className="today-badge">today</span>}
-                </div>
-                <div className="day-col-body">
-                  {daySlots.map((s) => (
-                    <div className="slot-chip" key={s.id}>
-                      <span>{formatTime(s.start_time)}–{formatTime(s.end_time)}</span>
-                      <button onClick={() => removeSlot(s.id)} aria-label={`Remove ${DAYS_FULL[dayIndex]} ${formatTime(s.start_time)} slot`}>×</button>
-                    </div>
-                  ))}
-
-                  {daySlots.length === 0 && addingDay !== dayIndex && (
-                    <div className="day-empty">No slots</div>
+              <div key={dayIndex}>
+                <div className={`sched-row ${isToday ? 'sched-row-today' : ''}`}>
+                  <span className={`sched-day ${isToday ? 'sched-day-today' : ''}`}>
+                    {label}
+                    {isToday && <span className="sched-today-dot" />}
+                  </span>
+                  <div className="sched-slots">
+                    {daySlots.map((s) => (
+                      <span className={`sched-chip ${isToday ? 'sched-chip-today' : ''}`} key={s.id}>
+                        {formatTime(s.start_time)}–{formatTime(s.end_time)}
+                        <button
+                          className="sched-chip-remove"
+                          onClick={() => removeSlot(s.id)}
+                          aria-label={`Remove ${DAYS_FULL[dayIndex]} ${formatTime(s.start_time)} slot`}
+                        >×</button>
+                      </span>
+                    ))}
+                    {daySlots.length === 0 && addingDay !== dayIndex && (
+                      <span className="sched-empty">—</span>
+                    )}
+                  </div>
+                  {addingDay !== dayIndex && daySlots.length < 2 && (
+                    <button className="sched-add-btn" onClick={() => startAdding(dayIndex)} aria-label={`Add time slot on ${DAYS_FULL[dayIndex]}`}>+ add</button>
                   )}
+                </div>
 
-                  {addingDay === dayIndex ? (
-                    <div className="slot-editor">
-                      <label className="slot-editor-label">From</label>
-                      <input
-                        type="time"
-                        value={draft.start_time}
-                        onChange={(e) => setDraft((d) => ({ ...d, start_time: e.target.value }))}
-                        aria-label="Start time"
-                      />
-                      <label className="slot-editor-label">To</label>
-                      <input
-                        type="time"
-                        value={draft.end_time}
-                        onChange={(e) => setDraft((d) => ({ ...d, end_time: e.target.value }))}
-                        aria-label="End time"
-                      />
-                      {draftError && <div className="slot-editor-error">{draftError}</div>}
-                      <div className="slot-editor-actions">
-                        <button className="btn btn-primary btn-sm" onClick={() => addSlot(dayIndex)}>Add</button>
-                        <button className="btn btn-ghost btn-sm" onClick={() => { setAddingDay(null); setDraftError(''); }}>Cancel</button>
+                {addingDay === dayIndex && (
+                  <div className="sched-editor">
+                    <div className="sched-editor-fields">
+                      <div className="sched-editor-field">
+                        <label className="sched-editor-label">From</label>
+                        <input
+                          type="time"
+                          value={draft.start_time}
+                          onChange={(e) => setDraft((d) => ({ ...d, start_time: e.target.value }))}
+                          aria-label="Start time"
+                        />
+                      </div>
+                      <div className="sched-editor-field">
+                        <label className="sched-editor-label">To</label>
+                        <input
+                          type="time"
+                          value={draft.end_time}
+                          onChange={(e) => setDraft((d) => ({ ...d, end_time: e.target.value }))}
+                          aria-label="End time"
+                        />
                       </div>
                     </div>
-                  ) : daySlots.length < 2 ? (
-                    <button className="slot-add-btn" onClick={() => startAdding(dayIndex)}>+ Add time</button>
-                  ) : null}
-                </div>
+                    {draftError && <div className="sched-editor-error">{draftError}</div>}
+                    <div className="sched-editor-actions">
+                      <button className="btn btn-primary btn-sm" onClick={() => addSlot(dayIndex)}>Add slot</button>
+                      <button className="btn btn-ghost btn-sm" onClick={() => { setAddingDay(null); setDraftError(''); }}>Cancel</button>
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}

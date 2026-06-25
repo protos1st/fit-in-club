@@ -372,88 +372,154 @@ input, select, textarea {
   padding: 0;
 }
 
-/* ---------- Weekly schedule grid (signature element) ---------- */
+/* ---------- Schedule list layout ---------- */
 
-.week-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
-}
-@media (max-width: 720px) {
-  .week-grid { grid-template-columns: 1fr; }
+.schedule-list {
+  padding: 4px 0;
 }
 
-.day-col {
-  background: var(--color-card);
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius);
-  min-height: 160px;
+.sched-row {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-line);
 }
-.day-col-head {
-  font-family: var(--font-display);
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  text-align: center;
-  padding: 8px 0;
-  background: var(--color-navy);
-  color: #fff;
-  border-radius: var(--radius) var(--radius) 0 0;
-}
-.day-col-body {
-  flex: 1;
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+.sched-row:last-child { border-bottom: none; }
+.sched-row-today {
+  background: rgba(251,163,39,0.06);
 }
 
-.slot-chip {
-  background: var(--color-accent);
-  color: var(--color-accent-ink);
-  border-radius: var(--radius);
-  padding: 6px 8px;
-  font-size: 0.78rem;
+.sched-day {
+  width: 38px;
+  font-size: 0.85rem;
   font-weight: 600;
+  color: var(--color-muted);
+  flex-shrink: 0;
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  gap: 5px;
+}
+.sched-day-today {
+  color: var(--color-accent);
+}
+.sched-today-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.sched-slots {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex: 1;
+  align-items: center;
+}
+
+.sched-chip {
+  background: var(--color-sage-bg);
+  color: var(--color-navy);
+  border-radius: var(--radius);
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
 }
-.slot-chip button {
-  background: rgba(42,42,34,0.15);
-  border: none;
+.sched-chip-today {
+  background: var(--color-accent);
   color: var(--color-accent-ink);
+}
+.sched-chip-remove {
+  background: rgba(42,42,34,0.12);
+  border: none;
+  color: inherit;
   border-radius: 3px;
-  width: 28px;
-  height: 28px;
-  line-height: 1;
-  font-size: 0.85rem;
+  width: 20px;
+  height: 20px;
+  font-size: 0.78rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.15s;
 }
-.slot-chip button:hover { background: rgba(42,42,34,0.28); }
+.sched-chip-remove:hover { opacity: 1; }
 
-.slot-add-btn {
-  border: 1.5px dashed var(--color-line);
-  background: transparent;
+.sched-empty {
+  color: var(--color-hint);
+  font-size: 0.85rem;
+}
+
+.sched-add-btn {
+  background: none;
+  border: 1px dashed var(--color-line);
   color: var(--color-hint);
   border-radius: var(--radius);
-  padding: 6px;
-  font-size: 0.78rem;
+  padding: 4px 10px;
+  font-size: 0.75rem;
   font-weight: 600;
+  flex-shrink: 0;
+  transition: border-color 0.15s, color 0.15s;
 }
-.slot-add-btn:hover { border-color: var(--color-accent); color: var(--color-accent); }
+.sched-add-btn:hover { border-color: var(--color-accent); color: var(--color-accent); }
 
-.schedule-count {
-  font-weight: 400;
-  color: var(--color-hint);
-  margin-left: 8px;
-  font-size: 0.72rem;
-  text-transform: none;
-  letter-spacing: 0;
+.sched-editor {
+  padding: 12px 16px 12px 66px;
+  border-bottom: 1px solid var(--color-line);
+  background: rgba(251,163,39,0.04);
+}
+.sched-editor-fields {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.sched-editor-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.sched-editor-label {
+  font-size: 0.68rem;
+  color: var(--color-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.sched-editor input[type="time"] {
+  font-size: 0.85rem;
+  padding: 6px 8px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  background: var(--color-card);
+  color: var(--color-ink);
+}
+.sched-editor input[type="time"]:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(251,163,39,0.25);
+}
+.sched-editor-error {
+  font-size: 0.75rem;
+  color: var(--color-danger);
+  margin-bottom: 8px;
+}
+.sched-editor-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.skeleton-chip {
+  height: 28px;
+  width: 100px;
+  border-radius: var(--radius);
+  background: var(--color-line);
+  animation: skeleton-pulse 1.2s ease-in-out infinite;
 }
 
 .saving-indicator {
@@ -462,42 +528,6 @@ input, select, textarea {
   font-weight: 500;
 }
 
-.day-col-today {
-  border-color: var(--color-accent);
-}
-.day-col-head-today {
-  background: var(--color-accent);
-  color: var(--color-accent-ink);
-}
-.today-badge {
-  font-size: 0.6rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  opacity: 0.8;
-  margin-left: 4px;
-}
-
-.day-empty {
-  font-size: 0.72rem;
-  color: var(--color-hint);
-  text-align: center;
-  padding: 8px 0;
-}
-
-.slot-editor-label {
-  font-size: 0.68rem;
-  color: var(--color-muted);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.skeleton-slot {
-  height: 32px;
-  border-radius: var(--radius);
-  background: var(--color-line);
-  animation: skeleton-pulse 1.2s ease-in-out infinite;
-}
 @keyframes skeleton-pulse {
   0%, 100% { opacity: 0.4; }
   50% { opacity: 0.8; }
