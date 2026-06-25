@@ -56,6 +56,9 @@ export const api = {
   checkOut: () => request('/api/schedule/checkout', { method: 'POST' }),
   getLive: () => request('/api/schedule/live'),
   getMyStatus: () => request('/api/schedule/my-status'),
+  extendCheckIn: () => request('/api/schedule/extend', { method: 'POST' }),
+  getTodayMatches: () => request('/api/schedule/today-matches'),
+  getDayBuddies: () => request('/api/schedule/day-buddies'),
   getLeaderboard: () => request('/api/schedule/leaderboard'),
 
   sendBuddyRequest: (to_user_id) => request('/api/buddies/request', { method: 'POST', body: { to_user_id } }),

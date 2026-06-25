@@ -152,6 +152,23 @@ router.post('/checkin', async (req, res) => {
   res.json({ checked_in_at: now.toISOString(), expires_at: expires.toISOString(), status_tag: statusTag });
 });
 
+// POST /api/schedule/extend
+router.post('/extend', async (req, res) => {
+  const now = new Date();
+  const result = await pool.query(
+    'SELECT * FROM live_status WHERE user_id = $1 AND expires_at > $2',
+    [req.user.id, now.toISOString()]
+  );
+  if (result.rows.length === 0) return res.status(400).json({ error: 'Not currently checked in' });
+
+  const newExpires = new Date(now.getTime() + LIVE_STATUS_DURATION_HOURS * 60 * 60 * 1000);
+  await pool.query(
+    'UPDATE live_status SET expires_at = $1 WHERE user_id = $2',
+    [newExpires.toISOString(), req.user.id]
+  );
+  res.json({ expires_at: newExpires.toISOString() });
+});
+
 // POST /api/schedule/checkout
 router.post('/checkout', async (req, res) => {
   await pool.query('DELETE FROM live_status WHERE user_id = $1', [req.user.id]);
@@ -196,6 +213,72 @@ router.get('/leaderboard', async (req, res) => {
     LIMIT 20
   `, [req.user.id]);
   res.json({ leaderboard: result.rows });
+});
+
+// GET /api/schedule/today-matches
+router.get('/today-matches', async (req, res) => {
+  const today = new Date().getDay();
+  const mySlots = await pool.query(
+    'SELECT start_time, end_time FROM schedules WHERE user_id = $1 AND day_of_week = $2',
+    [req.user.id, today]
+  );
+  if (mySlots.rows.length === 0) return res.json({ count: 0, names: [] });
+
+  const others = await pool.query(`
+    SELECT DISTINCT u.id, u.name
+    FROM schedules s
+    JOIN users u ON u.id = s.user_id
+    WHERE s.day_of_week = $1 AND u.id != $2
+      AND NOT EXISTS (SELECT 1 FROM blocks WHERE (blocker_id = $2 AND blocked_id = u.id) OR (blocker_id = u.id AND blocked_id = $2))
+  `, [today, req.user.id]);
+
+  const overlaps = [];
+  for (const other of others.rows) {
+    const otherSlots = await pool.query(
+      'SELECT start_time, end_time FROM schedules WHERE user_id = $1 AND day_of_week = $2',
+      [other.id, today]
+    );
+    const hasOverlap = mySlots.rows.some(mine =>
+      otherSlots.rows.some(theirs => mine.start_time < theirs.end_time && theirs.start_time < mine.end_time)
+    );
+    if (hasOverlap) overlaps.push(other.name);
+  }
+  res.json({ count: overlaps.length, names: overlaps.slice(0, 5) });
+});
+
+// GET /api/schedule/day-buddies
+router.get('/day-buddies', async (req, res) => {
+  const mySlots = await pool.query(
+    'SELECT day_of_week, start_time, end_time FROM schedules WHERE user_id = $1',
+    [req.user.id]
+  );
+  if (mySlots.rows.length === 0) return res.json({ buddies: {} });
+
+  const others = await pool.query(`
+    SELECT s.day_of_week, s.start_time, s.end_time, u.id as user_id, u.name
+    FROM schedules s
+    JOIN users u ON u.id = s.user_id
+    WHERE u.id != $1
+      AND NOT EXISTS (SELECT 1 FROM blocks WHERE (blocker_id = $1 AND blocked_id = u.id) OR (blocker_id = u.id AND blocked_id = $1))
+  `, [req.user.id]);
+
+  const buddiesByDay = {};
+  for (const mine of mySlots.rows) {
+    for (const theirs of others.rows) {
+      if (mine.day_of_week !== theirs.day_of_week) continue;
+      if (mine.start_time < theirs.end_time && theirs.start_time < mine.end_time) {
+        const day = mine.day_of_week;
+        if (!buddiesByDay[day]) buddiesByDay[day] = {};
+        buddiesByDay[day][theirs.user_id] = theirs.name;
+      }
+    }
+  }
+
+  const result = {};
+  for (const [day, users] of Object.entries(buddiesByDay)) {
+    result[day] = Object.entries(users).map(([id, name]) => ({ user_id: Number(id), name }));
+  }
+  res.json({ buddies: result });
 });
 
 module.exports = router;

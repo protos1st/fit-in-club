@@ -1682,6 +1682,126 @@ input, select, textarea {
   color: var(--color-accent);
   white-space: nowrap;
 }
+/* --- Schedule improvements --- */
+.sched-match-hint {
+  font-size: 0.75rem;
+  color: var(--color-accent);
+  font-weight: 600;
+  margin-top: 4px;
+  cursor: pointer;
+}
+.sched-extend-prompt {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: rgba(251,163,39,0.12);
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+.sched-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+.sched-template-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1px solid var(--color-line);
+  border-radius: 10px;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  color: var(--color-hint);
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+.sched-template-btn:hover { border-color: var(--color-accent); color: var(--color-accent); }
+.sched-template-cta {
+  text-align: center;
+  padding: 20px;
+  margin-bottom: 12px;
+}
+.sched-template-text {
+  font-size: 0.85rem;
+  color: var(--color-hint);
+  margin: 0 0 12px;
+}
+.sched-templates {
+  margin-bottom: 12px;
+  padding: 16px;
+}
+.sched-templates-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 4px;
+}
+.sched-templates-sub {
+  font-size: 0.75rem;
+  color: var(--color-hint);
+  margin: 0 0 12px;
+}
+.sched-templates-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.sched-templates-item {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  border: 1px solid var(--color-line);
+  border-radius: 10px;
+  background: var(--color-bg);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: border-color 0.2s, background 0.2s;
+}
+.sched-templates-item:hover { border-color: var(--color-accent); background: rgba(83,96,62,0.04); }
+.sched-templates-name { font-size: 0.82rem; font-weight: 600; color: var(--color-text); }
+.sched-templates-days { font-size: 0.7rem; color: var(--color-hint); margin-top: 2px; }
+
+.sched-buddies {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  margin-left: 8px;
+}
+.sched-buddy-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 0.55rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: -6px;
+  border: 2px solid var(--color-card);
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.sched-buddy-avatar:first-child { margin-left: 0; }
+.sched-buddy-avatar:hover { transform: scale(1.2); z-index: 1; }
+.sched-buddy-more {
+  font-size: 0.65rem;
+  color: var(--color-hint);
+  margin-left: 4px;
+  font-weight: 600;
+}
+
+@media (max-width: 720px) {
+  .sched-templates-grid { grid-template-columns: 1fr; }
+}
+
 /* --- Chat profile peek --- */
 .chat-header-name-tap { cursor: pointer; }
 .chat-header-name-tap:hover { color: var(--color-accent); }
