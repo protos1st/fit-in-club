@@ -11,6 +11,7 @@ import ConnectionsPage from './pages/ConnectionsPage';
 import ChatPage from './pages/ChatPage';
 import ProfilePage from './pages/ProfilePage';
 import OnboardingPage from './pages/OnboardingPage';
+import BlockedPage from './pages/BlockedPage';
 
 function ProtectedRoutes() {
   const { user, loading } = useAuth();
@@ -46,6 +47,7 @@ function ProtectedRoutes() {
             <Route path="/connections" element={<ConnectionsPage />} />
             <Route path="/connections/:userId" element={<ChatPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/blocked" element={<BlockedPage />} />
             <Route path="/find" element={<Navigate to="/discover" replace />} />
             <Route path="/live" element={<Navigate to="/discover" replace />} />
             <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/AuthContext';
 import { api } from '../lib/api';
@@ -15,22 +15,6 @@ export default function ProfilePage() {
     gender: user?.gender || ''
   });
   const [saving, setSaving] = useState(false);
-
-  const [blockedUsers, setBlockedUsers] = useState([]);
-
-  useEffect(() => {
-    api.getBlocked().then((data) => setBlockedUsers(data.blocked || [])).catch(() => {});
-  }, []);
-
-  async function handleUnblock(userId, name) {
-    try {
-      await api.unblockUser(userId);
-      setBlockedUsers((prev) => prev.filter((b) => b.user_id !== userId));
-      showToast(`${name} unblocked`, 'info');
-    } catch (err) {
-      showToast(err.message, 'error');
-    }
-  }
 
   const dark = localStorage.getItem('theme') === 'dark';
   function toggleTheme() {
@@ -128,21 +112,16 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {blockedUsers.length > 0 && (
-        <>
-          <div className="section-title mt-md">Blocked users</div>
-          <div className="card card-narrow">
-            {blockedUsers.map((b) => (
-              <div className="profile-setting" key={b.user_id} style={blockedUsers.indexOf(b) > 0 ? { marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--color-line)' } : {}}>
-                <div>
-                  <div className="profile-setting-title">{b.name}</div>
-                </div>
-                <button className="btn btn-outline btn-sm" onClick={() => handleUnblock(b.user_id, b.name)}>Unblock</button>
-              </div>
-            ))}
+      <div className="section-title mt-md">Others</div>
+      <div className="card card-narrow">
+        <div className="profile-setting" onClick={() => navigate('/blocked')} style={{ cursor: 'pointer' }}>
+          <div>
+            <div className="profile-setting-title">Blocked users</div>
+            <div className="profile-setting-desc">Manage blocked members</div>
           </div>
-        </>
-      )}
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-hint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </div>
 
       <div className="section-title mt-md">Account</div>
       <div className="card card-narrow">
