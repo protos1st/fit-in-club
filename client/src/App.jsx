@@ -60,8 +60,10 @@ function ProtectedRoutes() {
 }
 
 export default function App() {
-  if (window.location.pathname === '/admin') {
-    return <AdminPage />;
-  }
-  return <ProtectedRoutes />;
+  return (
+    <Routes>
+      <Route path="/admin" element={<AdminPage />} />
+      <Route path="/*" element={<ProtectedRoutes />} />
+    </Routes>
+  );
 }
