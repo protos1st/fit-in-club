@@ -81,7 +81,7 @@ export default function AuthPage() {
   return (
     <div className="auth-screen">
       <div className="auth-card">
-        <a href="https://fitin.club/" target="_blank" rel="noopener noreferrer">
+        <a href="https://fitin.club/" target="_blank" rel="noopener noreferrer" className="auth-logo-link">
           <img src={fitinLogo} alt="Fit In Club" className="auth-logo" />
         </a>
 
