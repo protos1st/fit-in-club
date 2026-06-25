@@ -375,11 +375,49 @@ input, select, textarea {
   display: block;
   margin-bottom: 12px;
 }
+.auth-heading {
+  font-size: 1.5rem;
+  margin-bottom: 4px;
+  text-transform: none;
+  letter-spacing: 0;
+}
 .auth-tagline {
   color: var(--color-muted);
   font-size: 0.88rem;
   margin-bottom: 24px;
+  line-height: 1.5;
 }
+
+.password-wrapper {
+  position: relative;
+}
+.password-wrapper input {
+  width: 100%;
+  padding-right: 44px;
+}
+.password-toggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--color-hint);
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.password-toggle:hover { color: var(--color-navy); }
+
+.password-strength {
+  font-size: 0.75rem;
+  margin-top: 6px;
+  font-weight: 500;
+}
+.password-strength.weak { color: var(--color-danger); }
+.password-strength.ok { color: #3b6d11; }
 .auth-switch {
   text-align: center;
   margin-top: 18px;
