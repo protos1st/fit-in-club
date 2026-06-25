@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useSocket } from '../lib/SocketContext';
@@ -7,10 +7,23 @@ function initials(name) {
   return name.split(' ').map((p) => p[0]).slice(0, 2).join('').toUpperCase();
 }
 
+function timeAgo(iso) {
+  if (!iso) return '';
+  const mins = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+  if (mins < 1) return 'now';
+  if (mins < 60) return `${mins}m`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d`;
+}
+
 export default function ConnectionsPage() {
   const [connections, setConnections] = useState([]);
   const [conversations, setConversations] = useState({});
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState('all');
   const navigate = useNavigate();
   const socketCtx = useSocket();
 
@@ -31,13 +44,73 @@ export default function ConnectionsPage() {
     if (socketCtx?.lastMessage) load();
   }, [socketCtx?.lastMessage]);
 
+  const totalUnread = useMemo(() => {
+    return Object.values(conversations).reduce((sum, c) => sum + (c.unread_count || 0), 0);
+  }, [conversations]);
+
+  const filtered = useMemo(() => {
+    let result = connections.map((c) => ({
+      ...c,
+      conv: conversations[c.user_id] || null,
+      unread: conversations[c.user_id]?.unread_count || 0
+    }));
+
+    if (search) {
+      const q = search.toLowerCase();
+      result = result.filter((c) => c.name.toLowerCase().includes(q));
+    }
+
+    if (filter === 'unread') {
+      result = result.filter((c) => c.unread > 0);
+    }
+
+    result.sort((a, b) => {
+      if (a.unread > 0 && b.unread === 0) return -1;
+      if (a.unread === 0 && b.unread > 0) return 1;
+      const aTime = a.conv?.last_message?.created_at || '';
+      const bTime = b.conv?.last_message?.created_at || '';
+      return bTime.localeCompare(aTime);
+    });
+
+    return result;
+  }, [connections, conversations, search, filter]);
+
   if (loading) return <div className="spinner-text">Loading your connections…</div>;
 
   return (
     <div>
       <div className="page-eyebrow">Your buddies</div>
       <h1 className="page-title">Messages</h1>
-      <p className="page-sub">Chat with members you've connected with.</p>
+      <p className="page-sub">{connections.length} connection{connections.length !== 1 ? 's' : ''}{totalUnread > 0 ? ` · ${totalUnread} unread` : ''}</p>
+
+      {connections.length > 0 && (
+        <div className="filter-bar">
+          <div className="filter-search">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-hint)" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search conversations…"
+              aria-label="Search conversations"
+            />
+          </div>
+          <div className="filter-chips">
+            <button
+              className={`filter-chip ${filter === 'all' ? 'filter-chip-active' : ''}`}
+              onClick={() => setFilter('all')}
+            >
+              All
+            </button>
+            <button
+              className={`filter-chip ${filter === 'unread' ? 'filter-chip-active' : ''}`}
+              onClick={() => setFilter('unread')}
+            >
+              Unread{totalUnread > 0 ? ` (${totalUnread})` : ''}
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="card">
         {connections.length === 0 ? (
@@ -45,29 +118,33 @@ export default function ConnectionsPage() {
             <div className="empty-state-title">No connections yet</div>
             <p>Accept a buddy request to start a conversation.</p>
           </div>
+        ) : filtered.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-state-title">No matches</div>
+            <p>{filter === 'unread' ? 'No unread messages.' : 'No conversations match your search.'}</p>
+          </div>
         ) : (
-          connections.map((c) => {
-            const conv = conversations[c.user_id];
-            const unread = conv?.unread_count || 0;
-            return (
-              <div
-                className="person-row person-row-clickable"
-                key={c.user_id}
-                onClick={() => navigate(`/connections/${c.user_id}`)}
-              >
-                <div className="person-avatar">{initials(c.name)}</div>
-                <div className="person-info">
-                  <div className="person-name">
-                    {c.name}
-                    {unread > 0 && <span className="badge-count">{unread}</span>}
-                  </div>
-                  <div className="person-meta">
-                    {conv?.last_message ? conv.last_message.body : 'Say hello 👋'}
-                  </div>
+          filtered.map((c) => (
+            <div
+              className={`person-row person-row-clickable ${c.unread > 0 ? 'person-row-unread' : ''}`}
+              key={c.user_id}
+              onClick={() => navigate(`/connections/${c.user_id}`)}
+            >
+              <div className="person-avatar">{initials(c.name)}</div>
+              <div className="person-info">
+                <div className="person-name">
+                  {c.name}
+                  {c.unread > 0 && <span className="badge-count">{c.unread}</span>}
+                </div>
+                <div className="person-meta" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span className="msg-preview">{c.conv?.last_message ? c.conv.last_message.body : 'Say hello'}</span>
+                  {c.conv?.last_message && (
+                    <span className="msg-time">{timeAgo(c.conv.last_message.created_at)}</span>
+                  )}
                 </div>
               </div>
-            );
-          })
+            </div>
+          ))
         )}
       </div>
     </div>

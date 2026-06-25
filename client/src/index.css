@@ -920,6 +920,43 @@ input, select, textarea {
   border-color: var(--color-accent);
   box-shadow: 0 0 0 3px rgba(251,163,39,0.25);
 }
+.filter-chip {
+  padding: 7px 14px;
+  border: 1px solid var(--color-line);
+  border-radius: 20px;
+  background: var(--color-card);
+  color: var(--color-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.filter-chip:hover { border-color: var(--color-accent); color: var(--color-accent); }
+.filter-chip-active {
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  border-color: var(--color-accent);
+}
+.filter-chip-active:hover { background: var(--color-accent); color: var(--color-accent-ink); }
+
+.person-row-unread {
+  background: rgba(251,163,39,0.04);
+}
+
+.msg-preview {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+.msg-time {
+  font-size: 0.72rem;
+  color: var(--color-hint);
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
 .filter-clear {
   background: none;
   border: none;
