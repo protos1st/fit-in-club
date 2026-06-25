@@ -179,7 +179,10 @@ export default function AuthPage() {
         </div>
       </div>
       <div className="powered-by auth-powered-by">
-        Powered by <a href="https://fitin.club/" target="_blank" rel="noopener noreferrer" className="powered-by-link">FitIn</a>
+        Powered by
+        <a href="https://fitin.club/" target="_blank" rel="noopener noreferrer" className="powered-by-link">
+          <img src={fitinLogo} alt="FitIn" className="powered-by-logo" />
+        </a>
       </div>
     </div>
   );
