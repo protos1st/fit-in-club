@@ -96,18 +96,15 @@ export default function ConnectionsPage() {
             />
           </div>
           <div className="filter-chips">
-            <button
-              className={`filter-chip ${filter === 'all' ? 'filter-chip-active' : ''}`}
-              onClick={() => setFilter('all')}
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="filter-select"
+              aria-label="Filter messages"
             >
-              All
-            </button>
-            <button
-              className={`filter-chip ${filter === 'unread' ? 'filter-chip-active' : ''}`}
-              onClick={() => setFilter('unread')}
-            >
-              Unread{totalUnread > 0 ? ` (${totalUnread})` : ''}
-            </button>
+              <option value="all">All messages</option>
+              <option value="unread">Unread{totalUnread > 0 ? ` (${totalUnread})` : ''}</option>
+            </select>
           </div>
         </div>
       )}
