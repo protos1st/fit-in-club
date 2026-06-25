@@ -268,6 +268,29 @@ input, select, textarea {
 }
 .card + .card { margin-top: 16px; }
 
+@media (max-width: 720px) {
+  .card {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    box-shadow: none;
+    margin-left: -16px;
+    margin-right: -16px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .filter-bar {
+    margin-left: -16px;
+    margin-right: -16px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .filter-search {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+}
 
 /* ---------- Buttons ---------- */
 
