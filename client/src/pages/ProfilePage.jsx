@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/AuthContext';
 import { api } from '../lib/api';
@@ -15,6 +15,22 @@ export default function ProfilePage() {
     gender: user?.gender || ''
   });
   const [saving, setSaving] = useState(false);
+
+  const [blockedUsers, setBlockedUsers] = useState([]);
+
+  useEffect(() => {
+    api.getBlocked().then((data) => setBlockedUsers(data.blocked || [])).catch(() => {});
+  }, []);
+
+  async function handleUnblock(userId, name) {
+    try {
+      await api.unblockUser(userId);
+      setBlockedUsers((prev) => prev.filter((b) => b.user_id !== userId));
+      showToast(`${name} unblocked`, 'info');
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  }
 
   const dark = localStorage.getItem('theme') === 'dark';
   function toggleTheme() {
@@ -111,6 +127,22 @@ export default function ProfilePage() {
           </button>
         </div>
       </div>
+
+      {blockedUsers.length > 0 && (
+        <>
+          <div className="section-title mt-md">Blocked users</div>
+          <div className="card card-narrow">
+            {blockedUsers.map((b) => (
+              <div className="profile-setting" key={b.user_id} style={blockedUsers.indexOf(b) > 0 ? { marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--color-line)' } : {}}>
+                <div>
+                  <div className="profile-setting-title">{b.name}</div>
+                </div>
+                <button className="btn btn-outline btn-sm" onClick={() => handleUnblock(b.user_id, b.name)}>Unblock</button>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       <div className="section-title mt-md">Account</div>
       <div className="card card-narrow">
