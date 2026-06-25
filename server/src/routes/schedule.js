@@ -126,7 +126,7 @@ router.get('/overlap', async (req, res) => {
 
 // --- Live status ---
 
-const LIVE_STATUS_DURATION_HOURS = 2;
+const LIVE_STATUS_DURATION_HOURS = 1;
 
 // POST /api/schedule/checkin
 router.post('/checkin', async (req, res) => {
