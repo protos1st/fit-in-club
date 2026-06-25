@@ -683,6 +683,7 @@ input, select, textarea {
   .live-banner-text span { font-size: 0.72rem; }
   .live-banner .btn { font-size: 0.8rem; padding: 8px 14px; white-space: nowrap; }
 }
+.live-banner .btn { border-radius: 22px; }
 
 .pulse-dot {
   width: 9px;
