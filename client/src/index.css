@@ -1118,12 +1118,19 @@ input, select, textarea {
   color: var(--color-hint);
 }
 .powered-by a {
-  color: var(--color-accent);
-  font-weight: 600;
   text-decoration: none;
+  vertical-align: middle;
 }
-.powered-by a:hover {
-  text-decoration: underline;
+.powered-by-logo {
+  height: 20px;
+  width: auto;
+  vertical-align: middle;
+  margin-left: 4px;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+.powered-by a:hover .powered-by-logo {
+  opacity: 1;
 }
 
 .section-title {

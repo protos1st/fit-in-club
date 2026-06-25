@@ -82,7 +82,7 @@ export default function AppShell({ children }) {
         {children}
         {!isChat && (
           <footer className="powered-by">
-            Powered by <a href="https://fitin.club/" target="_blank" rel="noopener noreferrer">FitIn</a>
+            Powered by <a href="https://fitin.club/" target="_blank" rel="noopener noreferrer"><img src={fitinLogo} alt="FitIn" className="powered-by-logo" /></a>
           </footer>
         )}
       </main>
