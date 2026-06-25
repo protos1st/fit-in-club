@@ -331,7 +331,11 @@ export default function DiscoverPage() {
                         <div className="person-name"><span className="pulse-dot" />{p.name}</div>
                         <div className="person-meta">{timeAgo(p.checked_in_at)}{p.status_tag && <span className="status-tag-label"> · {p.status_tag}</span>}</div>
                       </div>
-                      {!isConn && !isSent && (
+                      {isConn ? (
+                        <span className="disc-status-tag disc-status-connected">Connected</span>
+                      ) : isSent ? (
+                        <span className="disc-status-tag disc-status-pending">Pending</span>
+                      ) : (
                         <button className="disc-quick-add" onClick={(e) => { e.stopPropagation(); sendRequest(p.user_id); }} aria-label={`Send request to ${p.name}`} title="Send buddy request">
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                         </button>
@@ -404,7 +408,11 @@ export default function DiscoverPage() {
                     {activity && <span className="disc-activity"> · {activity}</span>}
                   </div>
                 </div>
-                {!isConn && !isSent && (
+                {isConn ? (
+                  <span className="disc-status-tag disc-status-connected">Connected</span>
+                ) : isSent ? (
+                  <span className="disc-status-tag disc-status-pending">Pending</span>
+                ) : (
                   <button className="disc-quick-add" onClick={(e) => { e.stopPropagation(); sendRequest(m.user_id); }} aria-label={`Send request to ${m.name}`} title="Send buddy request">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                   </button>

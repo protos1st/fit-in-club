@@ -1717,6 +1717,15 @@ input, select, textarea {
   color: var(--color-accent);
   font-weight: 500;
 }
+.disc-status-tag {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+.disc-status-connected { background: #dcfce7; color: #166534; }
+.disc-status-pending { background: #fef3c7; color: #92400e; }
 .modal-activity {
   font-size: 0.75rem;
   color: var(--color-accent);
