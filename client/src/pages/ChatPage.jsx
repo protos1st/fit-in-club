@@ -74,14 +74,15 @@ export default function ChatPage() {
   }
 
   return (
-    <div>
-      <button className="chat-back-btn" onClick={() => navigate('/connections')} aria-label="Back to messages">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-        Messages
-      </button>
-      <h1 className="page-title" style={{ marginBottom: 12 }}>{otherName || 'Conversation'}</h1>
+    <div className="chat-page">
+      <div className="chat-header">
+        <button className="chat-back-btn" onClick={() => navigate('/connections')} aria-label="Back to messages">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <h1 className="chat-header-name">{otherName || 'Conversation'}</h1>
+      </div>
 
-      <div className="card chat-window">
+      <div className="chat-window">
         <div className="chat-messages">
           {messages.length === 0 && (
             <div className="empty-state">

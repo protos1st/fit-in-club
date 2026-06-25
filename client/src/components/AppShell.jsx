@@ -49,7 +49,7 @@ export default function AppShell({ children }) {
   const [dark, toggleTheme] = useTheme();
   const location = useLocation();
 
-  const isRequestsOrChat = location.pathname === '/requests' || location.pathname.startsWith('/connections/');
+  const isChat = location.pathname.startsWith('/connections/');
 
   return (
     <div className="app-shell">
@@ -80,31 +80,34 @@ export default function AppShell({ children }) {
 
       <main className="app-main">
         {children}
-        <footer className="powered-by">
-          Powered by <a href="https://fitin.club/" target="_blank" rel="noopener noreferrer">FitIn</a>
-        </footer>
+        {!isChat && (
+          <footer className="powered-by">
+            Powered by <a href="https://fitin.club/" target="_blank" rel="noopener noreferrer">FitIn</a>
+          </footer>
+        )}
       </main>
 
-      <nav className="bottom-bar" aria-label="Main navigation">
-        {bottomTabs.map((tab) => {
-          const isActive = tab.to === '/'
-            ? location.pathname === '/'
-            : location.pathname.startsWith(tab.to);
-          const isMore = tab.icon === 'more';
-          return (
-            <NavLink
-              key={tab.to}
-              to={tab.to}
-              className={`bottom-tab ${isActive ? 'bottom-tab-active' : ''}`}
-              end={tab.to === '/'}
-              aria-label={tab.label}
-            >
-              <TabIcon icon={tab.icon} active={isActive} />
-              <span className="bottom-tab-label">{tab.label}</span>
-            </NavLink>
-          );
-        })}
-      </nav>
+      {!isChat && (
+        <nav className="bottom-bar" aria-label="Main navigation">
+          {bottomTabs.map((tab) => {
+            const isActive = tab.to === '/'
+              ? location.pathname === '/'
+              : location.pathname.startsWith(tab.to);
+            return (
+              <NavLink
+                key={tab.to}
+                to={tab.to}
+                className={`bottom-tab ${isActive ? 'bottom-tab-active' : ''}`}
+                end={tab.to === '/'}
+                aria-label={tab.label}
+              >
+                <TabIcon icon={tab.icon} active={isActive} />
+                <span className="bottom-tab-label">{tab.label}</span>
+              </NavLink>
+            );
+          })}
+        </nav>
+      )}
     </div>
   );
 }
