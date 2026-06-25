@@ -108,9 +108,6 @@ input, select, textarea {
   margin: 0 auto;
 }
 
-@media (max-width: 720px) {
-  .app-main { padding: 20px 16px 64px; }
-}
 
 /* ---------- Sidebar nav ---------- */
 
