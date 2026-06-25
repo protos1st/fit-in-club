@@ -740,12 +740,19 @@ input, select, textarea {
   font-weight: 600;
   padding: 3px 10px;
   border-radius: 20px;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .empty-state {
   text-align: center;
   padding: 40px 20px;
   color: var(--color-hint);
+}
+.empty-state-compact {
+  padding: 28px 20px;
 }
 .empty-state-title {
   font-family: var(--font-display);

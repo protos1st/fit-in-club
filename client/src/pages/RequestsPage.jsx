@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useToast } from '../lib/ToastContext';
 
@@ -11,6 +12,7 @@ export default function RequestsPage() {
   const [outgoing, setOutgoing] = useState([]);
   const [loading, setLoading] = useState(true);
   const showToast = useToast();
+  const navigate = useNavigate();
 
   function load() {
     Promise.all([api.getIncoming(), api.getOutgoing()])
@@ -34,55 +36,64 @@ export default function RequestsPage() {
 
   if (loading) return <div className="spinner-text">Loading requests…</div>;
 
+  const isEmpty = incoming.length === 0 && outgoing.length === 0;
+
+  if (isEmpty) {
+    return (
+      <div>
+        <h1 className="page-title">Requests</h1>
+        <div className="card">
+          <div className="empty-state empty-state-compact">
+            <div className="empty-state-title">No requests yet</div>
+            <p>When you send or receive buddy requests, they'll appear here.</p>
+            <button className="btn btn-primary" style={{ marginTop: 12, borderRadius: 22 }} onClick={() => navigate('/discover')}>Find Buddies</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
-      <div className="page-eyebrow">Buddy Requests</div>
       <h1 className="page-title">Requests</h1>
-      <p className="page-sub">Accept a request to start chatting with your gym buddy.</p>
 
-      <div className="section-title">Incoming ({incoming.length})</div>
-      <div className="card">
-        {incoming.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-state-title">Nothing waiting on you</div>
-            <p>Requests from other members will show up here.</p>
+      {incoming.length > 0 && (
+        <>
+          <div className="section-title">Incoming ({incoming.length})</div>
+          <div className="card">
+            {incoming.map((r) => (
+              <div className="person-row" key={r.id}>
+                <div className="person-avatar">{initials(r.name)}</div>
+                <div className="person-info">
+                  <div className="person-name">{r.name}</div>
+                  {r.training_type && <div className="person-meta"><span className="tag">{r.training_type}</span></div>}
+                </div>
+                <div className="row-gap-sm">
+                  <button className="btn btn-primary btn-sm" onClick={() => respond(r.id, 'accept')}>Accept</button>
+                  <button className="btn btn-danger-outline btn-sm" onClick={() => respond(r.id, 'decline')}>Decline</button>
+                </div>
+              </div>
+            ))}
           </div>
-        ) : (
-          incoming.map((r) => (
-            <div className="person-row" key={r.id}>
-              <div className="person-avatar">{initials(r.name)}</div>
-              <div className="person-info">
-                <div className="person-name">{r.name}</div>
-                {r.training_type && <div className="person-meta"><span className="tag">{r.training_type}</span></div>}
-              </div>
-              <div className="row-gap-sm">
-                <button className="btn btn-primary btn-sm" onClick={() => respond(r.id, 'accept')}>Accept</button>
-                <button className="btn btn-danger-outline btn-sm" onClick={() => respond(r.id, 'decline')}>Decline</button>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
+        </>
+      )}
 
-      <div className="section-title mt-md">Sent ({outgoing.length})</div>
-      <div className="card">
-        {outgoing.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-state-title">No pending sent requests</div>
-            <p>Find a buddy and send a request from the Discover page.</p>
-          </div>
-        ) : (
-          outgoing.map((r) => (
-            <div className="person-row" key={r.id}>
-              <div className="person-avatar">{initials(r.name)}</div>
-              <div className="person-info">
-                <div className="person-name">{r.name}</div>
-                <div className="person-meta">Waiting for response…</div>
+      {outgoing.length > 0 && (
+        <>
+          <div className="section-title mt-md">Sent ({outgoing.length})</div>
+          <div className="card">
+            {outgoing.map((r) => (
+              <div className="person-row" key={r.id}>
+                <div className="person-avatar">{initials(r.name)}</div>
+                <div className="person-info">
+                  <div className="person-name">{r.name}</div>
+                  <div className="person-meta">Waiting for response…</div>
+                </div>
               </div>
-            </div>
-          ))
-        )}
-      </div>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
