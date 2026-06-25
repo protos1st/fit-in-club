@@ -203,7 +203,7 @@ input, select, textarea {
 @media (max-width: 720px) {
   .app-shell { flex-direction: column; }
   .sidebar { display: none; }
-  .app-main { padding-bottom: 80px; }
+  .app-main { padding: 16px 16px 80px; max-width: none; }
 
   .bottom-bar {
     display: flex;
@@ -269,8 +269,18 @@ input, select, textarea {
   box-shadow: var(--shadow-card);
   padding: 20px;
 }
-
 .card + .card { margin-top: 16px; }
+
+@media (max-width: 720px) {
+  .card {
+    border-radius: var(--radius);
+    margin-left: -16px;
+    margin-right: -16px;
+    border-left: none;
+    border-right: none;
+    box-shadow: none;
+  }
+}
 
 /* ---------- Buttons ---------- */
 
