@@ -88,6 +88,12 @@ export default function ChatPage() {
   }, [socketCtx?.lastMessage, otherId]);
 
   useEffect(() => {
+    if (socketCtx?.deletedMessageId) {
+      setMessages(prev => prev.filter(m => m.id !== socketCtx.deletedMessageId));
+    }
+  }, [socketCtx?.deletedMessageId]);
+
+  useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
@@ -119,15 +125,21 @@ export default function ChatPage() {
     setText(msg);
   }
 
-  async function handleDeleteMessage(msgId) {
+  async function handleDeleteMessage(msgId, mode = 'me') {
     try {
-      await api.deleteMessage(msgId);
+      await api.deleteMessage(msgId, mode);
       setMessages(prev => prev.filter(m => m.id !== msgId));
       setSelectedMsg(null);
-      showToast('Message deleted', 'info');
+      showToast(mode === 'everyone' ? 'Deleted for everyone' : 'Message deleted', 'info');
     } catch (err) {
       showToast(err.message, 'error');
     }
+  }
+
+  function canDeleteForEveryone(msg) {
+    if (msg.from_user_id !== user.id) return false;
+    const mins = (Date.now() - new Date(msg.created_at).getTime()) / 60000;
+    return mins <= 15;
   }
 
   async function handleBlock() {
@@ -272,9 +284,12 @@ export default function ChatPage() {
                   {mine && <span className="chat-read-status">{m.read_at ? ' ✓✓' : ' ✓'}</span>}
                 </div>
                 {selectedMsg === m.id && (
-                  <button className="chat-delete-btn" onClick={(e) => { e.stopPropagation(); handleDeleteMessage(m.id); }}>
-                    Delete
-                  </button>
+                  <div className="chat-delete-menu" onClick={(e) => e.stopPropagation()}>
+                    <button className="chat-delete-btn" onClick={() => handleDeleteMessage(m.id, 'me')}>Delete for me</button>
+                    {canDeleteForEveryone(m) && (
+                      <button className="chat-delete-btn chat-delete-everyone" onClick={() => handleDeleteMessage(m.id, 'everyone')}>Delete for everyone</button>
+                    )}
+                  </div>
                 )}
               </div>
             );

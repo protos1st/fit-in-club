@@ -71,7 +71,7 @@ export const api = {
   getConversations: () => request('/api/messages'),
   getMessages: (userId) => request(`/api/messages/${userId}`),
   sendMessage: (userId, body) => request(`/api/messages/${userId}`, { method: 'POST', body: { body } }),
-  deleteMessage: (messageId) => request(`/api/messages/${messageId}`, { method: 'DELETE' }),
+  deleteMessage: (messageId, mode = 'me') => request(`/api/messages/${messageId}?mode=${mode}`, { method: 'DELETE' }),
   disconnectBuddy: (userId) => request(`/api/buddies/disconnect/${userId}`, { method: 'DELETE' }),
 
   blockUser: (userId) => request('/api/moderation/block', { method: 'POST', body: { userId } }),

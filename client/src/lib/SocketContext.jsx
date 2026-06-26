@@ -9,6 +9,7 @@ export function SocketProvider({ children }) {
   const { user } = useAuth();
   const socketRef = useRef(null);
   const [lastMessage, setLastMessage] = useState(null);
+  const [deletedMessageId, setDeletedMessageId] = useState(null);
   const [typingUsers, setTypingUsers] = useState(new Set());
   const typingTimers = useRef({});
 
@@ -27,6 +28,10 @@ export function SocketProvider({ children }) {
 
     socket.on('message:new', (message) => {
       setLastMessage(message);
+    });
+
+    socket.on('message:deleted', ({ messageId }) => {
+      setDeletedMessageId(messageId);
     });
 
     socket.on('typing:start', ({ userId }) => {
@@ -56,7 +61,7 @@ export function SocketProvider({ children }) {
   }, []);
 
   return (
-    <SocketContext.Provider value={{ lastMessage, typingUsers, emitTyping }}>
+    <SocketContext.Provider value={{ lastMessage, deletedMessageId, typingUsers, emitTyping }}>
       {children}
     </SocketContext.Provider>
   );

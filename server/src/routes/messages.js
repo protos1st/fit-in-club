@@ -94,16 +94,41 @@ router.post('/:userId', async (req, res) => {
   res.status(201).json({ message });
 });
 
-// DELETE /api/messages/:messageId
+const DELETE_FOR_EVERYONE_WINDOW_MIN = 15;
+
+// DELETE /api/messages/:messageId?mode=everyone|me
 router.delete('/:messageId', async (req, res) => {
   const msgId = Number(req.params.messageId);
+  const mode = req.query.mode || 'me';
   const result = await pool.query('SELECT * FROM messages WHERE id = $1', [msgId]);
   if (result.rows.length === 0) return res.status(404).json({ error: 'Message not found' });
   const msg = result.rows[0];
   if (msg.from_user_id !== req.user.id && msg.to_user_id !== req.user.id) {
     return res.status(403).json({ error: 'Not your message' });
   }
-  await pool.query('DELETE FROM messages WHERE id = $1', [msgId]);
+
+  if (mode === 'everyone') {
+    if (msg.from_user_id !== req.user.id) {
+      return res.status(403).json({ error: 'You can only delete your own messages for everyone' });
+    }
+    const mins = (Date.now() - new Date(msg.created_at).getTime()) / 60000;
+    if (mins > DELETE_FOR_EVERYONE_WINDOW_MIN) {
+      return res.status(400).json({ error: `Can only delete for everyone within ${DELETE_FOR_EVERYONE_WINDOW_MIN} minutes` });
+    }
+    await pool.query('DELETE FROM messages WHERE id = $1', [msgId]);
+
+    const io = req.app.get('io');
+    const onlineUsers = req.app.get('onlineUsers');
+    const otherId = msg.to_user_id;
+    if (io && onlineUsers && onlineUsers.has(otherId)) {
+      for (const socketId of onlineUsers.get(otherId)) {
+        io.to(socketId).emit('message:deleted', { messageId: msgId });
+      }
+    }
+  } else {
+    await pool.query('DELETE FROM messages WHERE id = $1', [msgId]);
+  }
+
   res.json({ ok: true });
 });
 
