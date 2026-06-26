@@ -31,7 +31,7 @@ export function SocketProvider({ children }) {
     });
 
     socket.on('message:deleted', ({ messageId }) => {
-      setDeletedMessageId(messageId);
+      setDeletedMessageId({ id: Number(messageId), ts: Date.now() });
     });
 
     socket.on('typing:start', ({ userId }) => {

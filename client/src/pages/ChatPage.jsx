@@ -88,8 +88,8 @@ export default function ChatPage() {
   }, [socketCtx?.lastMessage, otherId]);
 
   useEffect(() => {
-    if (socketCtx?.deletedMessageId) {
-      setMessages(prev => prev.filter(m => m.id !== socketCtx.deletedMessageId));
+    if (socketCtx?.deletedMessageId?.id) {
+      setMessages(prev => prev.filter(m => m.id !== socketCtx.deletedMessageId.id));
     }
   }, [socketCtx?.deletedMessageId]);
 
