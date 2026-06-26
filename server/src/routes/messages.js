@@ -5,6 +5,21 @@ const { authMiddleware } = require('../auth');
 const router = express.Router();
 router.use(authMiddleware);
 
+const BLOCKED_WORDS = [
+  'fuck', 'shit', 'bitch', 'asshole', 'dick', 'pussy', 'cunt', 'bastard',
+  'whore', 'slut', 'nigger', 'faggot', 'retard', 'motherfucker',
+  'chutiya', 'madarchod', 'bhenchod', 'bhosdike', 'gaand', 'randi',
+  'lavde', 'lodu', 'harami', 'kamina', 'kutte', 'saala', 'gandu'
+];
+
+function containsProfanity(text) {
+  const lower = text.toLowerCase().replace(/[^a-zऀ-ॿ]/g, ' ');
+  return BLOCKED_WORDS.some(w => {
+    const regex = new RegExp(`\\b${w}\\b|${w}`, 'i');
+    return regex.test(lower);
+  });
+}
+
 async function areConnected(userA, userB) {
   const blocked = await pool.query(
     'SELECT 1 FROM blocks WHERE (blocker_id = $1 AND blocked_id = $2) OR (blocker_id = $2 AND blocked_id = $1)',
@@ -53,6 +68,9 @@ router.post('/:userId', async (req, res) => {
   }
   if (body.length > 2000) {
     return res.status(400).json({ error: 'Message is too long (max 2000 characters)' });
+  }
+  if (containsProfanity(body)) {
+    return res.status(400).json({ error: 'Message contains inappropriate language. Keep it respectful.' });
   }
   if (!(await areConnected(req.user.id, otherId))) {
     return res.status(403).json({ error: 'You can only message accepted gym buddies' });
