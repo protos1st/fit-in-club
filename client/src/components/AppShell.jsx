@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../lib/AuthContext';
+import { useSocket } from '../lib/SocketContext';
 import { api } from '../lib/api';
 import fitinLogo from '../assets/fitin-logo-green.png';
 
@@ -48,6 +49,7 @@ export default function AppShell({ children }) {
   const { user, logout } = useAuth();
   const [dark, toggleTheme] = useTheme();
   const location = useLocation();
+  const socketCtx = useSocket();
   const [badges, setBadges] = useState({ unreadMessages: 0, pendingRequests: 0 });
 
   const fetchBadges = useCallback(() => {
@@ -62,11 +64,15 @@ export default function AppShell({ children }) {
 
   useEffect(() => {
     fetchBadges();
-    const interval = setInterval(fetchBadges, 30000);
+    const interval = setInterval(fetchBadges, 10000);
     return () => clearInterval(interval);
   }, [fetchBadges]);
 
   useEffect(() => { fetchBadges(); }, [location.pathname, fetchBadges]);
+
+  useEffect(() => {
+    if (socketCtx?.lastMessage) fetchBadges();
+  }, [socketCtx?.lastMessage, fetchBadges]);
 
   const isChat = location.pathname.startsWith('/connections/');
 
