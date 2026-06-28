@@ -14,7 +14,7 @@ function signToken(user) {
   return jwt.sign(
     { id: user.id, email: user.email, name: user.name },
     JWT_SECRET,
-    { expiresIn: '30d' }
+    { expiresIn: '7d', algorithm: 'HS256' }
   );
 }
 
@@ -27,8 +27,8 @@ function authMiddleware(req, res, next) {
   }
 
   try {
-    const payload = jwt.verify(token, JWT_SECRET);
-    req.user = payload; // { id, email, name }
+    const payload = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
+    req.user = payload;
     next();
   } catch (err) {
     return res.status(401).json({ error: 'Invalid or expired token' });
@@ -37,7 +37,7 @@ function authMiddleware(req, res, next) {
 
 // Used by socket.io to authenticate websocket connections the same way
 function verifyToken(token) {
-  return jwt.verify(token, JWT_SECRET);
+  return jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
 }
 
 module.exports = { signToken, authMiddleware, verifyToken, JWT_SECRET };

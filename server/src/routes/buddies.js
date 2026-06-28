@@ -5,9 +5,11 @@ const { authMiddleware } = require('../auth');
 const router = express.Router();
 router.use(authMiddleware);
 
+function validId(v) { const n = Number(v); return Number.isInteger(n) && n > 0 ? n : null; }
+
 // POST /api/buddies/request  { to_user_id }
 router.post('/request', async (req, res) => {
-  const { to_user_id } = req.body;
+  const to_user_id = validId(req.body.to_user_id);
   if (!to_user_id) return res.status(400).json({ error: 'to_user_id is required' });
   if (to_user_id === req.user.id) return res.status(400).json({ error: "You can't send a request to yourself" });
 
@@ -127,7 +129,8 @@ router.get('/connections', async (req, res) => {
 
 // DELETE /api/buddies/disconnect/:userId
 router.delete('/disconnect/:userId', async (req, res) => {
-  const otherId = Number(req.params.userId);
+  const otherId = validId(req.params.userId);
+  if (!otherId) return res.status(400).json({ error: 'Invalid user ID' });
   const result = await pool.query(`
     DELETE FROM buddy_requests
     WHERE status = 'accepted'

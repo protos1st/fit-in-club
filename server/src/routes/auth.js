@@ -27,8 +27,8 @@ router.post('/signup', async (req, res) => {
     return res.status(403).json({ error: 'Invalid gym code. Ask the front desk for the correct code.' });
   }
 
-  if (password.length < 6 || password.length > 128) {
-    return res.status(400).json({ error: 'Password must be 6-128 characters' });
+  if (password.length < 8 || password.length > 128) {
+    return res.status(400).json({ error: 'Password must be 8-128 characters' });
   }
   if (name.length > 100) return res.status(400).json({ error: 'Name is too long' });
   if (email.length > 254) return res.status(400).json({ error: 'Email is too long' });

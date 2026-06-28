@@ -24,7 +24,11 @@ const io = new Server(server, {
   cors: { origin: CLIENT_ORIGIN, methods: ['GET', 'POST'] }
 });
 
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false,
+  hsts: { maxAge: 31536000, includeSubDomains: true },
+}));
 app.set('trust proxy', 1);
 app.use(cors({ origin: CLIENT_ORIGIN }));
 app.use(express.json({ limit: '16kb' }));
@@ -54,14 +58,30 @@ const messageLimiter = rateLimit({
   message: { error: 'Sending messages too fast, slow down' }
 });
 
+const scheduleLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many schedule updates, try again later' }
+});
+
+const buddyLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many buddy actions, try again later' }
+});
+
 // Track which users are currently connected over websocket: Map<userId, Set<socketId>>
 const onlineUsers = new Map();
 app.set('io', io);
 app.set('onlineUsers', onlineUsers);
 
 app.use('/api/auth', authLimiter, authRoutes);
-app.use('/api/schedule', scheduleRoutes);
-app.use('/api/buddies', buddyRoutes);
+app.use('/api/schedule', scheduleLimiter, scheduleRoutes);
+app.use('/api/buddies', buddyLimiter, buddyRoutes);
 app.use('/api/messages', messageLimiter, messageRoutes);
 app.use('/api/moderation', moderationRoutes);
 app.use('/api/admin', adminRoutes);
@@ -116,7 +136,8 @@ io.on('connection', (socket) => {
 // --- Error handling ----------------------------------------------------------
 
 app.use((err, req, res, next) => {
-  console.error(err);
+  console.error(`[${new Date().toISOString()}] ${req.method} ${req.path}:`, err.message);
+  if (process.env.NODE_ENV !== 'production') console.error(err.stack);
   res.status(500).json({ error: 'Something went wrong on the server' });
 });
 

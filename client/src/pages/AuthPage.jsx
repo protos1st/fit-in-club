@@ -48,8 +48,8 @@ export default function AuthPage() {
       setError('Please enter your email');
       return;
     }
-    if (form.password.length < 6) {
-      setError('Password must be at least 6 characters');
+    if (form.password.length < 8) {
+      setError('Password must be at least 8 characters');
       return;
     }
     if (mode === 'signup' && !form.gymCode.trim()) {
@@ -129,7 +129,7 @@ export default function AuthPage() {
                 type={showPassword ? 'text' : 'password'}
                 value={form.password}
                 onChange={(e) => update('password', e.target.value)}
-                placeholder={mode === 'signup' ? 'At least 6 characters' : 'Your password'}
+                placeholder={mode === 'signup' ? 'At least 8 characters' : 'Your password'}
                 autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                 maxLength={128}
               />
@@ -144,8 +144,8 @@ export default function AuthPage() {
               </button>
             </div>
             {mode === 'signup' && form.password.length > 0 && (
-              <div className={`password-strength ${form.password.length >= 6 ? 'ok' : 'weak'}`}>
-                {form.password.length < 6 ? `${6 - form.password.length} more character${6 - form.password.length > 1 ? 's' : ''} needed` : 'Looks good'}
+              <div className={`password-strength ${form.password.length >= 8 ? 'ok' : 'weak'}`}>
+                {form.password.length < 8 ? `${8 - form.password.length} more character${8 - form.password.length > 1 ? 's' : ''} needed` : 'Looks good'}
               </div>
             )}
           </div>

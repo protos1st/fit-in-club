@@ -3,13 +3,36 @@ const { pool } = require('../db');
 
 const router = express.Router();
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'fitbud-admin-2024';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+
+if (!ADMIN_PASSWORD) {
+  console.error('\nMissing ADMIN_PASSWORD env var. Admin dashboard disabled.\n');
+}
+
+const adminAttempts = new Map();
+const ADMIN_MAX_ATTEMPTS = 5;
+const ADMIN_LOCKOUT_MS = 15 * 60 * 1000;
 
 router.use((req, res, next) => {
+  if (!ADMIN_PASSWORD) {
+    return res.status(503).json({ error: 'Admin dashboard not configured' });
+  }
+  const ip = req.ip;
+  const record = adminAttempts.get(ip);
+  if (record && record.count >= ADMIN_MAX_ATTEMPTS && Date.now() - record.first < ADMIN_LOCKOUT_MS) {
+    return res.status(429).json({ error: 'Too many failed attempts. Try again later.' });
+  }
   const pw = req.headers['x-admin-password'];
   if (pw !== ADMIN_PASSWORD) {
+    const now = Date.now();
+    if (!record || now - record.first > ADMIN_LOCKOUT_MS) {
+      adminAttempts.set(ip, { count: 1, first: now });
+    } else {
+      record.count++;
+    }
     return res.status(401).json({ error: 'Invalid admin password' });
   }
+  adminAttempts.delete(ip);
   next();
 });
 
