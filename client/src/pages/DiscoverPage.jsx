@@ -241,29 +241,25 @@ export default function DiscoverPage() {
               </button>
             </div>
 
-            {genders.length > 0 && (
-              <div className="filter-sheet-section">
-                <div className="filter-sheet-label">Gender</div>
-                <div className="filter-sheet-options">
-                  <button className={`filter-pill ${genderFilter === '' ? 'filter-pill-active' : ''}`} onClick={() => setGenderFilter('')}>All</button>
-                  {genders.map((g) => (
-                    <button key={g} className={`filter-pill ${genderFilter === g ? 'filter-pill-active' : ''}`} onClick={() => setGenderFilter(g)}>{g}</button>
-                  ))}
-                </div>
+            <div className="filter-sheet-section">
+              <div className="filter-sheet-label">Gender</div>
+              <div className="filter-sheet-options">
+                <button className={`filter-pill ${genderFilter === '' ? 'filter-pill-active' : ''}`} onClick={() => setGenderFilter('')}>All</button>
+                {['Male', 'Female'].map((g) => (
+                  <button key={g} className={`filter-pill ${genderFilter === g ? 'filter-pill-active' : ''}`} onClick={() => setGenderFilter(g)}>{g}</button>
+                ))}
               </div>
-            )}
+            </div>
 
-            {trainingTypes.length > 0 && (
-              <div className="filter-sheet-section">
-                <div className="filter-sheet-label">Training type</div>
-                <div className="filter-sheet-options">
-                  <button className={`filter-pill ${trainingFilter === '' ? 'filter-pill-active' : ''}`} onClick={() => setTrainingFilter('')}>All</button>
-                  {trainingTypes.map((t) => (
-                    <button key={t} className={`filter-pill ${trainingFilter === t ? 'filter-pill-active' : ''}`} onClick={() => setTrainingFilter(t)}>{t}</button>
-                  ))}
-                </div>
+            <div className="filter-sheet-section">
+              <div className="filter-sheet-label">Training type</div>
+              <div className="filter-sheet-options">
+                <button className={`filter-pill ${trainingFilter === '' ? 'filter-pill-active' : ''}`} onClick={() => setTrainingFilter('')}>All</button>
+                {trainingTypes.map((t) => (
+                  <button key={t} className={`filter-pill ${trainingFilter === t ? 'filter-pill-active' : ''}`} onClick={() => setTrainingFilter(t)}>{t}</button>
+                ))}
               </div>
-            )}
+            </div>
 
             <div className="filter-sheet-section">
               <div className="filter-sheet-label">Day</div>
