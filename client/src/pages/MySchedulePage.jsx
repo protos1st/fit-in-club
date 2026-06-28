@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useToast } from '../lib/ToastContext';
+import { formatTime, initials } from '../lib/utils';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const DAYS_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -12,17 +13,6 @@ const TEMPLATES = [
   { label: 'Tue / Thu / Sat', days: [2, 4, 6] },
   { label: 'Every day', days: [0, 1, 2, 3, 4, 5, 6] },
 ];
-
-function formatTime(t) {
-  const [h, m] = t.split(':').map(Number);
-  const period = h >= 12 ? 'PM' : 'AM';
-  const hour12 = h % 12 === 0 ? 12 : h % 12;
-  return `${hour12}:${String(m).padStart(2, '0')} ${period}`;
-}
-
-function initials(name) {
-  return name.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase();
-}
 
 function SkeletonList() {
   return (
@@ -262,19 +252,21 @@ export default function MySchedulePage() {
     <div>
       <h1 className="page-title">My Schedule</h1>
 
-      <LiveBanner
-        liveStatus={liveStatus} liveBusy={liveBusy} statusTag={statusTag}
-        setStatusTag={setStatusTag} onToggle={toggleLive} onExtend={handleExtend}
-        todayMatches={todayMatches}
-      />
+      {!loading && hasSlots && (
+        <LiveBanner
+          liveStatus={liveStatus} liveBusy={liveBusy} statusTag={statusTag}
+          setStatusTag={setStatusTag} onToggle={toggleLive} onExtend={handleExtend}
+          todayMatches={todayMatches}
+        />
+      )}
 
       {saving && <div className="saving-indicator">Saving…</div>}
 
       {!loading && !hasSlots && (
         <div className="sched-template-cta">
           <p className="sched-template-text">Set up your weekly gym schedule to find buddies with matching times.</p>
-          <button className="btn btn-outline btn-sm" onClick={() => setShowTemplates(true)} style={{ borderRadius: 16 }}>
-            Use a template
+          <button className="btn btn-primary" onClick={() => setShowTemplates(true)} style={{ borderRadius: 20 }}>
+            Get started
           </button>
         </div>
       )}

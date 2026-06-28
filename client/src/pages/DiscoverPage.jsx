@@ -2,39 +2,9 @@ import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useToast } from '../lib/ToastContext';
+import { formatTime, initials, timeAgo, lastActiveLabel } from '../lib/utils';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-function formatTime(t) {
-  const [h, m] = t.split(':').map(Number);
-  const period = h >= 12 ? 'PM' : 'AM';
-  const hour12 = h % 12 === 0 ? 12 : h % 12;
-  return `${hour12}:${String(m).padStart(2, '0')} ${period}`;
-}
-
-function initials(name) {
-  return name.split(' ').map((p) => p[0]).slice(0, 2).join('').toUpperCase();
-}
-
-function timeAgo(iso) {
-  const mins = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.round(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.round(hrs / 24);
-  return `${days}d ago`;
-}
-
-function lastActiveLabel(iso) {
-  if (!iso) return null;
-  const days = Math.round((Date.now() - new Date(iso).getTime()) / 86400000);
-  if (days === 0) return 'Active today';
-  if (days === 1) return 'Active yesterday';
-  if (days <= 7) return `Active ${days}d ago`;
-  if (days <= 30) return `Active ${Math.round(days / 7)}w ago`;
-  return 'Inactive';
-}
 
 function ProfileModal({ person, type, connectedTo, pendingTo, sentTo, onSend, onClose, onMessage, onCancel, outgoing }) {
   const isConnected = connectedTo.has(person.user_id);
@@ -44,7 +14,7 @@ function ProfileModal({ person, type, connectedTo, pendingTo, sentTo, onSend, on
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-card" role="dialog" aria-modal="true" aria-label={`${person.name}'s profile`} onClick={(e) => e.stopPropagation()}>
         <button className="modal-close" onClick={onClose} aria-label="Close">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>

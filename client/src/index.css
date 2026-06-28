@@ -15,8 +15,8 @@
   --color-warn-bg: #fdebc7;
   --color-warn-ink: #6d412a;
   --color-brown: #6d412a;        /* fitin brown, used directly where called for */
-  --color-muted: #777;
-  --color-hint: #999;
+  --color-muted: #5a5a50;
+  --color-hint: #737360;
 
   /* --- Type --- */
   --font-display: 'Raleway', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -45,8 +45,8 @@
   --color-warn-bg: #3a3020;
   --color-warn-ink: #d4a870;
   --color-brown: #d4a870;
-  --color-muted: #aaa;
-  --color-hint: #888;
+  --color-muted: #b0ada0;
+  --color-hint: #9a9788;
 }
 [data-theme="dark"] .sidebar-logo,
 [data-theme="dark"] .powered-by-logo {
@@ -247,7 +247,8 @@ input, select, textarea {
     flex-direction: column;
     align-items: center;
     gap: 2px;
-    padding: 6px 0;
+    padding: 8px 0;
+    min-height: 44px;
     text-decoration: none;
     color: var(--color-hint);
     transition: color 0.15s;
@@ -257,7 +258,7 @@ input, select, textarea {
     color: var(--color-accent);
   }
   .bottom-tab-label {
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.02em;
   }
@@ -526,6 +527,21 @@ input, select, textarea {
 }
 .password-strength.weak { color: var(--color-danger); }
 .password-strength.ok { color: #3b6d11; }
+.auth-forgot {
+  text-align: center;
+  margin-top: 12px;
+}
+.auth-forgot button {
+  background: none;
+  border: none;
+  color: var(--color-muted);
+  font-size: 0.82rem;
+  padding: 0;
+  cursor: pointer;
+}
+.auth-forgot button:hover {
+  color: var(--color-accent);
+}
 .auth-switch {
   text-align: center;
   margin-top: 18px;
@@ -1290,7 +1306,8 @@ input, select, textarea {
   gap: 8px;
 }
 .filter-pill {
-  padding: 8px 16px;
+  padding: 10px 16px;
+  min-height: 44px;
   border-radius: 22px;
   border: 1.5px solid var(--color-line);
   background: var(--color-card);
