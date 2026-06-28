@@ -26,7 +26,7 @@ function ProfileModal({ person, type, connectedTo, pendingTo, sentTo, onSend, on
           <h2 className="modal-name">{person.name}</h2>
           {person.training_type && <span className="tag">{person.training_type}</span>}
           {person.gender && person.gender !== 'Prefer not to say' && (
-            <span className="tag" className="tag-ml">{person.gender}</span>
+            <span className="tag tag-ml">{person.gender}</span>
           )}
           {activity && type === 'match' && (
             <div className="modal-activity">{activity}</div>
@@ -273,7 +273,7 @@ export default function DiscoverPage() {
 
             <div className="filter-sheet-actions">
               <button className="btn btn-ghost" onClick={() => { setGenderFilter(''); setTrainingFilter(''); setDayFilter(''); }}>Clear all</button>
-              <button className="btn btn-primary" onClick={() => setShowFilters(false)} className="rounded-pill">Show results</button>
+              <button className="btn btn-primary rounded-pill" onClick={() => setShowFilters(false)}>Show results</button>
             </div>
           </div>
         </div>
