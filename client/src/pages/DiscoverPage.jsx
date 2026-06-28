@@ -5,6 +5,7 @@ import { useToast } from '../lib/ToastContext';
 import { formatTime, initials, timeAgo, lastActiveLabel } from '../lib/utils';
 import Avatar from '../components/Avatar';
 import EmptyState from '../components/EmptyState';
+import Portal from '../components/Portal';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -15,6 +16,7 @@ function ProfileModal({ person, type, connectedTo, pendingTo, sentTo, onSend, on
   const activity = lastActiveLabel(person.last_active);
 
   return (
+    <Portal>
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-card" role="dialog" aria-modal="true" aria-label={`${person.name}'s profile`} onClick={(e) => e.stopPropagation()}>
         <button className="modal-close" onClick={onClose} aria-label="Close">
@@ -78,6 +80,7 @@ function ProfileModal({ person, type, connectedTo, pendingTo, sentTo, onSend, on
         </div>
       </div>
     </div>
+    </Portal>
   );
 }
 
@@ -228,6 +231,7 @@ export default function DiscoverPage() {
       )}
 
       {showFilters && (
+        <Portal>
         <div className="modal-overlay" onClick={() => setShowFilters(false)}>
           <div className="filter-sheet" onClick={(e) => e.stopPropagation()}>
             <div className="filter-sheet-header">
@@ -277,6 +281,7 @@ export default function DiscoverPage() {
             </div>
           </div>
         </div>
+        </Portal>
       )}
 
       {live.length > 0 && (
