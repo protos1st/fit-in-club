@@ -13,6 +13,7 @@ import ProfilePage from './pages/ProfilePage';
 import OnboardingPage from './pages/OnboardingPage';
 import BlockedPage from './pages/BlockedPage';
 import AdminPage from './pages/AdminPage';
+import ConfirmDialog from './components/ConfirmDialog';
 
 function ProtectedRoutes() {
   const { user, loading } = useAuth();
@@ -61,9 +62,12 @@ function ProtectedRoutes() {
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/admin" element={<AdminPage />} />
-      <Route path="/*" element={<ProtectedRoutes />} />
-    </Routes>
+    <>
+      <Routes>
+        <Route path="/admin" element={<AdminPage />} />
+        <Route path="/*" element={<ProtectedRoutes />} />
+      </Routes>
+      <ConfirmDialog />
+    </>
   );
 }

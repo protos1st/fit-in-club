@@ -4,6 +4,9 @@ import { api } from '../lib/api';
 import { useAuth } from '../lib/AuthContext';
 import { useSocket } from '../lib/SocketContext';
 import { useToast } from '../lib/ToastContext';
+import Avatar from '../components/Avatar';
+import EmptyState from '../components/EmptyState';
+import { confirmDialog } from '../components/ConfirmDialog';
 
 const STARTERS = [
   "Hey! When do you usually train?",
@@ -143,7 +146,7 @@ export default function ChatPage() {
   }
 
   async function handleBlock() {
-    if (!confirm(`Block ${otherName}? They won't be able to message you or see you.`)) return;
+    if (!(await confirmDialog({ title: 'Block this person?', message: `${otherName} won't be able to message you or see you in Discover.`, confirmLabel: 'Block', danger: true }))) return;
     try {
       await api.blockUser(otherId);
       showToast(`${otherName} blocked`, 'info');
@@ -154,7 +157,7 @@ export default function ChatPage() {
   }
 
   async function handleDisconnect() {
-    if (!confirm(`Disconnect from ${otherName}? You won't be able to message each other. They can send a new request.`)) return;
+    if (!(await confirmDialog({ title: 'Disconnect?', message: `You and ${otherName} won't be able to message each other. Either of you can send a new request later.`, confirmLabel: 'Disconnect', danger: true }))) return;
     try {
       await api.disconnectBuddy(otherId);
       showToast(`Disconnected from ${otherName}`, 'info');
@@ -200,7 +203,7 @@ export default function ChatPage() {
         </button>
         <div className="chat-header-info" onClick={() => otherProfile && setProfileOpen(true)}>
           <h1 className="chat-header-name chat-header-name-tap">{otherName || 'Conversation'}</h1>
-          {isTyping && <span className="chat-typing-indicator">typing...</span>}
+          {isTyping && <span className="chat-typing-indicator"><span className="typing-dots-inline"><span /><span /><span /></span></span>}
         </div>
         <div className="chat-menu-wrap">
           <button className="chat-menu-btn" onClick={() => setMenuOpen(!menuOpen)} aria-label="Chat options">
@@ -236,14 +239,12 @@ export default function ChatPage() {
       {profileOpen && otherProfile && (
         <div className="chat-profile-peek">
           <div className="chat-profile-header">
-            <div className="chat-profile-avatar">
-              {otherProfile.name.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase()}
-            </div>
+            <Avatar name={otherProfile.name} size={44} />
             <div>
               <div className="chat-profile-name">{otherProfile.name}</div>
               {otherProfile.training_type && <span className="tag">{otherProfile.training_type}</span>}
               {otherProfile.gender && otherProfile.gender !== 'Prefer not to say' && (
-                <span className="tag" style={{ marginLeft: 4 }}>{otherProfile.gender}</span>
+                <span className="tag tag-ml">{otherProfile.gender}</span>
               )}
             </div>
             <button className="chat-profile-close" onClick={() => setProfileOpen(false)} aria-label="Close profile">
@@ -281,7 +282,14 @@ export default function ChatPage() {
                 {m.body}
                 <div className="chat-time">
                   {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  {mine && <span className="chat-read-status">{m.read_at ? ' ✓✓' : ' ✓'}</span>}
+                  {mine && (
+                    <span className={`chat-read-status ${m.read_at ? 'read' : ''}`}>
+                      <svg width="16" height="10" viewBox="0 0 16 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="1 5 4 8 10 2" />
+                        {m.read_at && <polyline points="5 5 8 8 14 2" />}
+                      </svg>
+                    </span>
+                  )}
                 </div>
                 {selectedMsg === m.id && (
                   <div className="chat-delete-menu" onClick={(e) => e.stopPropagation()}>
@@ -309,7 +317,9 @@ export default function ChatPage() {
             placeholder="Type a message…"
             onFocus={() => setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 300)}
           />
-          <button type="submit" className="btn btn-primary">Send</button>
+          <button type="submit" className="btn btn-primary chat-send-btn" aria-label="Send message">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
+          </button>
         </form>
       </div>
     </div>

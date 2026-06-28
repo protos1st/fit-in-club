@@ -73,7 +73,7 @@ export default function EmptyState({ type, title, message, action, onAction }) {
       <h3 className="empty-state-v2-title">{title}</h3>
       <p className="empty-state-v2-msg">{message}</p>
       {action && (
-        <button className="btn btn-primary" onClick={onAction} style={{ borderRadius: 20, marginTop: 8 }}>
+        <button className="btn btn-primary rounded-pill mt-sm" onClick={onAction}>
           {action}
         </button>
       )}

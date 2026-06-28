@@ -5,6 +5,7 @@ import { api } from '../lib/api';
 import { useToast } from '../lib/ToastContext';
 import { initials } from '../lib/utils';
 import Avatar from '../components/Avatar';
+import { confirmDialog } from '../components/ConfirmDialog';
 
 export default function ProfilePage() {
   const { user, setUser, logout } = useAuth();
@@ -23,12 +24,12 @@ export default function ProfilePage() {
     api.getLeaderboard().then((data) => setLeaderboard(data.leaderboard || [])).catch(() => {});
   }, []);
 
-  const dark = localStorage.getItem('theme') === 'dark';
+  const [dark, setDark] = useState(() => localStorage.getItem('theme') === 'dark');
   function toggleTheme() {
-    const next = dark ? 'light' : 'dark';
-    localStorage.setItem('theme', next);
-    document.documentElement.setAttribute('data-theme', next);
-    window.location.reload();
+    const next = !dark;
+    setDark(next);
+    localStorage.setItem('theme', next ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', next ? 'dark' : 'light');
   }
 
   function update(field, value) {
@@ -96,7 +97,7 @@ export default function ProfilePage() {
               onChange={(e) => update('bio', e.target.value)}
               placeholder="A short intro about yourself"
               rows={3}
-              style={{ resize: 'vertical' }}
+              className="profile-bio-input"
               maxLength={500}
             />
           </div>
@@ -143,7 +144,7 @@ export default function ProfilePage() {
 
       <div className="section-title mt-md">Others</div>
       <div className="card card-narrow">
-        <div className="profile-setting" onClick={() => navigate('/blocked')} style={{ cursor: 'pointer' }}>
+        <div className="profile-setting profile-setting-link" onClick={() => navigate('/blocked')}>
           <div>
             <div className="profile-setting-title">Blocked users</div>
             <div className="profile-setting-desc">Manage blocked members</div>
@@ -161,14 +162,13 @@ export default function ProfilePage() {
           </div>
           <button className="btn btn-danger-outline btn-sm" onClick={logout}>Log out</button>
         </div>
-        <div className="profile-setting" style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--color-line)' }}>
+        <div className="profile-setting profile-setting-danger">
           <div>
-            <div className="profile-setting-title" style={{ color: 'var(--color-danger)' }}>Delete account</div>
+            <div className="profile-setting-title profile-setting-danger-title">Delete account</div>
             <div className="profile-setting-desc">Permanently delete your account and all data</div>
           </div>
           <button className="btn btn-danger-outline btn-sm" onClick={async () => {
-            if (!confirm('Are you sure? This will permanently delete your account, messages, connections, and all data. This cannot be undone.')) return;
-            if (!confirm('Really delete? Type OK to confirm.')) return;
+            if (!(await confirmDialog({ title: 'Delete your account?', message: 'This will permanently delete your account, messages, connections, and all data. This cannot be undone.', confirmLabel: 'Delete my account', danger: true }))) return;
             try {
               await api.deleteAccount();
               logout();

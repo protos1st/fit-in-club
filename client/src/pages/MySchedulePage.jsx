@@ -42,14 +42,14 @@ function LiveBanner({ liveStatus, liveBusy, statusTag, setStatusTag, onToggle, o
           <>
             <strong><span className="pulse-dot" />You're at the gym</strong>
             <span>{timeLeft > 0 ? `Visible for ${timeLeft} more min` : 'Expiring soon'}</span>
-            {liveStatus.status_tag && <span className="tag tag-sm" style={{ marginTop: 4 }}>{liveStatus.status_tag}</span>}
+            {liveStatus.status_tag && <span className="tag tag-sm tag-spaced">{liveStatus.status_tag}</span>}
             {todayMatches > 0 && (
               <span className="sched-match-hint">{todayMatches} buddy match{todayMatches !== 1 ? 'es' : ''} today</span>
             )}
             {showExtendPrompt && (
               <div className="sched-extend-prompt">
                 <span>Still training?</span>
-                <button className="btn btn-primary btn-sm" onClick={onExtend} style={{ borderRadius: 16, marginLeft: 8 }}>Extend 1 hr</button>
+                <button className="btn btn-primary btn-sm rounded-pill" onClick={onExtend}>Extend 1 hr</button>
               </div>
             )}
           </>
@@ -266,7 +266,7 @@ export default function MySchedulePage() {
       {!loading && !hasSlots && (
         <div className="sched-template-cta">
           <p className="sched-template-text">Set up your weekly gym schedule to find buddies with matching times.</p>
-          <button className="btn btn-primary" onClick={() => setShowTemplates(true)} style={{ borderRadius: 20 }}>
+          <button className="btn btn-primary rounded-pill" onClick={() => setShowTemplates(true)}>
             Get started
           </button>
         </div>
@@ -310,7 +310,7 @@ export default function MySchedulePage() {
                 <input type="time" value={customTime.end_time} onChange={e => setCustomTime(t => ({ ...t, end_time: e.target.value }))} />
               </div>
             </div>
-            <button className="btn btn-primary btn-sm" onClick={applyCustom} disabled={customDays.length === 0} style={{ borderRadius: 16, marginTop: 8 }}>
+            <button className="btn btn-primary btn-sm rounded-pill mt-sm" onClick={applyCustom} disabled={customDays.length === 0}>
               Apply to {customDays.length > 0 ? customDays.map(d => DAYS[d]).join(', ') : '...'}
             </button>
           </div>
@@ -333,7 +333,7 @@ export default function MySchedulePage() {
                   <div className="sched-slots">
                     {daySlots.map((s) => (
                       editingSlot === s.id ? null : (
-                        <span className={`sched-chip ${isToday ? 'sched-chip-today' : ''}`} key={s.id} onClick={() => startEditing(s)} style={{ cursor: 'pointer' }} title="Tap to edit">
+                        <span className={`sched-chip ${isToday ? 'sched-chip-today' : ''}`} key={s.id} onClick={() => startEditing(s)} title="Tap to edit">
                           {formatTime(s.start_time)}–{formatTime(s.end_time)}
                           <button
                             className="sched-chip-remove"

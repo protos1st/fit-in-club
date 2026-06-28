@@ -88,10 +88,9 @@ export default function OnboardingPage() {
             <button className="btn btn-ghost" onClick={() => setStep((s) => s - 1)}>Back</button>
           )}
           <button
-            className="btn btn-primary"
+            className="btn btn-primary ml-auto"
             onClick={handleNext}
             disabled={!canProceed || submitting}
-            style={{ marginLeft: 'auto' }}
           >
             {submitting ? 'Saving…' : isLast ? 'Get started' : 'Next'}
           </button>

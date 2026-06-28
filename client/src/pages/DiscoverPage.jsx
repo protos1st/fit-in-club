@@ -26,7 +26,7 @@ function ProfileModal({ person, type, connectedTo, pendingTo, sentTo, onSend, on
           <h2 className="modal-name">{person.name}</h2>
           {person.training_type && <span className="tag">{person.training_type}</span>}
           {person.gender && person.gender !== 'Prefer not to say' && (
-            <span className="tag" style={{ marginLeft: 4 }}>{person.gender}</span>
+            <span className="tag" className="tag-ml">{person.gender}</span>
           )}
           {activity && type === 'match' && (
             <div className="modal-activity">{activity}</div>
@@ -59,7 +59,7 @@ function ProfileModal({ person, type, connectedTo, pendingTo, sentTo, onSend, on
         <div className="modal-action">
           {isConnected ? (
             <button className="btn btn-primary btn-block" onClick={() => onMessage(person.user_id)}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ marginRight: 6, verticalAlign: -2 }}><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="btn-icon-inline"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
               Message
             </button>
           ) : isSent && pendingRequest ? (
@@ -273,7 +273,7 @@ export default function DiscoverPage() {
 
             <div className="filter-sheet-actions">
               <button className="btn btn-ghost" onClick={() => { setGenderFilter(''); setTrainingFilter(''); setDayFilter(''); }}>Clear all</button>
-              <button className="btn btn-primary" onClick={() => setShowFilters(false)} style={{ borderRadius: 22 }}>Show results</button>
+              <button className="btn btn-primary" onClick={() => setShowFilters(false)} className="rounded-pill">Show results</button>
             </div>
           </div>
         </div>

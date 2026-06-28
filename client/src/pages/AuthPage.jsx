@@ -172,7 +172,7 @@ export default function AuthPage() {
 
         {mode === 'login' && (
           <div className="auth-forgot">
-            <button onClick={() => alert('Please ask the gym front desk to reset your password, or contact support at fitin.club.')}>Forgot password?</button>
+            <button onClick={() => setError('Please ask the gym front desk to reset your password.')}>Forgot password?</button>
           </div>
         )}
 
