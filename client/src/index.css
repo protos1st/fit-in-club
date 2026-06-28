@@ -132,6 +132,7 @@ input, select, textarea {
   padding: 32px 40px 80px;
   max-width: 980px;
   margin: 0 auto;
+  isolation: isolate;
 }
 
 
