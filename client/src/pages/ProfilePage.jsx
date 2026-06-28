@@ -4,6 +4,7 @@ import { useAuth } from '../lib/AuthContext';
 import { api } from '../lib/api';
 import { useToast } from '../lib/ToastContext';
 import { initials } from '../lib/utils';
+import Avatar from '../components/Avatar';
 
 export default function ProfilePage() {
   const { user, setUser, logout } = useAuth();
@@ -128,7 +129,7 @@ export default function ProfilePage() {
             {leaderboard.map((u, i) => (
               <div className="person-row" key={u.user_id}>
                 <div className="leaderboard-rank">{i + 1}</div>
-                <div className="person-avatar">{initials(u.name)}</div>
+                <Avatar name={u.name} size={36} />
                 <div className="person-info">
                   <div className="person-name">{u.name}</div>
                   {u.training_type && <div className="person-meta">{u.training_type}</div>}

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useToast } from '../lib/ToastContext';
 import { initials } from '../lib/utils';
+import Avatar from '../components/Avatar';
 
 export default function BlockedPage() {
   const [blocked, setBlocked] = useState([]);
@@ -60,7 +61,7 @@ export default function BlockedPage() {
         ) : (
           blocked.filter((b) => !search || b.name.toLowerCase().includes(search.toLowerCase())).map((b) => (
             <div className="person-row" key={b.user_id}>
-              <div className="person-avatar">{initials(b.name)}</div>
+              <Avatar name={b.name} size={40} />
               <div className="person-info">
                 <div className="person-name">{b.name}</div>
               </div>

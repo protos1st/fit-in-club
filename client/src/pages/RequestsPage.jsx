@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useToast } from '../lib/ToastContext';
 import { initials } from '../lib/utils';
+import Avatar from '../components/Avatar';
+import EmptyState from '../components/EmptyState';
 
 export default function RequestsPage() {
   const [incoming, setIncoming] = useState([]);
@@ -50,11 +52,13 @@ export default function RequestsPage() {
       <div>
         <h1 className="page-title">Requests</h1>
         <div className="card">
-          <div className="empty-state empty-state-compact">
-            <div className="empty-state-title">No requests yet</div>
-            <p>When you send or receive buddy requests, they'll appear here.</p>
-            <button className="btn btn-primary" style={{ marginTop: 12, borderRadius: 22 }} onClick={() => navigate('/discover')}>Find Buddies</button>
-          </div>
+          <EmptyState
+            type="requests"
+            title="No requests yet"
+            message="Send a buddy request from Discover, or wait for someone to find you."
+            action="Find buddies"
+            onAction={() => navigate('/discover')}
+          />
         </div>
       </div>
     );
@@ -70,7 +74,7 @@ export default function RequestsPage() {
           <div className="card">
             {incoming.map((r) => (
               <div className="person-row" key={r.id}>
-                <div className="person-avatar">{initials(r.name)}</div>
+                <Avatar name={r.name} size={40} />
                 <div className="person-info">
                   <div className="person-name">{r.name}</div>
                   {r.training_type && <div className="person-meta"><span className="tag">{r.training_type}</span></div>}
@@ -91,7 +95,7 @@ export default function RequestsPage() {
           <div className="card">
             {outgoing.map((r) => (
               <div className="person-row" key={r.id}>
-                <div className="person-avatar">{initials(r.name)}</div>
+                <Avatar name={r.name} size={40} />
                 <div className="person-info">
                   <div className="person-name">{r.name}</div>
                   <div className="person-meta">Waiting for response…</div>

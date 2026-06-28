@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useToast } from '../lib/ToastContext';
 import { formatTime, initials, timeAgo, lastActiveLabel } from '../lib/utils';
+import Avatar from '../components/Avatar';
+import EmptyState from '../components/EmptyState';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -20,7 +22,7 @@ function ProfileModal({ person, type, connectedTo, pendingTo, sentTo, onSend, on
         </button>
 
         <div className="modal-header">
-          <div className="modal-avatar">{initials(person.name)}</div>
+          <Avatar name={person.name} size={56} />
           <h2 className="modal-name">{person.name}</h2>
           {person.training_type && <span className="tag">{person.training_type}</span>}
           {person.gender && person.gender !== 'Prefer not to say' && (
@@ -294,7 +296,7 @@ export default function DiscoverPage() {
                   return (
                     <div className="person-row person-row-clickable" key={p.user_id} onClick={() => { setSelectedPerson(p); setSelectedType('live'); }}>
                       <div className="avatar-wrap">
-                        <div className="person-avatar">{initials(p.name)}</div>
+                        <Avatar name={p.name} size={40} />
                         {isConn && <span className="connected-badge" aria-label="Connected"><svg width="12" height="12" viewBox="0 0 24 24" fill="#fff" stroke="none"><path d="M20 6L9 17l-5-5" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg></span>}
                       </div>
                       <div className="person-info">
@@ -343,17 +345,21 @@ export default function DiscoverPage() {
 
       {matchNote ? (
         <div className="card">
-          <div className="empty-state">
-            <div className="empty-state-title">Set your schedule first</div>
-            <p>{matchNote}</p>
-          </div>
+          <EmptyState
+            type="schedule"
+            title="Set your schedule first"
+            message={matchNote}
+            action="Set up schedule"
+            onAction={() => navigate('/')}
+          />
         </div>
       ) : filteredMatches.length === 0 ? (
         <div className="card">
-          <div className="empty-state">
-            <div className="empty-state-title">{(hasFilters || search) ? 'No matches' : 'No overlaps yet'}</div>
-            <p>{(hasFilters || search) ? 'Try broadening your filters.' : 'No one else trains during your current time slots yet.'}</p>
-          </div>
+          <EmptyState
+            type="discover"
+            title={(hasFilters || search) ? 'No matches found' : 'No overlaps yet'}
+            message={(hasFilters || search) ? 'Try broadening your filters or check back later.' : "As more members join, you'll find training partners here."}
+          />
         </div>
       ) : (
         <div className="card">
@@ -368,7 +374,7 @@ export default function DiscoverPage() {
                 onClick={() => { setSelectedPerson(m); setSelectedType('match'); }}
               >
                 <div className="avatar-wrap">
-                  <div className="person-avatar">{initials(m.name)}</div>
+                  <Avatar name={m.name} size={40} />
                   {isConn && <span className="connected-badge" aria-label="Connected"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>}
                 </div>
                 <div className="person-info">

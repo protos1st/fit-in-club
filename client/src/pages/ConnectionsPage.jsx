@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useSocket } from '../lib/SocketContext';
 import { initials, timeAgo } from '../lib/utils';
+import Avatar from '../components/Avatar';
+import EmptyState from '../components/EmptyState';
 
 export default function ConnectionsPage() {
   const [connections, setConnections] = useState([]);
@@ -97,15 +99,19 @@ export default function ConnectionsPage() {
 
       <div className="card">
         {connections.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-state-title">No connections yet</div>
-            <p>Accept a buddy request to start a conversation.</p>
-          </div>
+          <EmptyState
+            type="messages"
+            title="No conversations yet"
+            message="Connect with a gym buddy to start chatting."
+            action="Find buddies"
+            onAction={() => navigate('/discover')}
+          />
         ) : filtered.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-state-title">No matches</div>
-            <p>{filter === 'unread' ? 'No unread messages.' : 'No conversations match your search.'}</p>
-          </div>
+          <EmptyState
+            type="messages"
+            title={filter === 'unread' ? 'All caught up!' : 'No results'}
+            message={filter === 'unread' ? "You've read all your messages." : 'No conversations match your search.'}
+          />
         ) : (
           filtered.map((c) => (
             <div
@@ -113,7 +119,7 @@ export default function ConnectionsPage() {
               key={c.user_id}
               onClick={() => navigate(`/connections/${c.user_id}`)}
             >
-              <div className="person-avatar">{initials(c.name)}</div>
+              <Avatar name={c.name} size={40} />
               <div className="person-info">
                 <div className="person-name">
                   {c.name}

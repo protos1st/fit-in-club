@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useToast } from '../lib/ToastContext';
 import { formatTime, initials } from '../lib/utils';
+import Avatar from '../components/Avatar';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const DAYS_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -348,8 +349,8 @@ export default function MySchedulePage() {
                     {buddies.length > 0 && !addingDay && !editingSlot && (
                       <div className="sched-buddies">
                         {buddies.slice(0, 3).map(b => (
-                          <div key={b.user_id} className="sched-buddy-avatar" title={b.name} onClick={() => navigate('/discover')}>
-                            {initials(b.name)}
+                          <div key={b.user_id} className="sched-buddy-avatar-wrap" title={b.name} onClick={() => navigate('/discover')}>
+                            <Avatar name={b.name} size={24} />
                           </div>
                         ))}
                         {buddies.length > 3 && <span className="sched-buddy-more">+{buddies.length - 3}</span>}
