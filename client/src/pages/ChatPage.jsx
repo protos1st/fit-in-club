@@ -7,6 +7,7 @@ import { useToast } from '../lib/ToastContext';
 import Avatar from '../components/Avatar';
 import EmptyState from '../components/EmptyState';
 import { confirmDialog } from '../components/ConfirmDialog';
+import { ChatBubbleSkeleton } from '../components/Skeleton';
 
 const STARTERS = [
   "Hey! When do you usually train?",
@@ -179,7 +180,18 @@ export default function ChatPage() {
     }
   }
 
-  if (loading) return <div className="spinner-text">Loading conversation…</div>;
+  if (loading) return (
+    <div className="chat-page">
+      <div className="chat-header">
+        <div style={{ width: 20 }} />
+        <div className="skeleton" style={{ width: 120, height: 18, borderRadius: 6 }} />
+        <div style={{ width: 40 }} />
+      </div>
+      <div className="chat-window" style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '20px 0' }}>
+        {ChatBubbleSkeleton({ count: 5 })}
+      </div>
+    </div>
+  );
 
   if (error) {
     return (

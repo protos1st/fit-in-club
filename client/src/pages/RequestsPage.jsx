@@ -5,6 +5,7 @@ import { useToast } from '../lib/ToastContext';
 import { initials } from '../lib/utils';
 import Avatar from '../components/Avatar';
 import EmptyState from '../components/EmptyState';
+import { PersonRowSkeleton } from '../components/Skeleton';
 
 export default function RequestsPage() {
   const [incoming, setIncoming] = useState([]);
@@ -43,7 +44,12 @@ export default function RequestsPage() {
     }
   }
 
-  if (loading) return <div className="spinner-text">Loading requests…</div>;
+  if (loading) return (
+    <div>
+      <h1 className="page-title">Requests</h1>
+      <div className="card">{PersonRowSkeleton({ count: 3 })}</div>
+    </div>
+  );
 
   const isEmpty = incoming.length === 0 && outgoing.length === 0;
 

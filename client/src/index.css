@@ -2708,3 +2708,104 @@ input, select, textarea {
 [data-theme="dark"] .onboarding-option.selected { background: rgba(251,163,39,0.15); border-color: var(--color-accent); }
 [data-theme="dark"] .onboarding-option:hover { border-color: var(--color-accent); }
 [data-theme="dark"] .confirm-dialog { box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+
+/* ---------- Professional UX overhaul ---------- */
+
+/* Skeleton loading */
+.skeleton {
+  background: linear-gradient(90deg, var(--color-line) 25%, rgba(255,255,255,0.4) 50%, var(--color-line) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 6px;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.skeleton-circle { border-radius: 50%; }
+.skeleton-text { height: 14px; margin-bottom: 8px; }
+.skeleton-text-sm { height: 10px; width: 60%; }
+.skeleton-row { display: flex; align-items: center; gap: 14px; padding: 12px 0; }
+[data-theme="dark"] .skeleton {
+  background: linear-gradient(90deg, #333328 25%, #444 50%, #333328 75%);
+  background-size: 200% 100%;
+}
+
+/* 8pt spacing utilities */
+.gap-4 { gap: 4px; } .gap-8 { gap: 8px; } .gap-12 { gap: 12px; } .gap-16 { gap: 16px; } .gap-24 { gap: 24px; }
+
+/* Typography scale */
+.text-xs { font-size: 0.75rem; } .text-sm { font-size: 0.875rem; } .text-base { font-size: 1rem; }
+.text-lg { font-size: 1.125rem; } .text-xl { font-size: 1.25rem; } .text-2xl { font-size: 1.5rem; }
+
+/* Input polish */
+.field input, .field select, .field textarea {
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 0.95rem;
+}
+
+/* Card depth hierarchy */
+.card-elevated { box-shadow: 0 4px 20px rgba(42,42,34,0.08); }
+.card-floating { box-shadow: 0 8px 30px rgba(42,42,34,0.12); border: none; }
+
+/* Bottom bar glass effect */
+.bottom-bar {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: rgba(255,255,255,0.88) !important;
+  border-top: 0.5px solid rgba(0,0,0,0.06) !important;
+}
+[data-theme="dark"] .bottom-bar {
+  background: rgba(36,36,32,0.92) !important;
+  border-top: 0.5px solid rgba(255,255,255,0.06) !important;
+}
+
+/* Chat input WhatsApp style */
+.chat-input-row { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-top: 0.5px solid var(--color-line); }
+.chat-input-row input { flex: 1; border: 1.5px solid var(--color-line); border-radius: 24px; padding: 10px 18px; font-size: 0.95rem; background: var(--color-bg); color: var(--color-ink); transition: border-color 0.2s; }
+.chat-input-row input:focus { outline: none; border-color: var(--color-accent); box-shadow: 0 0 0 3px rgba(251,163,39,0.15); }
+
+/* Chat bubbles WhatsApp style */
+.chat-bubble.mine { border-radius: 18px 18px 4px 18px; max-width: 78%; }
+.chat-bubble.theirs { border-radius: 18px 18px 18px 4px; max-width: 78%; }
+.chat-time { font-size: 0.68rem; opacity: 0.7; margin-top: 4px; display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
+
+/* Person row Instagram style */
+.person-name { letter-spacing: -0.01em; }
+
+/* Powered-by subtle */
+.powered-by { opacity: 0.35; margin-top: 48px; }
+.powered-by-logo { height: 28px; }
+
+/* Page header polish */
+.page-eyebrow { text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; }
+.page-title { font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; }
+.page-sub { line-height: 1.5; max-width: 400px; }
+
+/* Profile header card */
+.profile-header-card { display: flex; align-items: center; gap: 16px; padding: 20px; background: var(--color-card); border-radius: 16px; border: 1px solid var(--color-line); margin-bottom: 24px; animation: fadeInUp 0.3s ease both; }
+.profile-header-info { flex: 1; }
+.profile-header-name { font-size: 1.2rem; font-weight: 700; color: var(--color-ink); margin: 0; }
+.profile-header-email { font-size: 0.82rem; color: var(--color-muted); margin-top: 2px; }
+.profile-header-stats { display: flex; gap: 20px; margin-top: 10px; }
+.profile-header-stat-val { font-size: 1.1rem; font-weight: 800; color: var(--color-navy); display: block; }
+.profile-header-stat-label { font-size: 0.65rem; color: var(--color-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+
+/* Section title polish */
+.section-title { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-muted); }
+
+/* Tag polish */
+.tag { transition: transform 0.1s; }
+
+/* Filter icon button */
+.filter-icon-btn { width: 48px; height: 48px; border-radius: 12px; border: 1.5px solid var(--color-line); background: var(--color-card); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: border-color 0.2s, background 0.2s; cursor: pointer; position: relative; }
+.filter-icon-btn:hover { border-color: var(--color-accent); }
+.filter-icon-active { border-color: var(--color-accent); background: rgba(251,163,39,0.08); }
+.filter-badge { position: absolute; top: -4px; right: -4px; width: 18px; height: 18px; border-radius: 50%; background: var(--color-accent); color: var(--color-accent-ink); font-size: 0.65rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+
+/* Search bar polish */
+.filter-search { display: flex; align-items: center; gap: 10px; padding: 0 16px; border: 1.5px solid var(--color-line); border-radius: 12px; background: var(--color-card); transition: border-color 0.2s; }
+.filter-search:focus-within { border-color: var(--color-accent); }
+.filter-search input { border: none !important; padding: 12px 0 !important; background: transparent !important; box-shadow: none !important; }
+.filter-search input:focus { box-shadow: none !important; }

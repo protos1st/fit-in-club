@@ -5,6 +5,7 @@ import { useSocket } from '../lib/SocketContext';
 import { initials, timeAgo } from '../lib/utils';
 import Avatar from '../components/Avatar';
 import EmptyState from '../components/EmptyState';
+import { PersonRowSkeleton } from '../components/Skeleton';
 
 export default function ConnectionsPage() {
   const [connections, setConnections] = useState([]);
@@ -63,7 +64,13 @@ export default function ConnectionsPage() {
     return result;
   }, [connections, conversations, search, filter]);
 
-  if (loading) return <div className="spinner-text">Loading your connections…</div>;
+  if (loading) return (
+    <div>
+      <div className="page-eyebrow">Your Buddies</div>
+      <h1 className="page-title">Messages</h1>
+      <div className="card">{PersonRowSkeleton({ count: 4 })}</div>
+    </div>
+  );
 
   return (
     <div>

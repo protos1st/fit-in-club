@@ -52,10 +52,25 @@ export default function ProfilePage() {
 
   return (
     <div>
-      <div className="page-eyebrow">Account</div>
-      <h1 className="page-title">Profile</h1>
-      <p className="page-sub">Update your name, training style, and bio visible to other members.</p>
+      <div className="profile-header-card">
+        <Avatar name={user?.name || 'U'} size={56} />
+        <div className="profile-header-info">
+          <h1 className="profile-header-name">{user?.name}</h1>
+          <div className="profile-header-email">{user?.email}</div>
+          <div className="profile-header-stats">
+            <div>
+              <span className="profile-header-stat-val">{leaderboard.find(u => u.user_id === user?.id)?.checkins || 0}</span>
+              <span className="profile-header-stat-label">Check-ins</span>
+            </div>
+            <div>
+              <span className="profile-header-stat-val">{user?.training_type || '—'}</span>
+              <span className="profile-header-stat-label">Training</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
+      <div className="section-title">Edit profile</div>
       <div className="card card-narrow">
         <form onSubmit={handleSubmit}>
           <div className="field">

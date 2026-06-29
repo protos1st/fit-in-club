@@ -6,6 +6,7 @@ import { formatTime, initials, timeAgo, lastActiveLabel } from '../lib/utils';
 import Avatar from '../components/Avatar';
 import EmptyState from '../components/EmptyState';
 import Portal from '../components/Portal';
+import { PersonRowSkeleton } from '../components/Skeleton';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -197,7 +198,13 @@ export default function DiscoverPage() {
   const hasFilters = genderFilter || trainingFilter || dayFilter !== '';
   const activeFilterCount = (genderFilter ? 1 : 0) + (trainingFilter ? 1 : 0) + (dayFilter !== '' ? 1 : 0);
 
-  if (loading) return <div className="spinner-text">Finding gym buddies…</div>;
+  if (loading) return (
+    <div>
+      <div className="page-eyebrow">Discover</div>
+      <h1 className="page-title">Find Buddies</h1>
+      <div className="card">{PersonRowSkeleton({ count: 4 })}</div>
+    </div>
+  );
 
   return (
     <div>
