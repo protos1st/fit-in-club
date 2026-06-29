@@ -28,6 +28,11 @@ router.put('/me', async (req, res) => {
     ) {
       return res.status(400).json({ error: 'Each slot needs day_of_week (0-6), start_time and end_time as HH:MM' });
     }
+    const [sh, sm] = s.start_time.split(':').map(Number);
+    const [eh, em] = s.end_time.split(':').map(Number);
+    if (sh > 23 || sm > 59 || eh > 23 || em > 59) {
+      return res.status(400).json({ error: 'Invalid time values' });
+    }
     if (s.start_time >= s.end_time) {
       return res.status(400).json({ error: 'start_time must be before end_time' });
     }

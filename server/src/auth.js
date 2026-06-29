@@ -12,7 +12,7 @@ if (!JWT_SECRET) {
 
 function signToken(user) {
   return jwt.sign(
-    { id: user.id, email: user.email, name: user.name },
+    { id: user.id },
     JWT_SECRET,
     { expiresIn: '7d', algorithm: 'HS256' }
   );

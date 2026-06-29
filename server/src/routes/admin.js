@@ -1,4 +1,5 @@
 const express = require('express');
+const crypto = require('crypto');
 const { pool } = require('../db');
 
 const router = express.Router();
@@ -22,8 +23,10 @@ router.use((req, res, next) => {
   if (record && record.count >= ADMIN_MAX_ATTEMPTS && Date.now() - record.first < ADMIN_LOCKOUT_MS) {
     return res.status(429).json({ error: 'Too many failed attempts. Try again later.' });
   }
-  const pw = req.headers['x-admin-password'];
-  if (pw !== ADMIN_PASSWORD) {
+  const pw = req.headers['x-admin-password'] || '';
+  const pwBuf = Buffer.from(String(pw));
+  const correctBuf = Buffer.from(ADMIN_PASSWORD);
+  if (pwBuf.length !== correctBuf.length || !crypto.timingSafeEqual(pwBuf, correctBuf)) {
     const now = Date.now();
     if (!record || now - record.first > ADMIN_LOCKOUT_MS) {
       adminAttempts.set(ip, { count: 1, first: now });

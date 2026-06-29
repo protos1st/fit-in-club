@@ -5,6 +5,8 @@ const { authMiddleware } = require('../auth');
 const router = express.Router();
 router.use(authMiddleware);
 
+function validId(v) { const n = Number(v); return Number.isInteger(n) && n > 0 ? n : null; }
+
 const BLOCKED_WORDS = [
   'fuck', 'shit', 'bitch', 'asshole', 'dick', 'pussy', 'cunt', 'bastard',
   'whore', 'slut', 'nigger', 'faggot', 'retard', 'motherfucker',
@@ -37,7 +39,8 @@ async function areConnected(userA, userB) {
 
 // GET /api/messages/:userId
 router.get('/:userId', async (req, res) => {
-  const otherId = Number(req.params.userId);
+  const otherId = validId(req.params.userId);
+  if (!otherId) return res.status(400).json({ error: 'Invalid user ID' });
 
   if (!(await areConnected(req.user.id, otherId))) {
     return res.status(403).json({ error: 'You can only message accepted gym buddies' });
@@ -60,7 +63,8 @@ router.get('/:userId', async (req, res) => {
 
 // POST /api/messages/:userId  { body }
 router.post('/:userId', async (req, res) => {
-  const otherId = Number(req.params.userId);
+  const otherId = validId(req.params.userId);
+  if (!otherId) return res.status(400).json({ error: 'Invalid user ID' });
   const { body } = req.body;
 
   if (!body || !body.trim()) {
@@ -98,7 +102,8 @@ const DELETE_FOR_EVERYONE_WINDOW_MIN = 15;
 
 // DELETE /api/messages/:messageId?mode=everyone|me
 router.delete('/:messageId', async (req, res) => {
-  const msgId = Number(req.params.messageId);
+  const msgId = validId(req.params.messageId);
+  if (!msgId) return res.status(400).json({ error: 'Invalid message ID' });
   const mode = req.query.mode || 'me';
   const result = await pool.query('SELECT * FROM messages WHERE id = $1', [msgId]);
   if (result.rows.length === 0) return res.status(404).json({ error: 'Message not found' });
@@ -134,35 +139,32 @@ router.delete('/:messageId', async (req, res) => {
 
 // GET /api/messages
 router.get('/', async (req, res) => {
-  const connResult = await pool.query(`
-    SELECT u.id as user_id, u.name
+  const result = await pool.query(`
+    SELECT
+      u.id as user_id, u.name,
+      lm.body as last_body, lm.created_at as last_at, lm.from_user_id as last_from,
+      COALESCE(ur.cnt, 0)::int as unread_count
     FROM buddy_requests br
     JOIN users u ON u.id = CASE WHEN br.from_user_id = $1 THEN br.to_user_id ELSE br.from_user_id END
+    LEFT JOIN LATERAL (
+      SELECT body, created_at, from_user_id FROM messages
+      WHERE (from_user_id = $1 AND to_user_id = u.id) OR (from_user_id = u.id AND to_user_id = $1)
+      ORDER BY created_at DESC LIMIT 1
+    ) lm ON true
+    LEFT JOIN LATERAL (
+      SELECT COUNT(*) as cnt FROM messages
+      WHERE from_user_id = u.id AND to_user_id = $1 AND read_at IS NULL
+    ) ur ON true
     WHERE br.status = 'accepted' AND (br.from_user_id = $1 OR br.to_user_id = $1)
   `, [req.user.id]);
 
-  const result = [];
-  for (const c of connResult.rows) {
-    const lastResult = await pool.query(`
-      SELECT body, created_at, from_user_id FROM messages
-      WHERE (from_user_id = $1 AND to_user_id = $2) OR (from_user_id = $2 AND to_user_id = $1)
-      ORDER BY created_at DESC LIMIT 1
-    `, [req.user.id, c.user_id]);
-
-    const unreadResult = await pool.query(`
-      SELECT COUNT(*) as cnt FROM messages
-      WHERE from_user_id = $1 AND to_user_id = $2 AND read_at IS NULL
-    `, [c.user_id, req.user.id]);
-
-    result.push({
-      user_id: c.user_id,
-      name: c.name,
-      last_message: lastResult.rows[0] || null,
-      unread_count: parseInt(unreadResult.rows[0].cnt)
-    });
-  }
-
-  res.json({ conversations: result });
+  const conversations = result.rows.map(r => ({
+    user_id: r.user_id,
+    name: r.name,
+    last_message: r.last_body ? { body: r.last_body, created_at: r.last_at, from_user_id: r.last_from } : null,
+    unread_count: r.unread_count,
+  }));
+  res.json({ conversations });
 });
 
 module.exports = router;

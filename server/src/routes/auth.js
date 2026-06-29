@@ -40,7 +40,7 @@ router.post('/signup', async (req, res) => {
     return res.status(409).json({ error: 'An account with this email already exists' });
   }
 
-  const passwordHash = await bcrypt.hash(password, 10);
+  const passwordHash = await bcrypt.hash(password, 12);
 
   const result = await pool.query(
     `INSERT INTO users (name, email, password_hash, training_type, bio)
@@ -128,6 +128,26 @@ router.put('/onboarding', authMiddleware, async (req, res) => {
     [req.user.id]
   );
   res.json({ user: result.rows[0] });
+});
+
+// PUT /api/auth/password
+router.put('/password', authMiddleware, async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword) return res.status(400).json({ error: 'Current and new password required' });
+  if (newPassword.length < 8 || newPassword.length > 128) return res.status(400).json({ error: 'New password must be 8-128 characters' });
+
+  const result = await pool.query('SELECT password_hash FROM users WHERE id = $1', [req.user.id]);
+  if (result.rows.length === 0) return res.status(404).json({ error: 'User not found' });
+
+  const valid = await bcrypt.compare(currentPassword, result.rows[0].password_hash);
+  if (!valid) return res.status(401).json({ error: 'Current password is incorrect' });
+
+  const newHash = await bcrypt.hash(newPassword, 12);
+  await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2', [newHash, req.user.id]);
+
+  const user = (await pool.query('SELECT id, name, email FROM users WHERE id = $1', [req.user.id])).rows[0];
+  const token = signToken(user);
+  res.json({ token, message: 'Password updated' });
 });
 
 // DELETE /api/auth/account

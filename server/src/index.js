@@ -1,4 +1,5 @@
 require('dotenv').config();
+require('express-async-errors');
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
@@ -25,7 +26,16 @@ const io = new Server(server, {
 });
 
 app.use(helmet({
-  contentSecurityPolicy: false,
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:"],
+      connectSrc: ["'self'", CLIENT_ORIGIN, "wss:", "ws:"],
+    },
+  },
   crossOriginEmbedderPolicy: false,
   hsts: { maxAge: 31536000, includeSubDomains: true },
 }));
@@ -104,25 +114,25 @@ io.use((socket, next) => {
 
 io.on('connection', (socket) => {
   const userId = socket.userId;
+  const typingTimestamps = new Map();
 
   if (!onlineUsers.has(userId)) onlineUsers.set(userId, new Set());
   onlineUsers.get(userId).add(socket.id);
 
-  socket.on('typing:start', ({ toUserId }) => {
+  function throttledEmit(event, toUserId) {
+    const key = `${event}:${toUserId}`;
+    const now = Date.now();
+    if (typingTimestamps.has(key) && now - typingTimestamps.get(key) < 1000) return;
+    typingTimestamps.set(key, now);
     if (onlineUsers.has(toUserId)) {
       for (const sid of onlineUsers.get(toUserId)) {
-        io.to(sid).emit('typing:start', { userId });
+        io.to(sid).emit(event, { userId });
       }
     }
-  });
+  }
 
-  socket.on('typing:stop', ({ toUserId }) => {
-    if (onlineUsers.has(toUserId)) {
-      for (const sid of onlineUsers.get(toUserId)) {
-        io.to(sid).emit('typing:stop', { userId });
-      }
-    }
-  });
+  socket.on('typing:start', ({ toUserId }) => throttledEmit('typing:start', toUserId));
+  socket.on('typing:stop', ({ toUserId }) => throttledEmit('typing:stop', toUserId));
 
   socket.on('disconnect', () => {
     const set = onlineUsers.get(userId);
@@ -147,6 +157,7 @@ initDb().then(() => {
   server.listen(PORT, () => {
     console.log(`Gym Buddy server running on http://localhost:${PORT}`);
   });
+  server.setTimeout(30000);
 }).catch((err) => {
   console.error('Failed to initialize database:', err);
   process.exit(1);
