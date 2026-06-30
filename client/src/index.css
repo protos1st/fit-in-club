@@ -1819,8 +1819,16 @@ input, select, textarea {
 }
 .sched-toolbar {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   margin-bottom: 8px;
+}
+.sched-hint-text {
+  font-size: 0.82rem;
+  color: var(--color-hint);
+  margin: 0;
+  flex: 1;
 }
 .sched-template-btn {
   display: inline-flex;

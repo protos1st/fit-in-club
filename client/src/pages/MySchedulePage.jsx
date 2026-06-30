@@ -263,17 +263,11 @@ export default function MySchedulePage() {
 
       {saving && <div className="saving-indicator">Saving…</div>}
 
-      {!loading && !hasSlots && (
-        <div className="sched-template-cta">
-          <p className="sched-template-text">Set up your weekly gym schedule to find buddies with matching times.</p>
-          <button className="btn btn-primary rounded-pill" onClick={() => setShowTemplates(true)}>
-            Get started
-          </button>
-        </div>
-      )}
-
-      {!loading && hasSlots && (
+      {!loading && (
         <div className="sched-toolbar">
+          {!hasSlots && (
+            <p className="sched-hint-text">Tap <strong>+ add</strong> on any day, or use a quick template:</p>
+          )}
           <button className="sched-template-btn" onClick={() => setShowTemplates(!showTemplates)}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
             Templates

@@ -142,7 +142,7 @@ export default function ProfilePage() {
             </div>
             <div className="ig-stat-divider" />
             <div className="ig-stat">
-              <span className="ig-stat-val">{user?.training_type || '—'}</span>
+              <span className="ig-stat-val">{user?.training_type ? user.training_type.charAt(0).toUpperCase() + user.training_type.slice(1) : '—'}</span>
               <span className="ig-stat-label">Training</span>
             </div>
             <div className="ig-stat-divider" />
