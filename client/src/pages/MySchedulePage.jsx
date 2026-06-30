@@ -80,6 +80,7 @@ function LiveBanner({ liveStatus, liveBusy, statusTag, setStatusTag, onToggle, o
 export default function MySchedulePage() {
   const [slots, setSlots] = useState([]);
   const [loadError, setLoadError] = useState(false);
+  const [waking, setWaking] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [addingDay, setAddingDay] = useState(null);
@@ -102,13 +103,16 @@ export default function MySchedulePage() {
   const today = new Date().getDay();
 
   const loadSchedule = useCallback((attempt = 0) => {
-    if (attempt === 0) { setLoadError(false); setLoading(true); }
+    if (attempt === 0) { setLoadError(false); setWaking(false); setLoading(true); }
     api.getMySchedule()
-      .then((data) => { setSlots(data.schedule); setLoading(false); })
+      .then((data) => { setSlots(data.schedule); setWaking(false); setLoading(false); })
       .catch(() => {
-        if (attempt < 3) {
-          setTimeout(() => loadSchedule(attempt + 1), 3000);
+        if (attempt < 10) {
+          setLoading(false);
+          setWaking(true);
+          setTimeout(() => loadSchedule(attempt + 1), 5000);
         } else {
+          setWaking(false);
           setLoadError(true);
           setLoading(false);
         }
@@ -274,7 +278,13 @@ export default function MySchedulePage() {
 
       {saving && <div className="saving-indicator">Saving…</div>}
 
-      {!loading && loadError && (
+      {waking && (
+        <div className="sched-template-cta">
+          <p className="sched-template-text">Server is starting up, hang tight…</p>
+        </div>
+      )}
+
+      {!loading && !waking && loadError && (
         <div className="sched-template-cta">
           <p className="sched-template-text">Couldn't load your schedule. Check your connection and try again.</p>
           <button className="btn btn-primary rounded-pill" onClick={loadSchedule}>Retry</button>
@@ -335,7 +345,7 @@ export default function MySchedulePage() {
         </div>
       )}
 
-      {loading ? <SkeletonList /> : loadError ? null : (
+      {loading ? <SkeletonList /> : (loadError || waking) ? null : (
         <div className="schedule-list card">
           {DAYS.map((label, dayIndex) => {
             const daySlots = slots.filter((s) => s.day_of_week === dayIndex);
