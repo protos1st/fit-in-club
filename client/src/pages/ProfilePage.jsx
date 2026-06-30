@@ -9,21 +9,20 @@ import { confirmDialog } from '../components/ConfirmDialog';
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 
 async function uploadToCloudinary(file) {
-  const { signature, timestamp, folder, eager, api_key } = await api.getUploadSignature();
+  const { signature, timestamp, folder, api_key } = await api.getUploadSignature();
   const fd = new FormData();
   fd.append('file', file);
   fd.append('signature', signature);
   fd.append('timestamp', timestamp);
   fd.append('folder', folder);
-  fd.append('eager', eager);
   fd.append('api_key', api_key);
   const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
     method: 'POST',
     body: fd,
   });
-  if (!res.ok) throw new Error('Upload failed');
   const data = await res.json();
-  return data.eager?.[0]?.secure_url || data.secure_url;
+  if (!res.ok) throw new Error(data.error?.message || 'Upload failed');
+  return data.secure_url;
 }
 
 export default function ProfilePage() {

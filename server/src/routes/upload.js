@@ -11,14 +11,13 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// GET /api/upload/sign — returns a signed upload params for direct browser upload
+// GET /api/upload/sign
 router.get('/sign', (req, res) => {
   const timestamp = Math.round(Date.now() / 1000);
   const folder = 'fitbud-avatars';
-  const eager = 'c_fill,w_400,h_400,g_face,q_auto,f_auto';
 
   const signature = cloudinary.utils.api_sign_request(
-    { timestamp, folder, eager, transformation: eager },
+    { timestamp, folder },
     process.env.CLOUDINARY_API_SECRET
   );
 
@@ -26,7 +25,6 @@ router.get('/sign', (req, res) => {
     signature,
     timestamp,
     folder,
-    eager,
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
   });
