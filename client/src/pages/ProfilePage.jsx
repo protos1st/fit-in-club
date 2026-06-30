@@ -5,6 +5,7 @@ import { api } from '../lib/api';
 import { useToast } from '../lib/ToastContext';
 import Avatar from '../components/Avatar';
 import { confirmDialog } from '../components/ConfirmDialog';
+import Portal from '../components/Portal';
 
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 
@@ -37,11 +38,13 @@ export default function ProfilePage() {
   });
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [preview, setPreview] = useState(null); // optimistic local preview
+  const [photoSheet, setPhotoSheet] = useState(false);
   const [leaderboard, setLeaderboard] = useState([]);
   const fileInputRef = useRef();
 
   useEffect(() => {
-    api.getLeaderboard().then((data) => setLeaderboard(data.leaderboard || [])).catch(() => {});
+    api.getLeaderboard().then((d) => setLeaderboard(d.leaderboard || [])).catch(() => {});
   }, []);
 
   const [dark, setDark] = useState(() => localStorage.getItem('theme') === 'dark');
@@ -56,20 +59,40 @@ export default function ProfilePage() {
     setForm((f) => ({ ...f, [field]: value }));
   }
 
-  async function handlePhotoChange(e) {
+  async function handleFileSelected(e) {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) { showToast('Photo must be under 5MB', 'error'); return; }
+
+    // Optimistic preview
+    const localUrl = URL.createObjectURL(file);
+    setPreview(localUrl);
     setUploading(true);
     try {
       const url = await uploadToCloudinary(file);
-      const data = await api.updateProfile({ ...form, avatarUrl: url });
+      const data = await api.updateProfile({ name: form.name, trainingType: form.trainingType, bio: form.bio, gender: form.gender, avatarUrl: url });
       setUser(data.user);
+      setPreview(null);
       showToast('Photo updated', 'success');
     } catch (err) {
-      showToast('Photo upload failed', 'error');
+      setPreview(null);
+      showToast(err.message || 'Photo upload failed', 'error');
     } finally {
       setUploading(false);
+    }
+  }
+
+  async function handleRemovePhoto() {
+    setPhotoSheet(false);
+    const ok = await confirmDialog({ title: 'Remove photo?', message: 'Your profile will show initials instead.', confirmLabel: 'Remove', danger: true });
+    if (!ok) return;
+    try {
+      const data = await api.updateProfile({ name: form.name, trainingType: form.trainingType, bio: form.bio, gender: form.gender, avatarUrl: '' });
+      setUser(data.user);
+      showToast('Photo removed', 'success');
+    } catch (err) {
+      showToast('Failed to remove photo', 'error');
     }
   }
 
@@ -79,7 +102,7 @@ export default function ProfilePage() {
     try {
       const data = await api.updateProfile(form);
       setUser(data.user);
-      showToast('Profile updated', 'success');
+      showToast('Profile saved', 'success');
     } catch (err) {
       showToast(err.message, 'error');
     } finally {
@@ -87,49 +110,83 @@ export default function ProfilePage() {
     }
   }
 
+  const displayPhoto = preview || user?.avatar_url || null;
+  const checkins = leaderboard.find(u => u.user_id === user?.id)?.checkins || 0;
+
   return (
     <div>
-      <div className="profile-header-card">
-        <div className="avatar-upload-wrap" onClick={() => fileInputRef.current?.click()}>
-          <Avatar name={user?.name || 'U'} photo={user?.avatar_url || null} size={56} />
-          <div className="avatar-upload-overlay">{uploading ? '…' : '📷'}</div>
-          <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhotoChange} />
-        </div>
-        <div className="profile-header-info">
-          <h1 className="profile-header-name">{user?.name}</h1>
-          <div className="profile-header-email">{user?.email}</div>
-          <div className="profile-header-stats">
-            <div>
-              <span className="profile-header-stat-val">{leaderboard.find(u => u.user_id === user?.id)?.checkins || 0}</span>
-              <span className="profile-header-stat-label">Check-ins</span>
+      {/* Instagram-style header */}
+      <div className="ig-profile-header">
+        <div className="ig-avatar-wrap" onClick={() => setPhotoSheet(true)}>
+          <Avatar name={user?.name || 'U'} photo={displayPhoto} size={88} />
+          {uploading ? (
+            <div className="ig-avatar-spinner"><div className="spinner-ring" /></div>
+          ) : (
+            <div className="ig-avatar-badge">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                <path d="M12 15.2A3.2 3.2 0 1 0 12 8.8a3.2 3.2 0 0 0 0 6.4z"/>
+                <path d="M9 3L7.17 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.17L15 3H9zm3 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/>
+              </svg>
             </div>
-            <div>
-              <span className="profile-header-stat-val">{user?.training_type || '—'}</span>
-              <span className="profile-header-stat-label">Training</span>
+          )}
+          <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFileSelected} />
+        </div>
+
+        <div className="ig-profile-meta">
+          <div className="ig-profile-name">{user?.name}</div>
+          <div className="ig-profile-email">{user?.email}</div>
+          <div className="ig-profile-stats">
+            <div className="ig-stat">
+              <span className="ig-stat-val">{checkins}</span>
+              <span className="ig-stat-label">Check-ins</span>
+            </div>
+            <div className="ig-stat-divider" />
+            <div className="ig-stat">
+              <span className="ig-stat-val">{user?.training_type || '—'}</span>
+              <span className="ig-stat-label">Training</span>
+            </div>
+            <div className="ig-stat-divider" />
+            <div className="ig-stat">
+              <span className="ig-stat-val">{user?.gender || '—'}</span>
+              <span className="ig-stat-label">Gender</span>
             </div>
           </div>
+          {user?.bio && <div className="ig-profile-bio">{user.bio}</div>}
         </div>
       </div>
+
+      {/* Photo action sheet */}
+      {photoSheet && (
+        <Portal>
+          <div className="sheet-backdrop" onClick={() => setPhotoSheet(false)} />
+          <div className="sheet">
+            <div className="sheet-handle" />
+            <div className="sheet-title">Profile photo</div>
+            <button className="sheet-action" onClick={() => { setPhotoSheet(false); fileInputRef.current?.click(); }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              Upload photo
+            </button>
+            {displayPhoto && (
+              <button className="sheet-action sheet-action-danger" onClick={handleRemovePhoto}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+                Remove photo
+              </button>
+            )}
+            <button className="sheet-action sheet-action-cancel" onClick={() => setPhotoSheet(false)}>Cancel</button>
+          </div>
+        </Portal>
+      )}
 
       <div className="section-title">Edit profile</div>
       <div className="card card-narrow">
         <form onSubmit={handleSubmit}>
           <div className="field">
             <label>Full name</label>
-            <input
-              type="text"
-              value={form.name}
-              onChange={(e) => update('name', e.target.value)}
-              required
-              maxLength={100}
-            />
+            <input type="text" value={form.name} onChange={(e) => update('name', e.target.value)} required maxLength={100} />
           </div>
           <div className="field">
             <label>Gender</label>
-            <select
-              value={form.gender}
-              onChange={(e) => update('gender', e.target.value)}
-            >
+            <select value={form.gender} onChange={(e) => update('gender', e.target.value)}>
               <option value="">Not set</option>
               <option value="Male">Male</option>
               <option value="Female">Female</option>
@@ -138,24 +195,11 @@ export default function ProfilePage() {
           </div>
           <div className="field">
             <label>What do you train?</label>
-            <input
-              type="text"
-              value={form.trainingType}
-              onChange={(e) => update('trainingType', e.target.value)}
-              placeholder="e.g. Powerlifting, Yoga, Running"
-              maxLength={100}
-            />
+            <input type="text" value={form.trainingType} onChange={(e) => update('trainingType', e.target.value)} placeholder="e.g. Powerlifting, Yoga, Running" maxLength={100} />
           </div>
           <div className="field">
             <label>Bio</label>
-            <textarea
-              value={form.bio}
-              onChange={(e) => update('bio', e.target.value)}
-              placeholder="A short intro about yourself"
-              rows={3}
-              className="profile-bio-input"
-              maxLength={500}
-            />
+            <textarea value={form.bio} onChange={(e) => update('bio', e.target.value)} placeholder="A short intro about yourself" rows={3} className="profile-bio-input" maxLength={500} />
           </div>
           <button type="submit" className="btn btn-primary" disabled={saving}>
             {saving ? 'Saving…' : 'Save changes'}
@@ -225,12 +269,7 @@ export default function ProfilePage() {
           </div>
           <button className="btn btn-danger-outline btn-sm" onClick={async () => {
             if (!(await confirmDialog({ title: 'Delete your account?', message: 'This will permanently delete your account, messages, connections, and all data. This cannot be undone.', confirmLabel: 'Delete my account', danger: true }))) return;
-            try {
-              await api.deleteAccount();
-              logout();
-            } catch (err) {
-              showToast(err.message, 'error');
-            }
+            try { await api.deleteAccount(); logout(); } catch (err) { showToast(err.message, 'error'); }
           }}>Delete</button>
         </div>
       </div>
