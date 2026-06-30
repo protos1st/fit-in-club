@@ -66,6 +66,7 @@ export default function ConnectionsPage() {
 
   if (loading) return (
     <div>
+      <div className="page-eyebrow">Your Buddies</div>
       <h1 className="page-title">Messages</h1>
       <div className="card">{PersonRowSkeleton({ count: 4 })}</div>
     </div>
@@ -73,10 +74,11 @@ export default function ConnectionsPage() {
 
   return (
     <div>
+      <div className="page-eyebrow">Your Buddies</div>
       <h1 className="page-title">Messages</h1>
       <p className="page-sub">{connections.length} connection{connections.length !== 1 ? 's' : ''}{totalUnread > 0 ? ` · ${totalUnread} unread` : ''}</p>
 
-      {connections.length >= 5 && (
+      {connections.length > 0 && (
         <div className="filter-bar">
           <div className="filter-search">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-hint)" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>

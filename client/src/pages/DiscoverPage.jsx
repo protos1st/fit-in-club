@@ -70,9 +70,8 @@ function SwipeCard({ person, onConnect, onPass, isConnected, isPending, onMessag
       {person.avatar_url ? (
         <img src={person.avatar_url} alt={person.name} className="swipe-card-photo" draggable={false} />
       ) : (
-        <div className="swipe-card-no-photo">
-          <Avatar name={person.name} size={120} />
-          <span className="swipe-no-photo-name">{person.name.split(' ')[0]}</span>
+        <div className="swipe-card-photo swipe-card-no-photo">
+          <Avatar name={person.name} size={100} />
         </div>
       )}
 

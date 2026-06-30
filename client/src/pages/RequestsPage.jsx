@@ -57,13 +57,15 @@ export default function RequestsPage() {
     return (
       <div>
         <h1 className="page-title">Requests</h1>
-        <EmptyState
-          type="requests"
-          title="No requests yet"
-          message="Send a buddy request from Discover, or wait for someone to find you."
-          action="Find buddies"
-          onAction={() => navigate('/discover')}
-        />
+        <div className="card">
+          <EmptyState
+            type="requests"
+            title="No requests yet"
+            message="Send a buddy request from Discover, or wait for someone to find you."
+            action="Find buddies"
+            onAction={() => navigate('/discover')}
+          />
+        </div>
       </div>
     );
   }
