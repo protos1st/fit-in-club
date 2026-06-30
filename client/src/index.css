@@ -3188,3 +3188,14 @@ input, select, textarea {
 @media (prefers-reduced-motion: reduce) {
   .swipe-card { transition: none !important; }
 }
+
+/* Admin reset password */
+.ad-reset-section { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--color-line); }
+.ad-reset-label { font-size: 0.78rem; font-weight: 700; color: var(--color-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+.ad-reset-row { display: flex; gap: 8px; }
+.ad-reset-input { flex: 1; padding: 9px 12px; border: 1.5px solid var(--color-line); border-radius: var(--radius); font-size: 0.88rem; background: var(--color-bg); color: var(--color-ink); }
+.ad-reset-btn { padding: 9px 16px; background: var(--color-olive); color: #fff; border: none; border-radius: var(--radius); font-size: 0.88rem; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.ad-reset-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.ad-reset-msg { font-size: 0.82rem; margin-top: 8px; padding: 8px 12px; border-radius: 8px; }
+.ad-reset-msg-success { background: #e8f5e9; color: #2e7d32; }
+.ad-reset-msg-error { background: #fdecea; color: #c62828; }

@@ -214,4 +214,17 @@ router.get('/stats', async (req, res) => {
   });
 });
 
+// POST /api/admin/reset-password { userId, newPassword }
+router.post('/reset-password', async (req, res) => {
+  const { userId, newPassword } = req.body;
+  if (!userId || !newPassword) return res.status(400).json({ error: 'userId and newPassword required' });
+  if (newPassword.length < 8 || newPassword.length > 128) return res.status(400).json({ error: 'Password must be 8-128 characters' });
+  const user = await pool.query('SELECT id FROM users WHERE id = $1', [userId]);
+  if (user.rows.length === 0) return res.status(404).json({ error: 'User not found' });
+  const bcrypt = require('bcryptjs');
+  const hash = await bcrypt.hash(newPassword, 12);
+  await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2', [hash, userId]);
+  res.json({ ok: true });
+});
+
 module.exports = router;

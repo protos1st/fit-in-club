@@ -301,9 +301,34 @@ function DonutChart({ title, data, colors }) {
   );
 }
 
-function MemberModal({ member, onClose }) {
+function MemberModal({ member, onClose, adminPassword }) {
   if (!member) return null;
   const joined = new Date(member.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  const [resetPw, setResetPw] = useState('');
+  const [resetting, setResetting] = useState(false);
+  const [resetMsg, setResetMsg] = useState(null);
+
+  async function handleReset() {
+    if (resetPw.length < 8) { setResetMsg({ type: 'error', text: 'Min 8 characters' }); return; }
+    setResetting(true);
+    setResetMsg(null);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/admin/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+        body: JSON.stringify({ userId: member.id, newPassword: resetPw })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setResetMsg({ type: 'success', text: `Password reset. Tell ${member.name.split(' ')[0]} their new password.` });
+      setResetPw('');
+    } catch (err) {
+      setResetMsg({ type: 'error', text: err.message });
+    } finally {
+      setResetting(false);
+    }
+  }
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="ad-member-modal" onClick={e => e.stopPropagation()}>
@@ -328,6 +353,24 @@ function MemberModal({ member, onClose }) {
           <div className="ad-member-stat"><span className="ad-member-stat-val">{member.total_checkins}</span><span className="ad-member-stat-label">Check-ins</span></div>
           <div className="ad-member-stat"><span className="ad-member-stat-val">{member.connections}</span><span className="ad-member-stat-label">Connections</span></div>
           <div className="ad-member-stat"><span className="ad-member-stat-val">{member.messages_sent}</span><span className="ad-member-stat-label">Messages</span></div>
+        </div>
+
+        <div className="ad-reset-section">
+          <div className="ad-reset-label">Reset password</div>
+          <div className="ad-reset-row">
+            <input
+              type="text"
+              value={resetPw}
+              onChange={e => setResetPw(e.target.value)}
+              placeholder="New temporary password"
+              className="ad-reset-input"
+              maxLength={64}
+            />
+            <button className="ad-reset-btn" onClick={handleReset} disabled={resetting || !resetPw}>
+              {resetting ? '…' : 'Reset'}
+            </button>
+          </div>
+          {resetMsg && <div className={`ad-reset-msg ad-reset-msg-${resetMsg.type}`}>{resetMsg.text}</div>}
         </div>
       </div>
     </div>
@@ -556,7 +599,7 @@ export default function AdminPage() {
         )}
       </div>
 
-      {selectedMember && <MemberModal member={selectedMember} onClose={() => setSelectedMember(null)} />}
+      {selectedMember && <MemberModal member={selectedMember} onClose={() => setSelectedMember(null)} adminPassword={password} />}
     </div>
   );
 }
