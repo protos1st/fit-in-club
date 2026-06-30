@@ -251,7 +251,7 @@ export default function ChatPage() {
       {profileOpen && otherProfile && (
         <div className="chat-profile-peek">
           <div className="chat-profile-header">
-            <Avatar name={otherProfile.name} size={44} />
+            <Avatar name={otherProfile.name} photo={otherProfile.avatar_url || null} size={44} />
             <div>
               <div className="chat-profile-name">{otherProfile.name}</div>
               {otherProfile.training_type && <span className="tag">{otherProfile.training_type}</span>}

@@ -92,7 +92,7 @@ router.get('/overlap', async (req, res) => {
 
   const othersResult = await pool.query(`
     SELECT s.id as schedule_id, s.day_of_week, s.start_time, s.end_time,
-           u.id as user_id, u.name, u.training_type, u.bio, u.gender, u.created_at,
+           u.id as user_id, u.name, u.training_type, u.bio, u.gender, u.avatar_url, u.created_at,
            (SELECT MAX(cl.checked_in_at) FROM checkin_log cl WHERE cl.user_id = u.id) as last_active
     FROM schedules s
     JOIN users u ON u.id = s.user_id
@@ -188,7 +188,7 @@ router.post('/checkout', async (req, res) => {
 router.get('/live', async (req, res) => {
   const now = new Date().toISOString();
   const result = await pool.query(`
-    SELECT u.id as user_id, u.name, u.training_type, u.bio, u.gender, l.checked_in_at, l.expires_at, l.status_tag
+    SELECT u.id as user_id, u.name, u.training_type, u.bio, u.gender, u.avatar_url, l.checked_in_at, l.expires_at, l.status_tag
     FROM live_status l
     JOIN users u ON u.id = l.user_id
     WHERE l.expires_at > $1 AND u.id != $2

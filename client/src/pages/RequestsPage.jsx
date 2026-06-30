@@ -80,7 +80,7 @@ export default function RequestsPage() {
           <div className="card">
             {incoming.map((r) => (
               <div className="person-row" key={r.id}>
-                <Avatar name={r.name} size={40} />
+                <Avatar name={r.name} photo={r.avatar_url || null} size={40} />
                 <div className="person-info">
                   <div className="person-name">{r.name}</div>
                   {r.training_type && <div className="person-meta"><span className="tag">{r.training_type}</span></div>}
@@ -101,7 +101,7 @@ export default function RequestsPage() {
           <div className="card">
             {outgoing.map((r) => (
               <div className="person-row" key={r.id}>
-                <Avatar name={r.name} size={40} />
+                <Avatar name={r.name} photo={r.avatar_url || null} size={40} />
                 <div className="person-info">
                   <div className="person-name">{r.name}</div>
                   <div className="person-meta">Waiting for response…</div>

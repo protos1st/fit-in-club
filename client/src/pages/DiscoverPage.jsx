@@ -25,7 +25,7 @@ function ProfileModal({ person, type, connectedTo, pendingTo, sentTo, onSend, on
         </button>
 
         <div className="modal-header">
-          <Avatar name={person.name} size={56} />
+          <Avatar name={person.name} photo={person.avatar_url || null} size={56} />
           <h2 className="modal-name">{person.name}</h2>
           {person.training_type && <span className="tag">{person.training_type}</span>}
           {person.gender && person.gender !== 'Prefer not to say' && (
@@ -304,7 +304,7 @@ export default function DiscoverPage() {
                   return (
                     <div className="person-row person-row-clickable" key={p.user_id} onClick={() => { setSelectedPerson(p); setSelectedType('live'); }}>
                       <div className="avatar-wrap">
-                        <Avatar name={p.name} size={40} />
+                        <Avatar name={p.name} photo={p.avatar_url || null} size={40} />
                         {isConn && <span className="connected-badge" aria-label="Connected"><svg width="12" height="12" viewBox="0 0 24 24" fill="#fff" stroke="none"><path d="M20 6L9 17l-5-5" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg></span>}
                       </div>
                       <div className="person-info">
@@ -382,7 +382,7 @@ export default function DiscoverPage() {
                 onClick={() => { setSelectedPerson(m); setSelectedType('match'); }}
               >
                 <div className="avatar-wrap">
-                  <Avatar name={m.name} size={40} />
+                  <Avatar name={m.name} photo={m.avatar_url || null} size={40} />
                   {isConn && <span className="connected-badge" aria-label="Connected"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>}
                 </div>
                 <div className="person-info">

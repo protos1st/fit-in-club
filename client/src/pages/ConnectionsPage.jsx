@@ -126,7 +126,7 @@ export default function ConnectionsPage() {
               key={c.user_id}
               onClick={() => navigate(`/connections/${c.user_id}`)}
             >
-              <Avatar name={c.name} size={40} />
+              <Avatar name={c.name} photo={c.avatar_url || null} size={40} />
               <div className="person-info">
                 <div className="person-name">
                   {c.name}
