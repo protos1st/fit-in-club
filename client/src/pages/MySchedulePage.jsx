@@ -79,6 +79,7 @@ function LiveBanner({ liveStatus, liveBusy, statusTag, setStatusTag, onToggle, o
 
 export default function MySchedulePage() {
   const [slots, setSlots] = useState([]);
+  const [loadError, setLoadError] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [addingDay, setAddingDay] = useState(null);
@@ -101,7 +102,11 @@ export default function MySchedulePage() {
   const today = new Date().getDay();
 
   const loadSchedule = useCallback(() => {
-    api.getMySchedule().then((data) => setSlots(data.schedule)).finally(() => setLoading(false));
+    setLoadError(false);
+    api.getMySchedule()
+      .then((data) => setSlots(data.schedule))
+      .catch(() => setLoadError(true))
+      .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
@@ -263,7 +268,14 @@ export default function MySchedulePage() {
 
       {saving && <div className="saving-indicator">Saving…</div>}
 
-      {!loading && !hasSlots && (
+      {!loading && loadError && (
+        <div className="sched-template-cta">
+          <p className="sched-template-text">Couldn't load your schedule. Check your connection and try again.</p>
+          <button className="btn btn-primary rounded-pill" onClick={loadSchedule}>Retry</button>
+        </div>
+      )}
+
+      {!loading && !loadError && !hasSlots && (
         <div className="sched-template-cta">
           <p className="sched-template-text">Set up your weekly gym schedule to find buddies with matching times.</p>
           <button className="btn btn-primary rounded-pill" onClick={() => setShowTemplates(true)}>
@@ -317,7 +329,7 @@ export default function MySchedulePage() {
         </div>
       )}
 
-      {loading ? <SkeletonList /> : (
+      {loading ? <SkeletonList /> : loadError ? null : (
         <div className="schedule-list card">
           {DAYS.map((label, dayIndex) => {
             const daySlots = slots.filter((s) => s.day_of_week === dayIndex);
