@@ -2809,3 +2809,30 @@ input, select, textarea {
 .filter-search:focus-within { border-color: var(--color-accent); }
 .filter-search input { border: none !important; padding: 12px 0 !important; background: transparent !important; box-shadow: none !important; }
 .filter-search input:focus { box-shadow: none !important; }
+
+/* Install banner */
+.install-banner {
+  position: fixed;
+  bottom: 72px;
+  left: 12px;
+  right: 12px;
+  background: var(--color-card);
+  border: 1.5px solid var(--color-line);
+  border-radius: 16px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+  z-index: 9999;
+  animation: slide-up 0.3s ease;
+}
+.install-banner-left { display: flex; align-items: center; gap: 10px; }
+.install-banner-icon { width: 40px; height: 40px; border-radius: 10px; }
+.install-banner-title { font-weight: 700; font-size: 0.9rem; color: var(--color-ink); }
+.install-banner-sub { font-size: 0.78rem; color: var(--color-muted); margin-top: 1px; }
+.install-banner-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.install-banner-dismiss { background: none; border: none; color: var(--color-muted); font-size: 0.82rem; cursor: pointer; padding: 6px; }
+.install-banner-btn { background: var(--color-olive); color: #fff; border: none; border-radius: 20px; padding: 7px 16px; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
+@keyframes slide-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }

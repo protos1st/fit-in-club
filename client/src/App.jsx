@@ -14,6 +14,7 @@ import OnboardingPage from './pages/OnboardingPage';
 import BlockedPage from './pages/BlockedPage';
 import AdminPage from './pages/AdminPage';
 import ConfirmDialog from './components/ConfirmDialog';
+import InstallBanner from './components/InstallBanner';
 
 function ProtectedRoutes() {
   const { user, loading } = useAuth();
@@ -68,6 +69,7 @@ export default function App() {
         <Route path="/*" element={<ProtectedRoutes />} />
       </Routes>
       <ConfirmDialog />
+      <InstallBanner />
     </>
   );
 }
