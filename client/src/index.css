@@ -3026,10 +3026,14 @@ input, select, textarea {
   display: block;
 }
 .swipe-card-no-photo {
+  position: absolute;
+  inset: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--color-olive), #7a8f5a);
+  gap: 12px;
+  background: linear-gradient(160deg, #3d4f2c 0%, #53603e 45%, #6b7a52 100%);
 }
 
 /* Drag labels */
@@ -3137,11 +3141,16 @@ input, select, textarea {
 /* Counter */
 .swipe-counter {
   position: absolute;
-  top: 12px;
-  right: 28px;
-  font-size: 0.75rem;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.72rem;
   color: var(--color-muted);
   font-weight: 600;
+  background: var(--color-card);
+  border-radius: 20px;
+  padding: 3px 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
 }
 
 /* Empty */
@@ -3155,12 +3164,18 @@ input, select, textarea {
 }
 
 /* Action buttons */
+.swipe-no-photo-name {
+  color: rgba(255,255,255,0.85);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
 .swipe-actions {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 24px;
-  padding: 16px 0 20px;
+  padding: 12px 0 env(safe-area-inset-bottom, 16px);
   flex-shrink: 0;
 }
 .swipe-btn {
