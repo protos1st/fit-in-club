@@ -101,12 +101,18 @@ export default function MySchedulePage() {
 
   const today = new Date().getDay();
 
-  const loadSchedule = useCallback(() => {
-    setLoadError(false);
+  const loadSchedule = useCallback((attempt = 0) => {
+    if (attempt === 0) { setLoadError(false); setLoading(true); }
     api.getMySchedule()
-      .then((data) => setSlots(data.schedule))
-      .catch(() => setLoadError(true))
-      .finally(() => setLoading(false));
+      .then((data) => { setSlots(data.schedule); setLoading(false); })
+      .catch(() => {
+        if (attempt < 3) {
+          setTimeout(() => loadSchedule(attempt + 1), 3000);
+        } else {
+          setLoadError(true);
+          setLoading(false);
+        }
+      });
   }, []);
 
   useEffect(() => {
