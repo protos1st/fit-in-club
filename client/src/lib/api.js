@@ -47,6 +47,7 @@ export const api = {
   me: () => request('/api/auth/me'),
   updateProfile: (payload) => request('/api/auth/profile', { method: 'PUT', body: payload }),
   deleteAccount: () => request('/api/auth/account', { method: 'DELETE' }),
+  getUploadSignature: () => request('/api/upload/sign'),
   completeOnboarding: (payload) => request('/api/auth/onboarding', { method: 'PUT', body: payload }),
 
   getMySchedule: () => request('/api/schedule/me'),

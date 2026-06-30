@@ -15,10 +15,28 @@ function hashName(name) {
   return Math.abs(h);
 }
 
-export default function Avatar({ name, size = 40, className = '' }) {
+export default function Avatar({ name, photo, size = 40, className = '' }) {
   const idx = hashName(name) % GRADIENTS.length;
   const [from, to] = GRADIENTS[idx];
-  const letters = initials(name);
+
+  if (photo) {
+    return (
+      <img
+        src={photo}
+        alt={name}
+        title={name}
+        className={`avatar ${className}`}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: '50%',
+          objectFit: 'cover',
+          flexShrink: 0,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+        }}
+      />
+    );
+  }
 
   return (
     <div
@@ -41,7 +59,7 @@ export default function Avatar({ name, size = 40, className = '' }) {
       }}
       title={name}
     >
-      {letters}
+      {initials(name)}
     </div>
   );
 }

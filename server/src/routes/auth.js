@@ -82,7 +82,7 @@ router.post('/login', async (req, res) => {
 
 // GET /api/auth/me
 router.get('/me', authMiddleware, async (req, res) => {
-  const result = await pool.query('SELECT id, name, email, training_type, bio, membership, workout_frequency, buddy_preference, gender, onboarded FROM users WHERE id = $1', [req.user.id]);
+  const result = await pool.query('SELECT id, name, email, training_type, bio, membership, workout_frequency, buddy_preference, gender, avatar_url, onboarded FROM users WHERE id = $1', [req.user.id]);
   const user = result.rows[0];
   if (!user) return res.status(404).json({ error: 'User not found' });
   res.json({ user });
@@ -90,7 +90,7 @@ router.get('/me', authMiddleware, async (req, res) => {
 
 // PUT /api/auth/profile
 router.put('/profile', authMiddleware, async (req, res) => {
-  const { name, trainingType, bio, gender } = req.body;
+  const { name, trainingType, bio, gender, avatarUrl } = req.body;
   if (!name || !name.trim()) {
     return res.status(400).json({ error: 'Name is required' });
   }
@@ -98,12 +98,20 @@ router.put('/profile', authMiddleware, async (req, res) => {
   if ((trainingType || '').length > 100) return res.status(400).json({ error: 'Training type is too long' });
   if ((bio || '').length > 500) return res.status(400).json({ error: 'Bio is too long' });
   if ((gender || '').length > 30) return res.status(400).json({ error: 'Invalid gender' });
-  await pool.query(
-    'UPDATE users SET name = $1, training_type = $2, bio = $3, gender = $4, onboarded = TRUE WHERE id = $5',
-    [name.trim(), trainingType || '', bio || '', gender || '', req.user.id]
-  );
+  if (avatarUrl && !/^https:\/\/res\.cloudinary\.com\//.test(avatarUrl)) {
+    return res.status(400).json({ error: 'Invalid avatar URL' });
+  }
 
-  const result = await pool.query('SELECT id, name, email, training_type, bio, gender, onboarded FROM users WHERE id = $1', [req.user.id]);
+  const fields = ['name = $1', 'training_type = $2', 'bio = $3', 'gender = $4', 'onboarded = TRUE'];
+  const values = [name.trim(), trainingType || '', bio || '', gender || ''];
+  if (avatarUrl !== undefined) {
+    fields.push(`avatar_url = $${values.length + 1}`);
+    values.push(avatarUrl);
+  }
+  values.push(req.user.id);
+  await pool.query(`UPDATE users SET ${fields.join(', ')} WHERE id = $${values.length}`, values);
+
+  const result = await pool.query('SELECT id, name, email, training_type, bio, gender, avatar_url, onboarded FROM users WHERE id = $1', [req.user.id]);
   res.json({ user: result.rows[0] });
 });
 

@@ -1,11 +1,30 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/AuthContext';
 import { api } from '../lib/api';
 import { useToast } from '../lib/ToastContext';
-import { initials } from '../lib/utils';
 import Avatar from '../components/Avatar';
 import { confirmDialog } from '../components/ConfirmDialog';
+
+const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+
+async function uploadToCloudinary(file) {
+  const { signature, timestamp, folder, eager, api_key } = await api.getUploadSignature();
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('signature', signature);
+  fd.append('timestamp', timestamp);
+  fd.append('folder', folder);
+  fd.append('eager', eager);
+  fd.append('api_key', api_key);
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+    method: 'POST',
+    body: fd,
+  });
+  if (!res.ok) throw new Error('Upload failed');
+  const data = await res.json();
+  return data.eager?.[0]?.secure_url || data.secure_url;
+}
 
 export default function ProfilePage() {
   const { user, setUser, logout } = useAuth();
@@ -18,7 +37,9 @@ export default function ProfilePage() {
     gender: user?.gender || ''
   });
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [leaderboard, setLeaderboard] = useState([]);
+  const fileInputRef = useRef();
 
   useEffect(() => {
     api.getLeaderboard().then((data) => setLeaderboard(data.leaderboard || [])).catch(() => {});
@@ -34,6 +55,23 @@ export default function ProfilePage() {
 
   function update(field, value) {
     setForm((f) => ({ ...f, [field]: value }));
+  }
+
+  async function handlePhotoChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { showToast('Photo must be under 5MB', 'error'); return; }
+    setUploading(true);
+    try {
+      const url = await uploadToCloudinary(file);
+      const data = await api.updateProfile({ ...form, avatarUrl: url });
+      setUser(data.user);
+      showToast('Photo updated', 'success');
+    } catch (err) {
+      showToast('Photo upload failed', 'error');
+    } finally {
+      setUploading(false);
+    }
   }
 
   async function handleSubmit(e) {
@@ -53,7 +91,11 @@ export default function ProfilePage() {
   return (
     <div>
       <div className="profile-header-card">
-        <Avatar name={user?.name || 'U'} size={56} />
+        <div className="avatar-upload-wrap" onClick={() => fileInputRef.current?.click()}>
+          <Avatar name={user?.name || 'U'} photo={user?.avatar_url || null} size={56} />
+          <div className="avatar-upload-overlay">{uploading ? '…' : '📷'}</div>
+          <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhotoChange} />
+        </div>
         <div className="profile-header-info">
           <h1 className="profile-header-name">{user?.name}</h1>
           <div className="profile-header-email">{user?.email}</div>

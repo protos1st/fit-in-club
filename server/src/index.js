@@ -15,6 +15,7 @@ const buddyRoutes = require('./routes/buddies');
 const messageRoutes = require('./routes/messages');
 const moderationRoutes = require('./routes/moderation');
 const adminRoutes = require('./routes/admin');
+const uploadRoutes = require('./routes/upload');
 
 const app = express();
 const server = http.createServer(app);
@@ -95,6 +96,7 @@ app.use('/api/buddies', buddyLimiter, buddyRoutes);
 app.use('/api/messages', messageLimiter, messageRoutes);
 app.use('/api/moderation', moderationRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/upload', uploadRoutes);
 
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 
