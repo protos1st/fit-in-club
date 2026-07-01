@@ -2331,7 +2331,8 @@ input, select, textarea {
 .ad-donut-name { flex: 1; color: var(--color-text); }
 .ad-donut-pct { font-weight: 700; color: var(--color-hint); font-size: 0.72rem; }
 
-.ad-tbl-wrap { overflow-x: auto; }
+.ad-tbl-wrap { overflow-x: auto; overflow-y: auto; max-height: 520px; border-radius: 0 0 12px 12px; }
+.ad-tbl thead th { position: sticky; top: 0; background: var(--color-card); z-index: 1; }
 .ad-tbl { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
 .ad-tbl th { text-align: left; font-weight: 600; color: var(--color-hint); font-size: 0.7rem; padding: 8px 12px; border-bottom: 2px solid var(--color-line); letter-spacing: 0.03em; }
 .ad-tbl td { padding: 10px 12px; border-bottom: 1px solid var(--color-line); color: var(--color-text); }
