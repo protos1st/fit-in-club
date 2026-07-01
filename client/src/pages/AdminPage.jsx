@@ -84,20 +84,27 @@ function Sparkline({ data, color, height = 32 }) {
   );
 }
 
+function fillDays(data, days = 30) {
+  const map = {};
+  data.forEach(d => { map[d.date?.slice(0, 10)] = d.count; });
+  const result = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const key = d.toISOString().slice(0, 10);
+    result.push({ date: key, count: map[key] || 0 });
+  }
+  return result;
+}
+
 function TrendCard({ title, data, color }) {
   const [tooltip, setTooltip] = useState(null);
+  const filled = fillDays(data || []);
+  const total = filled.reduce((s, d) => s + d.count, 0);
 
-  if (!data || data.length === 0) return (
-    <div className="ad-card">
-      <div className="ad-card-head"><h3>{title}</h3></div>
-      <div className="ad-empty">No data yet</div>
-    </div>
-  );
-  const total = data.reduce((s, d) => s + d.count, 0);
-  const max = Math.max(...data.map(d => d.count), 1);
+  const max = Math.max(...filled.map(d => d.count), 1);
   const w = 400, h = 120;
-  const pts = data.map((d, i) => {
-    const x = (i / Math.max(data.length - 1, 1)) * w;
+  const pts = filled.map((d, i) => {
+    const x = (i / Math.max(filled.length - 1, 1)) * w;
     const y = h - (d.count / max) * (h - 20) - 10;
     return `${x},${y}`;
   });
@@ -118,8 +125,8 @@ function TrendCard({ title, data, color }) {
           </defs>
           <polygon points={`0,${h} ${pts.join(' ')} ${w},${h}`} fill={`url(#tg-${color.replace('#','')})`} />
           <polyline points={pts.join(' ')} fill="none" stroke={color} strokeWidth="2.5" vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" />
-          {data.map((d, i) => {
-            const x = (i / Math.max(data.length - 1, 1)) * w;
+          {filled.map((d, i) => {
+            const x = (i / Math.max(filled.length - 1, 1)) * w;
             const y = h - (d.count / max) * (h - 20) - 10;
             const pctX = (x / w) * 100;
             const pctY = (y / h) * 100;
@@ -147,9 +154,9 @@ function TrendCard({ title, data, color }) {
         )}
       </div>
       <div className="ad-chart-axis">
-        <span>{formatDate(data[0].date)}</span>
-        {data.length > 2 && <span>{formatDate(data[Math.floor(data.length / 2)].date)}</span>}
-        <span>{formatDate(data[data.length - 1].date)}</span>
+        <span>{formatDate(filled[0].date)}</span>
+        <span>{formatDate(filled[Math.floor(filled.length / 2)].date)}</span>
+        <span>{formatDate(filled[filled.length - 1].date)}</span>
       </div>
     </div>
   );
@@ -227,7 +234,7 @@ function Heatmap({ data }) {
 
   return (
     <div className="ad-card">
-      <div className="ad-card-head"><h3>Check-in activity</h3><span className="ad-card-sub">Last 90 days</span></div>
+      <div className="ad-card-head"><h3>Check-in activity</h3><span className="ad-card-sub">Last 30 days</span></div>
       <div className="ad-heatmap">
         {weeks.map((w, wi) => (
           <div key={wi} className="ad-heatmap-week">
