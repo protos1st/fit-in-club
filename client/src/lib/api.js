@@ -80,6 +80,9 @@ export const api = {
   getBlocked: () => request('/api/moderation/blocked'),
   reportUser: (userId, reason) => request('/api/moderation/report', { method: 'POST', body: { userId, reason } }),
 
+  forgotPassword: (email) => request('/api/auth/forgot-password', { method: 'POST', body: { email } }),
+  resetPassword: (token, password) => request('/api/auth/reset-password', { method: 'POST', body: { token, password } }),
+
   getAdminStats: (password) => {
     return fetch(`${API_BASE}/api/admin/stats`, {
       headers: { 'Content-Type': 'application/json', 'x-admin-password': password }

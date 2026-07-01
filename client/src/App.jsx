@@ -13,6 +13,7 @@ import ProfilePage from './pages/ProfilePage';
 import OnboardingPage from './pages/OnboardingPage';
 import BlockedPage from './pages/BlockedPage';
 import AdminPage from './pages/AdminPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import ConfirmDialog from './components/ConfirmDialog';
 import InstallBanner from './components/InstallBanner';
 
@@ -66,6 +67,7 @@ export default function App() {
     <>
       <Routes>
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/*" element={<ProtectedRoutes />} />
       </Routes>
       <ConfirmDialog />

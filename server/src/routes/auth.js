@@ -1,7 +1,12 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
+const { Resend } = require('resend');
 const { pool } = require('../db');
 const { signToken, authMiddleware } = require('../auth');
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
 
 const router = express.Router();
 
@@ -156,6 +161,67 @@ router.put('/password', authMiddleware, async (req, res) => {
   const user = (await pool.query('SELECT id, name, email FROM users WHERE id = $1', [req.user.id])).rows[0];
   const token = signToken(user);
   res.json({ token, message: 'Password updated' });
+});
+
+// POST /api/auth/forgot-password
+router.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email is required' });
+
+  const result = await pool.query('SELECT id, name FROM users WHERE email = $1', [email.toLowerCase().trim()]);
+  // Always respond OK to prevent email enumeration
+  if (result.rows.length === 0) return res.json({ ok: true });
+
+  const user = result.rows[0];
+  const token = crypto.randomBytes(32).toString('hex');
+  const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+  await pool.query(
+    'UPDATE users SET password_reset_token = $1, password_reset_expires = $2 WHERE id = $3',
+    [token, expires, user.id]
+  );
+
+  const resetUrl = `${CLIENT_ORIGIN}/reset-password?token=${token}`;
+
+  await resend.emails.send({
+    from: 'FitIn Club <noreply@fitin.club>',
+    to: email.toLowerCase().trim(),
+    subject: 'Reset your FitIn password',
+    html: `
+      <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px">
+        <h2 style="color:#53603e">Reset your password</h2>
+        <p>Hi ${user.name},</p>
+        <p>Click the button below to reset your FitIn Club password. This link expires in 1 hour.</p>
+        <a href="${resetUrl}" style="display:inline-block;background:#fba327;color:#2a2a22;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:700;margin:16px 0">Reset password</a>
+        <p style="color:#888;font-size:0.85rem">If you didn't request this, ignore this email.</p>
+      </div>
+    `,
+  });
+
+  res.json({ ok: true });
+});
+
+// POST /api/auth/reset-password
+router.post('/reset-password', async (req, res) => {
+  const { token, password } = req.body;
+  if (!token || !password) return res.status(400).json({ error: 'Token and password are required' });
+  if (password.length < 8 || password.length > 128) return res.status(400).json({ error: 'Password must be 8-128 characters' });
+
+  const result = await pool.query(
+    'SELECT id FROM users WHERE password_reset_token = $1 AND password_reset_expires > NOW()',
+    [token]
+  );
+  if (result.rows.length === 0) return res.status(400).json({ error: 'Reset link is invalid or has expired' });
+
+  const userId = result.rows[0].id;
+  const hash = await bcrypt.hash(password, 12);
+
+  await pool.query(
+    'UPDATE users SET password_hash = $1, password_reset_token = NULL, password_reset_expires = NULL WHERE id = $2',
+    [hash, userId]
+  );
+
+  res.json({ ok: true });
 });
 
 // DELETE /api/auth/account

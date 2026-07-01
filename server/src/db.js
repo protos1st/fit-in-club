@@ -94,6 +94,9 @@ async function initDb() {
     );
     CREATE INDEX IF NOT EXISTS idx_checkin_log_user ON checkin_log(user_id);
     CREATE INDEX IF NOT EXISTS idx_checkin_log_time ON checkin_log(checked_in_at);
+
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS password_reset_token TEXT;
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS password_reset_expires TIMESTAMPTZ;
   `);
 }
 
