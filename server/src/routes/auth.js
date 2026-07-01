@@ -184,7 +184,7 @@ router.post('/forgot-password', async (req, res) => {
   const resetUrl = `${CLIENT_ORIGIN}/reset-password?token=${token}`;
 
   await resend.emails.send({
-    from: 'FitIn Club <noreply@fitin.club>',
+    from: 'FitIn Club <onboarding@resend.dev>',
     to: email.toLowerCase().trim(),
     subject: 'Reset your FitIn password',
     html: `
