@@ -153,14 +153,20 @@ export default function DiscoverPage() {
 
   const trainingTypes = useMemo(() => {
     const all = [...live, ...matches];
-    return [...new Set(all.map(p => p.training_type).filter(Boolean))].sort();
+    const types = new Set();
+    all.forEach(p => {
+      if (p.training_type) p.training_type.split(',').forEach(t => { const s = t.trim(); if (s) types.add(s); });
+    });
+    return [...types].sort();
   }, [live, matches]);
 
   const queue = useMemo(() => {
     const pool = tab === 'live' ? live : matches;
     let result = [...pool];
     if (genderFilter) result = result.filter(p => p.gender === genderFilter);
-    if (trainingFilter) result = result.filter(p => p.training_type === trainingFilter);
+    if (trainingFilter) result = result.filter(p =>
+      p.training_type?.split(',').map(t => t.trim()).includes(trainingFilter)
+    );
     if (dayFilter !== '' && tab === 'matches') {
       result = result.filter(p => p.overlapping_slots?.some(s => s.day_of_week === Number(dayFilter)));
     }
