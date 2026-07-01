@@ -97,6 +97,13 @@ async function initDb() {
 
     ALTER TABLE users ADD COLUMN IF NOT EXISTS password_reset_token TEXT;
     ALTER TABLE users ADD COLUMN IF NOT EXISTS password_reset_expires TIMESTAMPTZ;
+
+    UPDATE users
+    SET training_type = regexp_replace(
+      regexp_replace(trim(training_type), '\s*\+\s*', ', ', 'g'),
+      ',\s*,', ',', 'g'
+    )
+    WHERE training_type ~ '\+';
   `);
 }
 
