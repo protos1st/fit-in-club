@@ -5,24 +5,32 @@ import { useToast } from '../lib/ToastContext';
 
 const STEPS = [
   { key: 'gender', title: 'About you', subtitle: 'This helps others find the right training partner' },
-  { key: 'workoutFrequency', title: 'Workout frequency', subtitle: 'How often do you train per week?' },
   { key: 'trainingType', title: 'Training style', subtitle: 'What do you usually train?' }
 ];
 
-const OPTIONS = {
-  gender: ['Male', 'Female', 'Prefer not to say'],
-  workoutFrequency: ['1–2 times', '3–4 times', '5–6 times', 'Every day']
-};
+const GENDER_OPTIONS = ['Male', 'Female', 'Prefer not to say'];
+
+const TRAINING_OPTIONS = [
+  'Strength training',
+  'Bodybuilding',
+  'Powerlifting',
+  'CrossFit',
+  'Calisthenics',
+  'Cardio / Running',
+  'Cycling',
+  'Yoga',
+  'Pilates',
+  'HIIT',
+  'Martial arts',
+  'Sports',
+  'Other',
+];
 
 export default function OnboardingPage() {
   const { setUser } = useAuth();
   const showToast = useToast();
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState({
-    gender: '',
-    workoutFrequency: '',
-    trainingType: ''
-  });
+  const [form, setForm] = useState({ gender: '', trainingType: '' });
   const [submitting, setSubmitting] = useState(false);
 
   const current = STEPS[step];
@@ -62,24 +70,27 @@ export default function OnboardingPage() {
         <p className="onboarding-subtitle">{current.subtitle}</p>
 
         <div className="onboarding-options">
-          {OPTIONS[current.key] ? (
-            OPTIONS[current.key].map((opt) => (
-              <button
-                key={opt}
-                className={`onboarding-option ${form[current.key] === opt ? 'selected' : ''}`}
-                onClick={() => select(current.key, opt)}
-              >
-                {opt}
-              </button>
-            ))
-          ) : (
-            <input
-              type="text"
+          {current.key === 'gender' && GENDER_OPTIONS.map((opt) => (
+            <button
+              key={opt}
+              className={`onboarding-option ${form.gender === opt ? 'selected' : ''}`}
+              onClick={() => select('gender', opt)}
+            >
+              {opt}
+            </button>
+          ))}
+
+          {current.key === 'trainingType' && (
+            <select
+              className="onboarding-select"
               value={form.trainingType}
               onChange={(e) => select('trainingType', e.target.value)}
-              placeholder="e.g. Powerlifting, CrossFit, Yoga, Running"
-              maxLength={100}
-            />
+            >
+              <option value="">Select your training style</option>
+              {TRAINING_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
           )}
         </div>
 
