@@ -2947,9 +2947,10 @@ input, select, textarea {
 .swipe-page {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 64px);
+  height: calc(100dvh - 64px);
   overflow: hidden;
   padding: 0;
+  margin: -16px -16px -100px;
 }
 .swipe-header {
   display: flex;
