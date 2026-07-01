@@ -212,16 +212,16 @@ export default function ProfilePage() {
           </div>
           <div className="field">
             <label>What do you train? {form.trainingType.length > 0 && <span style={{ fontWeight: 400, color: 'var(--color-muted)', fontSize: '0.8rem' }}>{form.trainingType.length} selected</span>}</label>
-            <div className="training-pill-grid">
+            <div className="training-check-list">
               {TRAINING_OPTIONS.map(opt => (
-                <button
-                  type="button"
-                  key={opt}
-                  className={`training-pill ${form.trainingType.includes(opt) ? 'training-pill-active' : ''}`}
-                  onClick={() => update('trainingType', form.trainingType.includes(opt) ? form.trainingType.filter(x => x !== opt) : [...form.trainingType, opt])}
-                >
-                  {opt}
-                </button>
+                <label key={opt} className="training-check-row">
+                  <input
+                    type="checkbox"
+                    checked={form.trainingType.includes(opt)}
+                    onChange={() => update('trainingType', form.trainingType.includes(opt) ? form.trainingType.filter(x => x !== opt) : [...form.trainingType, opt])}
+                  />
+                  <span>{opt}</span>
+                </label>
               ))}
             </div>
           </div>

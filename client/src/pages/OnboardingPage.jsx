@@ -101,15 +101,16 @@ export default function OnboardingPage() {
           ))}
 
           {current.key === 'trainingType' && (
-            <div className="training-pill-grid">
+            <div className="training-check-list">
               {TRAINING_OPTIONS.map((opt) => (
-                <button
-                  key={opt}
-                  className={`training-pill ${form.trainingType.includes(opt) ? 'training-pill-active' : ''}`}
-                  onClick={() => toggleTraining(opt)}
-                >
-                  {opt}
-                </button>
+                <label key={opt} className="training-check-row">
+                  <input
+                    type="checkbox"
+                    checked={form.trainingType.includes(opt)}
+                    onChange={() => toggleTraining(opt)}
+                  />
+                  <span>{opt}</span>
+                </label>
               ))}
             </div>
           )}

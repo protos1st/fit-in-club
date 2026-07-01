@@ -1089,27 +1089,33 @@ input, select, textarea {
   border-color: var(--color-accent);
   background: rgba(251,163,39,0.1);
 }
-.training-pill-grid {
+.training-check-list {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  flex-direction: column;
+  gap: 0;
   margin-top: 4px;
-}
-.training-pill {
-  padding: 7px 14px;
-  border-radius: 20px;
   border: 1.5px solid var(--color-line);
-  background: var(--color-card);
-  color: var(--color-ink);
-  font-size: 0.82rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  border-radius: var(--radius);
+  overflow: hidden;
 }
-.training-pill-active {
-  border-color: var(--color-olive);
-  background: var(--color-olive);
-  color: #fff;
+.training-check-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--color-line);
+  font-size: 0.9rem;
+  transition: background 0.12s;
+}
+.training-check-row:last-child { border-bottom: none; }
+.training-check-row:hover { background: var(--color-hover); }
+.training-check-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-olive);
+  flex-shrink: 0;
+  cursor: pointer;
 }
 .training-pill-count {
   font-size: 0.78rem;
