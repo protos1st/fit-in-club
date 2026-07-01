@@ -2305,9 +2305,9 @@ input, select, textarea {
 .ad-funnel-bar { height: 100%; border-radius: 13px; transition: width 0.8s cubic-bezier(0.22,1,0.36,1); min-width: 26px; }
 .ad-funnel-rate { font-size: 0.68rem; color: var(--color-hint); font-weight: 600; text-align: right; }
 
-.ad-heatmap { display: flex; gap: 3px; flex-wrap: nowrap; padding-bottom: 6px; }
-.ad-heatmap-week { display: flex; flex-direction: column; gap: 3px; }
-.ad-heatmap-cell { width: 28px; height: 28px; border-radius: 4px; cursor: default; transition: transform 0.15s, box-shadow 0.15s; flex-shrink: 0; }
+.ad-heatmap { display: flex; gap: 4px; width: 100%; padding-bottom: 6px; }
+.ad-heatmap-week { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+.ad-heatmap-cell { width: 100%; aspect-ratio: 1/1; border-radius: 4px; cursor: default; transition: transform 0.15s, box-shadow 0.15s; max-height: 36px; }
 .ad-heatmap-cell:hover { transform: scale(1.5); box-shadow: 0 0 0 2px var(--color-accent); z-index: 1; position: relative; }
 .ad-heatmap-legend { display: flex; align-items: center; gap: 4px; margin-top: 10px; font-size: 0.65rem; color: var(--color-hint); }
 
