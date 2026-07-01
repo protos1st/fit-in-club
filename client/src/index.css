@@ -2235,9 +2235,9 @@ input, select, textarea {
 @keyframes ad-fade-up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes ad-spin { to { transform: rotate(360deg); } }
 
-.ad-page { font-family: 'Raleway', sans-serif; }
-.ad-header { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 24px; background: #fff; border-bottom: 1.5px solid rgba(0,0,0,0.08); box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
-.ad-content { max-width: 1120px; margin: 0 auto; padding: 88px 24px 60px; }
+.ad-page { font-family: 'Raleway', sans-serif; background: var(--color-bg); min-height: 100vh; }
+.ad-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 16px 32px; background: #ffffff; border-bottom: 2px solid #e8e2cc; box-shadow: 0 2px 16px rgba(0,0,0,0.07); }
+.ad-content { max-width: 1120px; margin: 0 auto; padding: 32px 24px 60px; }
 .ad-header-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .ad-header-logo { height: 32px; flex-shrink: 0; }
 .ad-header-title { font-size: 1.2rem; font-weight: 800; color: var(--color-text); margin: 0; line-height: 1.2; letter-spacing: -0.02em; white-space: nowrap; }
