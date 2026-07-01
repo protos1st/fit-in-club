@@ -302,7 +302,7 @@ export default function DiscoverPage() {
             <div style={{ padding: '0 20px' }}>
               <div className="filter-sheet-label">Gender</div>
               <div className="filter-sheet-options">
-                {['', 'Male', 'Female'].map(g => (
+                {['', 'Male', 'Female', 'Other'].map(g => (
                   <button key={g} className={`filter-pill ${genderFilter === g ? 'filter-pill-active' : ''}`} onClick={() => setGenderFilter(g)}>{g || 'All'}</button>
                 ))}
               </div>
