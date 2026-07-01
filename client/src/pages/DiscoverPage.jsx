@@ -130,7 +130,7 @@ export default function DiscoverPage() {
   const [cardIdx, setCardIdx] = useState(0);
   const [showFilters, setShowFilters] = useState(false);
   const [genderFilter, setGenderFilter] = useState('');
-  const [trainingFilter, setTrainingFilter] = useState('');
+  const [trainingFilter, setTrainingFilter] = useState([]);
   const [dayFilter, setDayFilter] = useState('');
   const showToast = useToast();
   const navigate = useNavigate();
@@ -157,9 +157,10 @@ export default function DiscoverPage() {
     const pool = tab === 'live' ? live : matches;
     let result = [...pool];
     if (genderFilter) result = result.filter(p => p.gender === genderFilter);
-    if (trainingFilter) result = result.filter(p =>
-      p.training_type?.split(',').map(t => t.trim()).includes(trainingFilter)
-    );
+    if (trainingFilter.length > 0) result = result.filter(p => {
+      const userTypes = p.training_type?.split(',').map(t => t.trim()) || [];
+      return trainingFilter.some(f => userTypes.includes(f));
+    });
     if (dayFilter !== '' && tab === 'matches') {
       result = result.filter(p => p.overlapping_slots?.some(s => s.day_of_week === Number(dayFilter)));
     }
@@ -167,7 +168,7 @@ export default function DiscoverPage() {
   }, [tab, live, matches, genderFilter, trainingFilter, dayFilter]);
 
   // Reset card index when tab or filters change
-  useEffect(() => { setCardIdx(0); }, [tab, genderFilter, trainingFilter, dayFilter]);
+  useEffect(() => { setCardIdx(0); }, [tab, genderFilter, trainingFilter.join(','), dayFilter]);
 
   async function handleConnect(person) {
     setCardIdx(i => i + 1);
@@ -190,7 +191,7 @@ export default function DiscoverPage() {
   }
 
   const remaining = queue.slice(cardIdx);
-  const activeFilterCount = (genderFilter ? 1 : 0) + (trainingFilter ? 1 : 0) + (dayFilter !== '' ? 1 : 0);
+  const activeFilterCount = (genderFilter ? 1 : 0) + (trainingFilter.length > 0 ? 1 : 0) + (dayFilter !== '' ? 1 : 0);
 
   if (loading) return (
     <div className="swipe-loading">
@@ -232,7 +233,7 @@ export default function DiscoverPage() {
               title={tab === 'live' ? 'No one live right now' : 'You\'ve seen everyone'}
               message={tab === 'live' ? 'Check back when more members check in.' : activeFilterCount > 0 ? 'Try clearing your filters.' : 'New members join every day. Check back soon!'}
               action={activeFilterCount > 0 ? 'Clear filters' : undefined}
-              onAction={activeFilterCount > 0 ? () => { setGenderFilter(''); setTrainingFilter(''); setDayFilter(''); } : undefined}
+              onAction={activeFilterCount > 0 ? () => { setGenderFilter(''); setTrainingFilter([]); setDayFilter(''); } : undefined}
             />
           </div>
         ) : (
@@ -302,9 +303,11 @@ export default function DiscoverPage() {
 
               <div className="filter-sheet-label" style={{ marginTop: 16 }}>Training type</div>
               <div className="filter-sheet-options">
-                <button className={`filter-pill ${trainingFilter === '' ? 'filter-pill-active' : ''}`} onClick={() => setTrainingFilter('')}>All</button>
                 {TRAINING_OPTIONS.map(t => (
-                  <button key={t} className={`filter-pill ${trainingFilter === t ? 'filter-pill-active' : ''}`} onClick={() => setTrainingFilter(t)}>{t}</button>
+                  <button key={t} className={`filter-pill ${trainingFilter.includes(t) ? 'filter-pill-active' : ''}`}
+                    onClick={() => setTrainingFilter(f => f.includes(t) ? f.filter(x => x !== t) : [...f, t])}>
+                    {t}
+                  </button>
                 ))}
               </div>
 
@@ -322,8 +325,10 @@ export default function DiscoverPage() {
             </div>
 
             <div className="filter-sheet-actions">
-              <button className="btn btn-ghost" onClick={() => { setGenderFilter(''); setTrainingFilter(''); setDayFilter(''); }}>Clear all</button>
-              <button className="btn btn-primary" onClick={() => setShowFilters(false)}>Done</button>
+              <button className="btn btn-ghost" onClick={() => { setGenderFilter(''); setTrainingFilter([]); setDayFilter(''); }}>Clear all</button>
+              <button className="btn btn-primary" onClick={() => setShowFilters(false)}>
+                Show {queue.length} {queue.length === 1 ? 'match' : 'matches'}
+              </button>
             </div>
           </div>
         </Portal>
