@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
+import { TRAINING_OPTIONS } from './OnboardingPage';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useToast } from '../lib/ToastContext';
@@ -151,14 +152,6 @@ export default function DiscoverPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const trainingTypes = useMemo(() => {
-    const all = [...live, ...matches];
-    const types = new Set();
-    all.forEach(p => {
-      if (p.training_type) p.training_type.split(',').forEach(t => { const s = t.trim(); if (s) types.add(s); });
-    });
-    return [...types].sort();
-  }, [live, matches]);
 
   const queue = useMemo(() => {
     const pool = tab === 'live' ? live : matches;
@@ -310,7 +303,7 @@ export default function DiscoverPage() {
               <div className="filter-sheet-label" style={{ marginTop: 16 }}>Training type</div>
               <div className="filter-sheet-options">
                 <button className={`filter-pill ${trainingFilter === '' ? 'filter-pill-active' : ''}`} onClick={() => setTrainingFilter('')}>All</button>
-                {trainingTypes.map(t => (
+                {TRAINING_OPTIONS.map(t => (
                   <button key={t} className={`filter-pill ${trainingFilter === t ? 'filter-pill-active' : ''}`} onClick={() => setTrainingFilter(t)}>{t}</button>
                 ))}
               </div>
