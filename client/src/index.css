@@ -3353,7 +3353,7 @@ input, select, textarea {
 .swipe-btn:active { transform: scale(0.92); }
 .swipe-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 .swipe-btn-pass { background: #fff; color: #e53935; }
-.swipe-btn-connect { background: var(--color-olive); color: #fff; width: 72px; height: 72px; }
+.swipe-btn-connect { background: var(--color-accent); color: var(--color-accent-ink); width: 72px; height: 72px; }
 .swipe-btn-message { background: #3d5a80; color: #fff; }
 
 /* Loading skeleton */
