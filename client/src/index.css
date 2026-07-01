@@ -1089,6 +1089,34 @@ input, select, textarea {
   border-color: var(--color-accent);
   background: rgba(251,163,39,0.1);
 }
+.training-pill-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+.training-pill {
+  padding: 7px 14px;
+  border-radius: 20px;
+  border: 1.5px solid var(--color-line);
+  background: var(--color-card);
+  color: var(--color-ink);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.training-pill-active {
+  border-color: var(--color-olive);
+  background: var(--color-olive);
+  color: #fff;
+}
+.training-pill-count {
+  font-size: 0.78rem;
+  color: var(--color-muted);
+  margin-top: 8px;
+  text-align: center;
+}
 .onboarding-select {
   width: 100%;
   padding: 12px 14px;

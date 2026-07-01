@@ -6,13 +6,13 @@ import { useToast } from '../lib/ToastContext';
 const STEPS = [
   { key: 'gender', title: 'About you', subtitle: 'This helps others find the right training partner' },
   { key: 'workoutFrequency', title: 'Workout frequency', subtitle: 'How often do you train per week?' },
-  { key: 'trainingType', title: 'Training style', subtitle: 'What do you usually train?' }
+  { key: 'trainingType', title: 'Training style', subtitle: 'Pick all that apply' }
 ];
 
 const GENDER_OPTIONS = ['Male', 'Female', 'Other', 'Prefer not to say'];
 const FREQUENCY_OPTIONS = ['1–2 times', '3–4 times', '5–6 times', 'Every day'];
 
-const TRAINING_OPTIONS = [
+export const TRAINING_OPTIONS = [
   'Strength training',
   'Bodybuilding',
   'Powerlifting',
@@ -32,7 +32,7 @@ export default function OnboardingPage() {
   const { setUser } = useAuth();
   const showToast = useToast();
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState({ gender: '', workoutFrequency: '', trainingType: '' });
+  const [form, setForm] = useState({ gender: '', workoutFrequency: '', trainingType: [] });
   const [submitting, setSubmitting] = useState(false);
 
   const current = STEPS[step];
@@ -43,11 +43,19 @@ export default function OnboardingPage() {
     setForm((f) => ({ ...f, [key]: value }));
   }
 
+  function toggleTraining(opt) {
+    setForm(f => {
+      const cur = f.trainingType;
+      return { ...f, trainingType: cur.includes(opt) ? cur.filter(x => x !== opt) : [...cur, opt] };
+    });
+  }
+
   async function handleNext() {
     if (isLast) {
       setSubmitting(true);
       try {
-        const data = await api.completeOnboarding(form);
+        const payload = { ...form, trainingType: form.trainingType.join(', ') };
+        const data = await api.completeOnboarding(payload);
         setUser(data.user);
       } catch (err) {
         showToast(err.message, 'error');
@@ -93,18 +101,23 @@ export default function OnboardingPage() {
           ))}
 
           {current.key === 'trainingType' && (
-            <select
-              className="onboarding-select"
-              value={form.trainingType}
-              onChange={(e) => select('trainingType', e.target.value)}
-            >
-              <option value="">Select your training style</option>
+            <div className="training-pill-grid">
               {TRAINING_OPTIONS.map((opt) => (
-                <option key={opt} value={opt}>{opt}</option>
+                <button
+                  key={opt}
+                  className={`training-pill ${form.trainingType.includes(opt) ? 'training-pill-active' : ''}`}
+                  onClick={() => toggleTraining(opt)}
+                >
+                  {opt}
+                </button>
               ))}
-            </select>
+            </div>
           )}
         </div>
+
+        {current.key === 'trainingType' && form.trainingType.length > 0 && (
+          <p className="training-pill-count">{form.trainingType.length} selected</p>
+        )}
 
         <div className="onboarding-actions">
           {step > 0 && (

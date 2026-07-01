@@ -6,6 +6,7 @@ import { useToast } from '../lib/ToastContext';
 import Avatar from '../components/Avatar';
 import { confirmDialog } from '../components/ConfirmDialog';
 import Portal from '../components/Portal';
+import { TRAINING_OPTIONS } from './OnboardingPage';
 
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 
@@ -32,7 +33,7 @@ export default function ProfilePage() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
     name: user?.name || '',
-    trainingType: user?.training_type || '',
+    trainingType: user?.training_type ? user.training_type.split(', ').filter(Boolean) : [],
     bio: user?.bio || '',
     gender: user?.gender || ''
   });
@@ -72,7 +73,7 @@ export default function ProfilePage() {
     setUploading(true);
     try {
       const url = await uploadToCloudinary(file);
-      const data = await api.updateProfile({ name: form.name, trainingType: form.trainingType, bio: form.bio, gender: form.gender, avatarUrl: url });
+      const data = await api.updateProfile({ name: form.name, trainingType: form.trainingType.join(', '), bio: form.bio, gender: form.gender, avatarUrl: url });
       setUser(data.user);
       setPreview(null);
       showToast('Photo updated', 'success');
@@ -89,7 +90,7 @@ export default function ProfilePage() {
     const ok = await confirmDialog({ title: 'Remove photo?', message: 'Your profile will show initials instead.', confirmLabel: 'Remove', danger: true });
     if (!ok) return;
     try {
-      const data = await api.updateProfile({ name: form.name, trainingType: form.trainingType, bio: form.bio, gender: form.gender, avatarUrl: '' });
+      const data = await api.updateProfile({ name: form.name, trainingType: form.trainingType.join(', '), bio: form.bio, gender: form.gender, avatarUrl: '' });
       setUser(data.user);
       showToast('Photo removed', 'success');
     } catch (err) {
@@ -101,7 +102,7 @@ export default function ProfilePage() {
     e.preventDefault();
     setSaving(true);
     try {
-      const data = await api.updateProfile(form);
+      const data = await api.updateProfile({ ...form, trainingType: form.trainingType.join(', ') });
       setUser(data.user);
       showToast('Profile saved', 'success');
     } catch (err) {
@@ -210,13 +211,19 @@ export default function ProfilePage() {
             </select>
           </div>
           <div className="field">
-            <label>What do you train?</label>
-            <select value={form.trainingType} onChange={(e) => update('trainingType', e.target.value)}>
-              <option value="">Not set</option>
-              {['Strength training','Bodybuilding','Powerlifting','CrossFit','Calisthenics','Cardio / Running','Cycling','Yoga','Pilates','HIIT','Martial arts','Sports','Other'].map(o => (
-                <option key={o} value={o}>{o}</option>
+            <label>What do you train? {form.trainingType.length > 0 && <span style={{ fontWeight: 400, color: 'var(--color-muted)', fontSize: '0.8rem' }}>{form.trainingType.length} selected</span>}</label>
+            <div className="training-pill-grid">
+              {TRAINING_OPTIONS.map(opt => (
+                <button
+                  type="button"
+                  key={opt}
+                  className={`training-pill ${form.trainingType.includes(opt) ? 'training-pill-active' : ''}`}
+                  onClick={() => update('trainingType', form.trainingType.includes(opt) ? form.trainingType.filter(x => x !== opt) : [...form.trainingType, opt])}
+                >
+                  {opt}
+                </button>
               ))}
-            </select>
+            </div>
           </div>
           <div className="field">
             <label>Bio</label>
