@@ -36,6 +36,12 @@ function useCountUp(target, duration = 800) {
   return val;
 }
 
+function fmtNum(n) {
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (n >= 1_000) return (n / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
+  return n.toString();
+}
+
 function StatCard({ icon, label, value, delta, sub, color, index }) {
   const animVal = useCountUp(value);
   return (
@@ -53,7 +59,7 @@ function StatCard({ icon, label, value, delta, sub, color, index }) {
           </span>
         )}
       </div>
-      <div className="ad-stat-val">{animVal.toLocaleString()}</div>
+      <div className="ad-stat-val">{fmtNum(animVal)}</div>
       <div className="ad-stat-label">{label}</div>
       {sub && <div className="ad-stat-sub">{sub}</div>}
     </div>
