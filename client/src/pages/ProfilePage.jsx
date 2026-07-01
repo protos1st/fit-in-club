@@ -211,7 +211,12 @@ export default function ProfilePage() {
           </div>
           <div className="field">
             <label>What do you train?</label>
-            <input type="text" value={form.trainingType} onChange={(e) => update('trainingType', e.target.value)} placeholder="e.g. Powerlifting, Yoga, Running" maxLength={100} />
+            <select value={form.trainingType} onChange={(e) => update('trainingType', e.target.value)}>
+              <option value="">Not set</option>
+              {['Strength training','Bodybuilding','Powerlifting','CrossFit','Calisthenics','Cardio / Running','Cycling','Yoga','Pilates','HIIT','Martial arts','Sports','Other'].map(o => (
+                <option key={o} value={o}>{o}</option>
+              ))}
+            </select>
           </div>
           <div className="field">
             <label>Bio</label>
