@@ -108,9 +108,10 @@ router.get('/stats', async (req, res) => {
     `),
 
     pool.query(`
-      SELECT COALESCE(NULLIF(training_type, ''), 'Not set') as type, COUNT(*)::int as count
-      FROM users
-      GROUP BY type
+      SELECT initcap(trim(t)) as type, COUNT(*)::int as count
+      FROM users, unnest(string_to_array(training_type, ',')) as t
+      WHERE trim(t) != ''
+      GROUP BY initcap(trim(t))
       ORDER BY count DESC
     `),
 
