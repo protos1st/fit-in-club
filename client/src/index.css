@@ -2885,6 +2885,37 @@ input, select, textarea {
   align-items: center;
   justify-content: center;
 }
+.photo-viewer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.92);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.photo-viewer-img {
+  max-width: 90vw;
+  max-height: 80vh;
+  border-radius: 12px;
+  object-fit: contain;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+}
+.photo-viewer-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(255,255,255,0.15);
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}
 .ig-avatar-spinner {
   position: absolute;
   inset: -4px;

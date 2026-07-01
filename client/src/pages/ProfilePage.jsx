@@ -40,6 +40,7 @@ export default function ProfilePage() {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState(null); // optimistic local preview
   const [photoSheet, setPhotoSheet] = useState(false);
+  const [photoViewer, setPhotoViewer] = useState(false);
   const [leaderboard, setLeaderboard] = useState([]);
   const fileInputRef = useRef();
 
@@ -117,12 +118,14 @@ export default function ProfilePage() {
     <div>
       {/* Instagram-style header */}
       <div className="ig-profile-header">
-        <div className="ig-avatar-wrap" onClick={() => setPhotoSheet(true)}>
-          <Avatar name={user?.name || 'U'} photo={displayPhoto} size={88} />
+        <div className="ig-avatar-wrap">
+          <div onClick={() => displayPhoto ? setPhotoViewer(true) : setPhotoSheet(true)} style={{ cursor: 'pointer' }}>
+            <Avatar name={user?.name || 'U'} photo={displayPhoto} size={88} />
+          </div>
           {uploading ? (
             <div className="ig-avatar-spinner"><div className="spinner-ring" /></div>
           ) : (
-            <div className="ig-avatar-badge">
+            <div className="ig-avatar-badge" onClick={() => setPhotoSheet(true)} style={{ cursor: 'pointer' }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
                 <path d="M12 15.2A3.2 3.2 0 1 0 12 8.8a3.2 3.2 0 0 0 0 6.4z"/>
                 <path d="M9 3L7.17 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.17L15 3H9zm3 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/>
@@ -154,6 +157,18 @@ export default function ProfilePage() {
           {user?.bio && <div className="ig-profile-bio">{user.bio}</div>}
         </div>
       </div>
+
+      {/* Photo viewer */}
+      {photoViewer && displayPhoto && (
+        <Portal>
+          <div className="photo-viewer-backdrop" onClick={() => setPhotoViewer(false)}>
+            <img src={displayPhoto} alt={user?.name} className="photo-viewer-img" onClick={e => e.stopPropagation()} />
+            <button className="photo-viewer-close" onClick={() => setPhotoViewer(false)} aria-label="Close">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        </Portal>
+      )}
 
       {/* Photo action sheet */}
       {photoSheet && (
