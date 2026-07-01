@@ -552,6 +552,7 @@ export default function AdminPage() {
         </div>
       </header>
 
+      <div className="ad-content">
       <div className="ad-stats">
         <StatCard icon={icons.users} label="Total members" value={overview.totalUsers} delta={weeklyDelta.newUsers} color="#53603E" index={0} />
         <StatCard icon={icons.active} label="Active this week" value={overview.activeThisWeek}
@@ -635,6 +636,7 @@ export default function AdminPage() {
       </div>
 
       {selectedMember && <MemberModal member={selectedMember} onClose={() => setSelectedMember(null)} adminPassword={password} />}
+      </div>
     </div>
   );
 }
