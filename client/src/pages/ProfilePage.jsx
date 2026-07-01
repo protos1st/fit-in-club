@@ -220,27 +220,6 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {leaderboard.length > 0 && (
-        <>
-          <div className="section-title mt-md">
-            This week's most consistent
-            <span className="schedule-count">{leaderboard.length}</span>
-          </div>
-          <div className="card card-narrow">
-            {leaderboard.map((u, i) => (
-              <div className="person-row" key={u.user_id}>
-                <div className="leaderboard-rank">{i + 1}</div>
-                <Avatar name={u.name} size={36} />
-                <div className="person-info">
-                  <div className="person-name">{u.name}</div>
-                  {u.training_type && <div className="person-meta">{u.training_type}</div>}
-                </div>
-                <div className="leaderboard-count">{u.checkins} day{u.checkins !== 1 ? 's' : ''}</div>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
 
       <div className="section-title mt-md">Others</div>
       <div className="card card-narrow">
