@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../lib/AuthContext';
 import { api } from '../lib/api';
 import { useToast } from '../lib/ToastContext';
@@ -34,6 +34,16 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState({ gender: '', workoutFrequency: '', trainingType: [] });
   const [submitting, setSubmitting] = useState(false);
+  const [trainingOpen, setTrainingOpen] = useState(false);
+  const trainingRef = useRef();
+
+  useEffect(() => {
+    function handleClick(e) {
+      if (trainingRef.current && !trainingRef.current.contains(e.target)) setTrainingOpen(false);
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
 
   const current = STEPS[step];
   const isLast = step === STEPS.length - 1;
@@ -101,17 +111,27 @@ export default function OnboardingPage() {
           ))}
 
           {current.key === 'trainingType' && (
-            <div className="training-check-list">
-              {TRAINING_OPTIONS.map((opt) => (
-                <label key={opt} className="training-check-row">
-                  <input
-                    type="checkbox"
-                    checked={form.trainingType.includes(opt)}
-                    onChange={() => toggleTraining(opt)}
-                  />
-                  <span>{opt}</span>
-                </label>
-              ))}
+            <div className="training-dropdown" ref={trainingRef}>
+              <button type="button" className={`training-dropdown-trigger${trainingOpen ? ' open' : ''}`} onClick={() => setTrainingOpen(o => !o)}>
+                <span>{form.trainingType.length === 0 ? 'Select training types' : `${form.trainingType.length} selected`}</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              {trainingOpen && (
+                <div className="training-dropdown-menu">
+                  <div className="training-check-list">
+                    {TRAINING_OPTIONS.map((opt) => (
+                      <label key={opt} className="training-check-row">
+                        <input
+                          type="checkbox"
+                          checked={form.trainingType.includes(opt)}
+                          onChange={() => toggleTraining(opt)}
+                        />
+                        <span>{opt}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
