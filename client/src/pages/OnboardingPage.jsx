@@ -196,10 +196,8 @@ export default function OnboardingPage() {
           </button>
         </div>
 
-        {(current.key === 'photo' || (!isLast && step > 0)) && (
-          <button className="onboarding-skip" onClick={() => isLast ? handleNext() : setStep((s) => s + 1)}>
-            {current.key === 'photo' ? 'Skip for now' : 'Skip'}
-          </button>
+        {current.key === 'photo' && (
+          <button className="onboarding-skip" onClick={handleNext}>Skip for now</button>
         )}
       </div>
     </div>
