@@ -5,10 +5,12 @@ import { useToast } from '../lib/ToastContext';
 
 const STEPS = [
   { key: 'gender', title: 'About you', subtitle: 'This helps others find the right training partner' },
+  { key: 'workoutFrequency', title: 'Workout frequency', subtitle: 'How often do you train per week?' },
   { key: 'trainingType', title: 'Training style', subtitle: 'What do you usually train?' }
 ];
 
 const GENDER_OPTIONS = ['Male', 'Female', 'Prefer not to say'];
+const FREQUENCY_OPTIONS = ['1–2 times', '3–4 times', '5–6 times', 'Every day'];
 
 const TRAINING_OPTIONS = [
   'Strength training',
@@ -30,7 +32,7 @@ export default function OnboardingPage() {
   const { setUser } = useAuth();
   const showToast = useToast();
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState({ gender: '', trainingType: '' });
+  const [form, setForm] = useState({ gender: '', workoutFrequency: '', trainingType: '' });
   const [submitting, setSubmitting] = useState(false);
 
   const current = STEPS[step];
@@ -75,6 +77,16 @@ export default function OnboardingPage() {
               key={opt}
               className={`onboarding-option ${form.gender === opt ? 'selected' : ''}`}
               onClick={() => select('gender', opt)}
+            >
+              {opt}
+            </button>
+          ))}
+
+          {current.key === 'workoutFrequency' && FREQUENCY_OPTIONS.map((opt) => (
+            <button
+              key={opt}
+              className={`onboarding-option ${form.workoutFrequency === opt ? 'selected' : ''}`}
+              onClick={() => select('workoutFrequency', opt)}
             >
               {opt}
             </button>
