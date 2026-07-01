@@ -9,7 +9,7 @@ const STEPS = [
   { key: 'trainingType', title: 'Training style', subtitle: 'What do you usually train?' }
 ];
 
-const GENDER_OPTIONS = ['Male', 'Female', 'Prefer not to say'];
+const GENDER_OPTIONS = ['Male', 'Female', 'Other', 'Prefer not to say'];
 const FREQUENCY_OPTIONS = ['1–2 times', '3–4 times', '5–6 times', 'Every day'];
 
 const TRAINING_OPTIONS = [
