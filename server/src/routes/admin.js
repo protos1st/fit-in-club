@@ -143,7 +143,7 @@ router.get('/stats', async (req, res) => {
     pool.query(`
       SELECT DATE(checked_in_at) as date, COUNT(*)::int as count
       FROM checkin_log
-      WHERE checked_in_at >= NOW() - INTERVAL '90 days'
+      WHERE checked_in_at >= NOW() - INTERVAL '30 days'
       GROUP BY DATE(checked_in_at)
       ORDER BY date
     `),
