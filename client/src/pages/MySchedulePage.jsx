@@ -4,6 +4,7 @@ import { api } from '../lib/api';
 import { useToast } from '../lib/ToastContext';
 import { formatTime, initials } from '../lib/utils';
 import Avatar from '../components/Avatar';
+import Portal from '../components/Portal';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const DAYS_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -37,42 +38,46 @@ function LiveBanner({ liveStatus, liveBusy, statusTag, setStatusTag, onToggle, o
 
   return (
     <div className={`live-banner ${liveStatus ? 'on' : 'off'}`}>
-      <div className="live-banner-text">
-        {liveStatus ? (
-          <>
-            <strong><span className="pulse-dot" />You're at the gym</strong>
-            <span>{timeLeft > 0 ? `Visible for ${timeLeft} more min` : 'Expiring soon'}</span>
-            {liveStatus.status_tag && <span className="tag tag-sm tag-spaced">{liveStatus.status_tag}</span>}
-            {todayMatches > 0 && (
-              <span className="sched-match-hint">{todayMatches} buddy match{todayMatches !== 1 ? 'es' : ''} today</span>
-            )}
-            {showExtendPrompt && (
-              <div className="sched-extend-prompt">
-                <span>Still training?</span>
-                <button className="btn btn-primary btn-sm rounded-pill" onClick={onExtend}>Extend 1 hr</button>
-              </div>
-            )}
-          </>
-        ) : (
-          <>
-            <strong>Not checked in</strong>
-            <span>Let others know you're at the gym</span>
-            <div className="status-tag-picker">
-              {STATUS_TAGS.map((t) => (
-                <button key={t} className={`filter-pill ${statusTag === t ? 'filter-pill-active' : ''}`} onClick={() => setStatusTag(statusTag === t ? '' : t)}>{t}</button>
-              ))}
-            </div>
-          </>
-        )}
+      <div className="live-banner-top">
+        <div className="live-banner-text">
+          {liveStatus ? (
+            <>
+              <strong><span className="pulse-dot" />You're at the gym</strong>
+              <span>{timeLeft > 0 ? `Visible for ${timeLeft} more min` : 'Expiring soon'}</span>
+              {liveStatus.status_tag && <span className="tag tag-sm tag-spaced">{liveStatus.status_tag}</span>}
+              {todayMatches > 0 && (
+                <span className="sched-match-hint">{todayMatches} buddy match{todayMatches !== 1 ? 'es' : ''} today</span>
+              )}
+              {showExtendPrompt && (
+                <div className="sched-extend-prompt">
+                  <span>Still training?</span>
+                  <button className="btn btn-primary btn-sm rounded-pill" onClick={onExtend}>Extend 1 hr</button>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <strong>Not checked in</strong>
+              <span>Let others know you're at the gym</span>
+            </>
+          )}
+        </div>
+        <button
+          className={liveStatus ? 'btn btn-outline live-banner-action-on' : 'btn btn-primary'}
+          onClick={onToggle}
+          disabled={liveBusy}
+          aria-label={liveStatus ? 'Check out of the gym' : 'Check in at the gym'}
+        >
+          {liveBusy ? 'Please wait…' : liveStatus ? 'Check out' : "I'm here now"}
+        </button>
       </div>
-      <button
-        className={liveStatus ? 'btn btn-outline live-banner-action-on' : 'btn btn-primary'}
-        onClick={onToggle}
-        disabled={liveBusy}
-        aria-label={liveStatus ? 'Check out of the gym' : 'Check in at the gym'}
-      >
-        {liveBusy ? 'Please wait…' : liveStatus ? 'Check out' : "I'm here now"}
-      </button>
+      {!liveStatus && (
+        <div className="status-tag-picker">
+          {STATUS_TAGS.map((t) => (
+            <button key={t} className={`filter-pill ${statusTag === t ? 'filter-pill-active' : ''}`} onClick={() => setStatusTag(statusTag === t ? '' : t)}>{t}</button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -310,39 +315,45 @@ export default function MySchedulePage() {
       )}
 
       {showTemplates && (
-        <div className="sched-templates card">
-          <div className="sched-templates-title">Quick templates</div>
-          <p className="sched-templates-sub">Replace your schedule with a preset pattern. You can adjust times after.</p>
-          <div className="sched-templates-grid">
-            {TEMPLATES.map(t => (
-              <button key={t.label} className="sched-templates-item" onClick={() => applyTemplate(t)}>
-                <span className="sched-templates-name">{t.label}</span>
-                <span className="sched-templates-days">{t.days.map(d => DAYS[d]).join(', ')}</span>
-              </button>
-            ))}
-          </div>
-          <div className="sched-custom-divider">or pick your own</div>
-          <div className="sched-custom">
-            <div className="sched-custom-days">
-              {DAYS.map((d, i) => (
-                <button key={i} className={`sched-custom-day ${customDays.includes(i) ? 'active' : ''}`} onClick={() => toggleCustomDay(i)}>{d}</button>
-              ))}
-            </div>
-            <div className="sched-custom-time">
-              <div className="sched-editor-field">
-                <label className="sched-editor-label">From</label>
-                <input type="time" value={customTime.start_time} onChange={e => setCustomTime(t => ({ ...t, start_time: e.target.value }))} />
+        <Portal>
+          <div className="sheet-backdrop" onClick={() => setShowTemplates(false)} />
+          <div className="sheet">
+            <div className="sheet-handle" />
+            <div className="sheet-title">Templates</div>
+            <div style={{ padding: '0 20px 20px' }}>
+              <p className="sched-templates-sub">Replace your schedule with a preset. Adjust times after.</p>
+              <div className="sched-templates-grid">
+                {TEMPLATES.map(t => (
+                  <button key={t.label} className="sched-templates-item" onClick={() => applyTemplate(t)}>
+                    <span className="sched-templates-name">{t.label}</span>
+                    <span className="sched-templates-days">{t.days.map(d => DAYS[d]).join(', ')}</span>
+                  </button>
+                ))}
               </div>
-              <div className="sched-editor-field">
-                <label className="sched-editor-label">To</label>
-                <input type="time" value={customTime.end_time} onChange={e => setCustomTime(t => ({ ...t, end_time: e.target.value }))} />
+              <div className="sched-custom-divider">or pick your own</div>
+              <div className="sched-custom">
+                <div className="sched-custom-days">
+                  {DAYS.map((d, i) => (
+                    <button key={i} className={`sched-custom-day ${customDays.includes(i) ? 'active' : ''}`} onClick={() => toggleCustomDay(i)}>{d}</button>
+                  ))}
+                </div>
+                <div className="sched-custom-time">
+                  <div className="sched-editor-field">
+                    <label className="sched-editor-label">From</label>
+                    <input type="time" value={customTime.start_time} onChange={e => setCustomTime(t => ({ ...t, start_time: e.target.value }))} />
+                  </div>
+                  <div className="sched-editor-field">
+                    <label className="sched-editor-label">To</label>
+                    <input type="time" value={customTime.end_time} onChange={e => setCustomTime(t => ({ ...t, end_time: e.target.value }))} />
+                  </div>
+                </div>
+                <button className="btn btn-primary btn-sm rounded-pill mt-sm" onClick={applyCustom} disabled={customDays.length === 0}>
+                  Apply to {customDays.length > 0 ? customDays.map(d => DAYS[d]).join(', ') : '...'}
+                </button>
               </div>
             </div>
-            <button className="btn btn-primary btn-sm rounded-pill mt-sm" onClick={applyCustom} disabled={customDays.length === 0}>
-              Apply to {customDays.length > 0 ? customDays.map(d => DAYS[d]).join(', ') : '...'}
-            </button>
           </div>
-        </div>
+        </Portal>
       )}
 
       {loading ? <SkeletonList /> : (loadError || waking) ? null : (

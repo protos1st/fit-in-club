@@ -647,16 +647,24 @@ input, select, textarea {
 
 .sched-add-btn {
   background: none;
-  border: 1px dashed var(--color-line);
+  border: 1.5px dashed var(--color-line);
   color: var(--color-hint);
-  border-radius: var(--radius);
-  padding: 4px 10px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 400;
   flex-shrink: 0;
-  transition: border-color 0.15s, color 0.15s;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  cursor: pointer;
+  line-height: 1;
 }
-.sched-add-btn:hover { border-color: var(--color-accent); color: var(--color-accent); }
+.sched-add-btn:hover { border-color: var(--color-accent); color: var(--color-accent); background: rgba(251,163,39,0.06); }
 
 .sched-editor {
   padding: 12px 16px 12px 66px;
@@ -743,12 +751,17 @@ input, select, textarea {
 
 .live-banner {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  flex-direction: column;
+  gap: 0;
   padding: 16px;
   border-radius: var(--radius-lg);
   margin-bottom: 20px;
+}
+.live-banner-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 .live-banner.off {
   background: var(--color-card);
@@ -1714,7 +1727,9 @@ input, select, textarea {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-line);
 }
 .status-tag-picker .filter-pill {
   font-size: 0.75rem;
@@ -3026,10 +3041,20 @@ input, select, textarea {
   display: block;
 }
 .swipe-card-no-photo {
+  position: absolute;
+  inset: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--color-olive), #7a8f5a);
+  gap: 12px;
+  background: linear-gradient(160deg, #3d4f2c 0%, #53603e 45%, #6b7a52 100%);
+}
+.swipe-no-photo-name {
+  color: rgba(255,255,255,0.85);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 /* Drag labels */
@@ -3137,11 +3162,16 @@ input, select, textarea {
 /* Counter */
 .swipe-counter {
   position: absolute;
-  top: 12px;
-  right: 28px;
-  font-size: 0.75rem;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.72rem;
   color: var(--color-muted);
   font-weight: 600;
+  background: var(--color-card);
+  border-radius: 20px;
+  padding: 3px 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
 }
 
 /* Empty */
