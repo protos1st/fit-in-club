@@ -71,10 +71,18 @@ const messageLimiter = rateLimit({
 
 const scheduleLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  max: 30,
+  max: 200,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Too many schedule updates, try again later' }
+  message: { error: 'Too many schedule requests, try again later' }
+});
+// Separate lenient limiter for checkin/checkout — critical user actions
+const checkinLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 40,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many check-ins, try again later' }
 });
 
 const buddyLimiter = rateLimit({
@@ -91,6 +99,9 @@ app.set('io', io);
 app.set('onlineUsers', onlineUsers);
 
 app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/schedule/checkin', checkinLimiter);
+app.use('/api/schedule/checkout', checkinLimiter);
+app.use('/api/schedule/extend', checkinLimiter);
 app.use('/api/schedule', scheduleLimiter, scheduleRoutes);
 app.use('/api/buddies', buddyLimiter, buddyRoutes);
 app.use('/api/messages', messageLimiter, messageRoutes);
