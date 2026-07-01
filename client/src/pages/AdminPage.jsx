@@ -202,7 +202,7 @@ function FunnelChart({ funnel }) {
 
 function Heatmap({ data }) {
   const today = new Date();
-  const days = 90;
+  const days = 30;
   const grid = [];
   const dateMap = {};
   data.forEach(d => { dateMap[new Date(d.date).toISOString().slice(0, 10)] = d.count; });
