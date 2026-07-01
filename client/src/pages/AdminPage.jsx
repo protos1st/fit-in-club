@@ -85,6 +85,8 @@ function Sparkline({ data, color, height = 32 }) {
 }
 
 function TrendCard({ title, data, color }) {
+  const [tooltip, setTooltip] = useState(null);
+
   if (!data || data.length === 0) return (
     <div className="ad-card">
       <div className="ad-card-head"><h3>{title}</h3></div>
@@ -106,21 +108,44 @@ function TrendCard({ title, data, color }) {
         <h3>{title}</h3>
         <span className="ad-card-metric">{total}</span>
       </div>
-      <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="ad-chart-svg">
-        <defs>
-          <linearGradient id={`tg-${color.replace('#','')}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={color} stopOpacity="0.2" />
-            <stop offset="100%" stopColor={color} stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        <polygon points={`0,${h} ${pts.join(' ')} ${w},${h}`} fill={`url(#tg-${color.replace('#','')})`} />
-        <polyline points={pts.join(' ')} fill="none" stroke={color} strokeWidth="2.5" vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" />
-        {data.map((d, i) => {
-          const x = (i / Math.max(data.length - 1, 1)) * w;
-          const y = h - (d.count / max) * (h - 20) - 10;
-          return <circle key={i} cx={x} cy={y} r="3" fill="var(--color-card)" stroke={color} strokeWidth="2" className="ad-dot" />;
-        })}
-      </svg>
+      <div style={{ position: 'relative' }}>
+        <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="ad-chart-svg">
+          <defs>
+            <linearGradient id={`tg-${color.replace('#','')}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={color} stopOpacity="0.2" />
+              <stop offset="100%" stopColor={color} stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <polygon points={`0,${h} ${pts.join(' ')} ${w},${h}`} fill={`url(#tg-${color.replace('#','')})`} />
+          <polyline points={pts.join(' ')} fill="none" stroke={color} strokeWidth="2.5" vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" />
+          {data.map((d, i) => {
+            const x = (i / Math.max(data.length - 1, 1)) * w;
+            const y = h - (d.count / max) * (h - 20) - 10;
+            const pctX = (x / w) * 100;
+            const pctY = (y / h) * 100;
+            return (
+              <g key={i}
+                onMouseEnter={() => setTooltip({ i, pctX, pctY, date: d.date, count: d.count })}
+                onMouseLeave={() => setTooltip(null)}
+                onTouchStart={() => setTooltip(t => t?.i === i ? null : { i, pctX, pctY, date: d.date, count: d.count })}
+                style={{ cursor: 'pointer' }}
+              >
+                <circle cx={x} cy={y} r="14" fill="transparent" />
+                <circle cx={x} cy={y} r={tooltip?.i === i ? 5 : 3} fill="var(--color-card)" stroke={color} strokeWidth="2" className="ad-dot" />
+              </g>
+            );
+          })}
+        </svg>
+        {tooltip && (
+          <div className="ad-tooltip" style={{
+            left: `clamp(4px, calc(${tooltip.pctX}% - 44px), calc(100% - 92px))`,
+            top: tooltip.pctY < 40 ? '28%' : '2px',
+          }}>
+            <div className="ad-tooltip-date">{formatDate(tooltip.date)}</div>
+            <div className="ad-tooltip-val">{tooltip.count}</div>
+          </div>
+        )}
+      </div>
       <div className="ad-chart-axis">
         <span>{formatDate(data[0].date)}</span>
         {data.length > 2 && <span>{formatDate(data[Math.floor(data.length / 2)].date)}</span>}
