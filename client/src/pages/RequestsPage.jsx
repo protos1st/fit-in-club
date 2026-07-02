@@ -15,10 +15,10 @@ export default function RequestsPage() {
   const navigate = useNavigate();
 
   function load() {
-    Promise.all([api.getIncoming(), api.getOutgoing()])
-      .then(([inc, out]) => {
-        setIncoming(inc.incoming || []);
-        setOutgoing(out.outgoing || []);
+    Promise.allSettled([api.getIncoming(), api.getOutgoing()])
+      .then(([incRes, outRes]) => {
+        if (incRes.status === 'fulfilled') setIncoming(incRes.value.incoming || []);
+        if (outRes.status === 'fulfilled') setOutgoing(outRes.value.outgoing || []);
       })
       .finally(() => setLoading(false));
   }

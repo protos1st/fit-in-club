@@ -17,12 +17,14 @@ export default function ConnectionsPage() {
   const socketCtx = useSocket();
 
   function load() {
-    Promise.all([api.getConnections(), api.getConversations()])
-      .then(([conn, conv]) => {
-        setConnections(conn.connections || []);
-        const map = {};
-        (conv.conversations || []).forEach((c) => { map[c.user_id] = c; });
-        setConversations(map);
+    Promise.allSettled([api.getConnections(), api.getConversations()])
+      .then(([connRes, convRes]) => {
+        if (connRes.status === 'fulfilled') setConnections(connRes.value.connections || []);
+        if (convRes.status === 'fulfilled') {
+          const map = {};
+          (convRes.value.conversations || []).forEach((c) => { map[c.user_id] = c; });
+          setConversations(map);
+        }
       })
       .finally(() => setLoading(false));
   }

@@ -53,13 +53,17 @@ export default function AppShell({ children }) {
   const [badges, setBadges] = useState({ unreadMessages: 0, pendingRequests: 0 });
 
   const fetchBadges = useCallback(() => {
-    Promise.all([api.getConversations(), api.getIncoming()])
-      .then(([conv, inc]) => {
-        const unread = (conv.conversations || []).reduce((sum, c) => sum + (c.unread_count || 0), 0);
-        const pending = (inc.incoming || []).length;
-        setBadges({ unreadMessages: unread, pendingRequests: pending });
-      })
-      .catch(() => {});
+    Promise.allSettled([api.getConversations(), api.getIncoming()])
+      .then(([convRes, incRes]) => {
+        setBadges(prev => ({
+          unreadMessages: convRes.status === 'fulfilled'
+            ? (convRes.value.conversations || []).reduce((sum, c) => sum + (c.unread_count || 0), 0)
+            : prev.unreadMessages,
+          pendingRequests: incRes.status === 'fulfilled'
+            ? (incRes.value.incoming || []).length
+            : prev.pendingRequests,
+        }));
+      });
   }, []);
 
   useEffect(() => {

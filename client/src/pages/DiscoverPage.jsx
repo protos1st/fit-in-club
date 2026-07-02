@@ -136,14 +136,20 @@ export default function DiscoverPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    Promise.all([api.getLive(), api.getOverlap(), api.getConnections(), api.getOutgoing()])
-      .then(([liveData, overlap, conn, out]) => {
-        setLive(liveData.live || []);
-        setMatches(overlap.matches || []);
-        setMatchNote(overlap.note || '');
-        setConnectedTo(new Set((conn.connections || []).map((c) => c.user_id)));
-        setOutgoing(out.outgoing || []);
-        setPendingTo(new Set((out.outgoing || []).map((r) => r.user_id)));
+    Promise.allSettled([api.getLive(), api.getOverlap(), api.getConnections(), api.getOutgoing()])
+      .then(([liveRes, overlapRes, connRes, outRes]) => {
+        if (liveRes.status === 'fulfilled') setLive(liveRes.value.live || []);
+        if (overlapRes.status === 'fulfilled') {
+          setMatches(overlapRes.value.matches || []);
+          setMatchNote(overlapRes.value.note || '');
+        }
+        if (connRes.status === 'fulfilled') setConnectedTo(new Set((connRes.value.connections || []).map((c) => c.user_id)));
+        if (outRes.status === 'fulfilled') {
+          setOutgoing(outRes.value.outgoing || []);
+          setPendingTo(new Set((outRes.value.outgoing || []).map((r) => r.user_id)));
+        }
+        const failed = [liveRes, overlapRes, connRes, outRes].some(r => r.status === 'rejected');
+        if (failed) showToast('Some data failed to load. Pull to refresh.', 'error');
       }).finally(() => setLoading(false));
 
     const interval = setInterval(() => {
