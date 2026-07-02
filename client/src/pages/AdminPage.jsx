@@ -5,6 +5,37 @@ import fitinLogo from '../assets/fitin-logo-green.png';
 const DAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
+const NAV_SECTIONS = [
+  {
+    id: 'overview', label: 'Overview',
+    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>,
+  },
+  {
+    id: 'trends', label: 'Trends',
+    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>,
+  },
+  {
+    id: 'community', label: 'Community',
+    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>,
+  },
+  {
+    id: 'members', label: 'Members',
+    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>,
+  },
+];
+
+function SectionHead({ kicker, title, sub }) {
+  return (
+    <div className="ad-sec-head">
+      <div>
+        <div className="ad-sec-kicker">{kicker}</div>
+        <h2 className="ad-sec-title">{title}</h2>
+      </div>
+      {sub && <span className="ad-sec-sub">{sub}</span>}
+    </div>
+  );
+}
+
 function formatDate(d) {
   const date = new Date(d);
   return `${date.getDate()} ${MONTHS_SHORT[date.getMonth()]}`;
@@ -488,8 +519,20 @@ export default function AdminPage() {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [selectedMember, setSelectedMember] = useState(null);
   const [memberSearch, setMemberSearch] = useState('');
+  const [activeSection, setActiveSection] = useState('overview');
 
   function handleAuth(pw, data) { setPassword(pw); setStats(data); setLastUpdated(new Date()); }
+
+  useEffect(() => {
+    if (!stats) return;
+    const sections = document.querySelectorAll('[data-adsection]');
+    if (!sections.length) return;
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) setActiveSection(e.target.dataset.adsection); });
+    }, { rootMargin: '-25% 0px -65% 0px' });
+    sections.forEach(s => obs.observe(s));
+    return () => obs.disconnect();
+  }, [stats]);
 
   useEffect(() => {
     if (!password) return;
@@ -528,15 +571,47 @@ export default function AdminPage() {
     msg: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>,
   };
 
+  function scrollToSection(id) {
+    document.getElementById(`ad-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  const todayStr = new Date().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+
   return (
     <div className="ad-page">
+      <aside className="ad-side">
+        <div className="ad-side-brand">
+          <div className="ad-side-logo-chip"><img src={fitinLogo} alt="FitIn" /></div>
+          <div>
+            <div className="ad-side-name">FitIn Club</div>
+            <div className="ad-side-role">Admin console</div>
+          </div>
+        </div>
+        <nav className="ad-side-nav">
+          {NAV_SECTIONS.map(n => (
+            <button key={n.id} className={`ad-side-link ${activeSection === n.id ? 'active' : ''}`} onClick={() => scrollToSection(n.id)}>
+              {n.icon}<span>{n.label}</span>
+            </button>
+          ))}
+        </nav>
+        <div className="ad-side-foot">
+          {overview.liveNow > 0 && (
+            <div className="ad-side-live"><span className="pulse-dot" />{overview.liveNow} at gym now</div>
+          )}
+          <button className="ad-side-logout" onClick={() => setPassword(null)}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Log out
+          </button>
+        </div>
+      </aside>
+
+      <div className="ad-main">
       <header className="ad-header">
         <div className="ad-header-left">
           <img src={fitinLogo} alt="FitIn" className="ad-header-logo" />
           <div>
             <h1 className="ad-header-title">Dashboard</h1>
             <p className="ad-header-sub">
-              {lastUpdated && `Updated ${lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
+              {todayStr}{lastUpdated && ` · Updated ${lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
             </p>
           </div>
         </div>
@@ -559,6 +634,8 @@ export default function AdminPage() {
       </header>
 
       <div className="ad-content">
+      <section id="ad-overview" data-adsection="overview" className="ad-section">
+      <SectionHead kicker="Pulse" title="Overview" sub={todayStr} />
       <div className="ad-stats">
         <StatCard icon={icons.users} label="Total members" value={overview.totalUsers} delta={weeklyDelta.newUsers} color="#53603E" index={0} />
         <StatCard icon={icons.active} label="Active this week" value={overview.activeThisWeek}
@@ -568,7 +645,10 @@ export default function AdminPage() {
       </div>
 
       <LiveMembersCard liveMembers={liveMembers} onSelect={selectMemberById} />
+      </section>
 
+      <section id="ad-trends" data-adsection="trends" className="ad-section">
+      <SectionHead kicker="Analytics" title="Trends" sub="Last 30 days" />
       <div className="ad-row-2">
         <TrendCard title="New signups" data={trends.signups} color="#53603E" />
         <TrendCard title="Check-ins" data={trends.checkins} color="#FBA327" />
@@ -578,7 +658,10 @@ export default function AdminPage() {
         <TrendCard title="Messages" data={trends.messages} color="#6D412A" />
         <PeakHours data={peakHours} />
       </div>
+      </section>
 
+      <section id="ad-community" data-adsection="community" className="ad-section">
+      <SectionHead kicker="Engagement" title="Community" />
       <div className="ad-row-2">
         <FunnelChart funnel={funnel} />
         <Heatmap data={heatmap} />
@@ -588,7 +671,10 @@ export default function AdminPage() {
         <DonutChart title="Training types" data={trainingBreakdown} colors={trainingColors} />
         <DonutChart title="Gender split" data={genderBreakdown} colors={genderColors} />
       </div>
+      </section>
 
+      <section id="ad-members" data-adsection="members" className="ad-section">
+      <SectionHead kicker="Directory" title="Members" sub={`${(allMembers || []).length} total`} />
       <div className="ad-card ad-full">
         <div className="ad-card-head"><h3>Top members</h3><span className="ad-card-sub">Last 30 days</span></div>
         {topMembers.length === 0 ? <div className="ad-empty">No check-ins yet</div> : (
@@ -641,7 +727,10 @@ export default function AdminPage() {
         )}
       </div>
 
+      </section>
+
       {selectedMember && <MemberModal member={selectedMember} onClose={() => setSelectedMember(null)} adminPassword={password} />}
+      </div>
       </div>
     </div>
   );
