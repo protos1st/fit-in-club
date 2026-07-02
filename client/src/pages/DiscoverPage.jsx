@@ -296,7 +296,7 @@ export default function DiscoverPage() {
                 title="No one live right now"
                 message="Check back when more members check in."
                 action={activeFilterCount > 0 ? 'Clear filters' : undefined}
-                onAction={activeFilterCount > 0 ? () => { setGenderFilter(''); setTrainingFilter([]); setDayFilter(''); } : undefined}
+                onAction={activeFilterCount > 0 ? clearFilters : undefined}
               />
             </div>
           ) : (
@@ -330,7 +330,7 @@ export default function DiscoverPage() {
                   title="You've seen everyone"
                   message={activeFilterCount > 0 ? 'Try clearing your filters.' : 'New members join every day. Check back soon!'}
                   action={activeFilterCount > 0 ? 'Clear filters' : undefined}
-                  onAction={activeFilterCount > 0 ? () => { setGenderFilter(''); setTrainingFilter([]); setDayFilter(''); } : undefined}
+                  onAction={activeFilterCount > 0 ? clearFilters : undefined}
                 />
               </div>
             ) : (
@@ -435,7 +435,7 @@ export default function DiscoverPage() {
             </div>
 
             <div className="filter-sheet-actions">
-              <button className="btn btn-ghost" onClick={() => { setGenderFilter(''); setTrainingFilter([]); setDayFilter(''); }}>Clear all</button>
+              <button className="btn btn-ghost" onClick={clearFilters}>Clear all</button>
               <button className="btn btn-primary" onClick={() => setShowFilters(false)}>
                 Show {queue.length} {queue.length === 1 ? 'match' : 'matches'}
               </button>
