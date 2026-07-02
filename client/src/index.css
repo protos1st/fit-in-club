@@ -663,6 +663,22 @@ input, select, textarea {
 }
 .sched-add-btn:hover { opacity: 0.7; }
 
+.sched-add-day-row { display: flex; align-items: center; gap: 10px; padding: 12px 16px; flex-wrap: wrap; }
+.sched-add-day-label { font-size: 0.75rem; color: var(--color-hint); font-weight: 600; flex-shrink: 0; }
+.sched-add-day-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.sched-add-day-pill {
+  background: var(--color-bg);
+  border: 1.5px dashed var(--color-line);
+  border-radius: 16px;
+  color: var(--color-muted);
+  padding: 5px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.sched-add-day-pill:hover { border-color: var(--color-accent); color: var(--color-accent); }
+
 .sched-editor {
   padding: 12px 16px 12px 66px;
   border-bottom: 1px solid var(--color-line);

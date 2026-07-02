@@ -347,6 +347,7 @@ export default function MySchedulePage() {
         <div className="schedule-list card">
           {DAYS.map((label, dayIndex) => {
             const daySlots = slots.filter((s) => s.day_of_week === dayIndex);
+            if (daySlots.length === 0 && addingDay !== dayIndex) return null;
             const isToday = dayIndex === today;
             return (
               <div key={dayIndex}>
@@ -419,6 +420,21 @@ export default function MySchedulePage() {
               </div>
             );
           })}
+
+          {(() => {
+            const missingDays = DAYS.map((_, i) => i).filter(i => slots.every(s => s.day_of_week !== i) && i !== addingDay);
+            if (missingDays.length === 0) return null;
+            return (
+              <div className="sched-add-day-row">
+                <span className="sched-add-day-label">Add day</span>
+                <div className="sched-add-day-pills">
+                  {missingDays.map(i => (
+                    <button key={i} className="sched-add-day-pill" onClick={() => startAdding(i)}>{DAYS[i]}</button>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
         </div>
       )}
     </div>
