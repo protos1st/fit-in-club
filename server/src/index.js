@@ -87,7 +87,7 @@ const checkinLimiter = rateLimit({
 
 const buddyLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  max: 60,
+  max: 600,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many buddy actions, try again later' }

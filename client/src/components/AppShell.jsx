@@ -68,7 +68,7 @@ export default function AppShell({ children }) {
 
   useEffect(() => {
     fetchBadges();
-    const interval = setInterval(fetchBadges, 10000);
+    const interval = setInterval(fetchBadges, 45000);
     return () => clearInterval(interval);
   }, [fetchBadges]);
 
