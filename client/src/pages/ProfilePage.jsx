@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/AuthContext';
-import { api } from '../lib/api';
+import { api, setToken } from '../lib/api';
 import { useToast } from '../lib/ToastContext';
 import Avatar from '../components/Avatar';
 import { confirmDialog } from '../components/ConfirmDialog';
@@ -50,6 +50,30 @@ export default function ProfilePage() {
   useEffect(() => {
     api.getLeaderboard().then((d) => setLeaderboard(d.leaderboard || [])).catch(() => {});
   }, []);
+
+  const [pwSheet, setPwSheet] = useState(false);
+  const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' });
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwError, setPwError] = useState('');
+
+  async function handleChangePassword(e) {
+    e.preventDefault();
+    setPwError('');
+    if (pwForm.next.length < 8) { setPwError('New password must be at least 8 characters'); return; }
+    if (pwForm.next !== pwForm.confirm) { setPwError('New passwords do not match'); return; }
+    setPwSaving(true);
+    try {
+      const data = await api.changePassword(pwForm.current, pwForm.next);
+      setToken(data.token);
+      showToast('Password updated', 'success');
+      setPwSheet(false);
+      setPwForm({ current: '', next: '', confirm: '' });
+    } catch (err) {
+      setPwError(err.message);
+    } finally {
+      setPwSaving(false);
+    }
+  }
 
   const [dark, setDark] = useState(() => localStorage.getItem('theme') === 'dark');
   function toggleTheme() {
@@ -203,6 +227,40 @@ export default function ProfilePage() {
         </Portal>
       )}
 
+      {/* Change password modal */}
+      {pwSheet && (
+        <Portal>
+          <div className="modal-backdrop" onClick={() => setPwSheet(false)}>
+            <div className="modal-card" onClick={e => e.stopPropagation()}>
+              <div className="modal-header">
+                <div className="modal-title">Change password</div>
+                <button className="modal-close" onClick={() => setPwSheet(false)} aria-label="Close">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+              <form onSubmit={handleChangePassword}>
+                {pwError && <div className="form-error">{pwError}</div>}
+                <div className="field">
+                  <label>Current password</label>
+                  <input type="password" value={pwForm.current} onChange={e => setPwForm(f => ({ ...f, current: e.target.value }))} autoComplete="current-password" autoFocus maxLength={128} />
+                </div>
+                <div className="field">
+                  <label>New password</label>
+                  <input type="password" value={pwForm.next} onChange={e => setPwForm(f => ({ ...f, next: e.target.value }))} placeholder="At least 8 characters" autoComplete="new-password" maxLength={128} />
+                </div>
+                <div className="field">
+                  <label>Confirm new password</label>
+                  <input type="password" value={pwForm.confirm} onChange={e => setPwForm(f => ({ ...f, confirm: e.target.value }))} placeholder="Same password again" autoComplete="new-password" maxLength={128} />
+                </div>
+                <button type="submit" className="btn btn-primary btn-block" disabled={pwSaving || !pwForm.current || !pwForm.next || !pwForm.confirm}>
+                  {pwSaving ? 'Updating…' : 'Update password'}
+                </button>
+              </form>
+            </div>
+          </div>
+        </Portal>
+      )}
+
       <div className="section-title">Edit profile</div>
       <div className="card card-narrow">
         <form onSubmit={handleSubmit}>
@@ -282,6 +340,13 @@ export default function ProfilePage() {
 
       <div className="section-title mt-md">Account</div>
       <div className="card card-narrow">
+        <div className="profile-setting profile-setting-link" onClick={() => setPwSheet(true)}>
+          <div>
+            <div className="profile-setting-title">Change password</div>
+            <div className="profile-setting-desc">Update your login password</div>
+          </div>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-hint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
         <div className="profile-setting">
           <div>
             <div className="profile-setting-title">Log out</div>

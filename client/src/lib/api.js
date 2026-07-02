@@ -80,6 +80,7 @@ export const api = {
   getBlocked: () => request('/api/moderation/blocked'),
   reportUser: (userId, reason) => request('/api/moderation/report', { method: 'POST', body: { userId, reason } }),
 
+  changePassword: (currentPassword, newPassword) => request('/api/auth/password', { method: 'PUT', body: { currentPassword, newPassword } }),
   forgotPassword: (email) => request('/api/auth/forgot-password', { method: 'POST', body: { email } }),
   resetPassword: (token, password) => request('/api/auth/reset-password', { method: 'POST', body: { token, password } }),
 
