@@ -29,7 +29,7 @@ function SkeletonList() {
 
 const STATUS_TAGS = ['Looking for a spotter', 'Open to join', 'Solo session', 'Cardio buddy wanted'];
 
-function LiveBanner({ liveStatus, liveBusy, statusTag, setStatusTag, onToggle, onExtend, todayMatches }) {
+function LiveBanner({ liveStatus, liveBusy, statusTag, setStatusTag, onToggle, onExtend }) {
   const expiresAt = liveStatus?.expires_at;
   const timeLeft = expiresAt ? Math.max(0, Math.round((new Date(expiresAt) - Date.now()) / 60000)) : 0;
   const showExtendPrompt = liveStatus && timeLeft <= 10 && timeLeft > 0;
@@ -43,9 +43,6 @@ function LiveBanner({ liveStatus, liveBusy, statusTag, setStatusTag, onToggle, o
               <strong><span className="pulse-dot" />You're at the gym</strong>
               <span>{timeLeft > 0 ? `Visible for ${timeLeft} more min` : 'Expiring soon'}</span>
               {liveStatus.status_tag && <span className="tag tag-sm tag-spaced">{liveStatus.status_tag}</span>}
-              {todayMatches > 0 && (
-                <span className="sched-match-hint">{todayMatches} buddy match{todayMatches !== 1 ? 'es' : ''} today</span>
-              )}
               {showExtendPrompt && (
                 <div className="sched-extend-prompt">
                   <span>Still training?</span>
@@ -97,7 +94,6 @@ export default function MySchedulePage() {
   const [liveStatus, setLiveStatus] = useState(null);
   const [liveBusy, setLiveBusy] = useState(false);
   const [statusTag, setStatusTag] = useState('');
-  const [todayMatches, setTodayMatches] = useState(0);
   const showToast = useToast();
   const timerRef = useRef(null);
 
@@ -123,7 +119,6 @@ export default function MySchedulePage() {
   useEffect(() => {
     loadSchedule();
     api.getMyStatus().then((data) => setLiveStatus(data.status)).catch(() => {});
-    api.getTodayMatches().then((data) => setTodayMatches(data.count)).catch(() => {});
   }, [loadSchedule]);
 
   useEffect(() => {
@@ -151,7 +146,6 @@ export default function MySchedulePage() {
       }));
       const data = await api.saveMySchedule(payload);
       setSlots(data.schedule);
-      api.getTodayMatches().then((d) => setTodayMatches(d.count)).catch(() => {});
     } catch (err) {
       showToast(err.message, 'error');
     } finally {
@@ -271,7 +265,6 @@ export default function MySchedulePage() {
         <LiveBanner
           liveStatus={liveStatus} liveBusy={liveBusy} statusTag={statusTag}
           setStatusTag={setStatusTag} onToggle={toggleLive} onExtend={handleExtend}
-          todayMatches={todayMatches}
         />
       )}
 
