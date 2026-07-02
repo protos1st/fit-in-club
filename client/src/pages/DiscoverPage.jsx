@@ -248,6 +248,11 @@ export default function DiscoverPage() {
     if (target) api.passProfile(target.user_id).catch(() => {});
   }
 
+  const availableMatches = useMemo(
+    () => matches.filter(p => !connectedTo.has(p.user_id) && !pendingTo.has(p.user_id) && !sentTo.has(p.user_id)).length,
+    [matches, connectedTo, pendingTo, sentTo]
+  );
+
   const remaining = queue.slice(cardIdx);
   const activeFilterCount = (genderFilter ? 1 : 0) + (trainingFilter.length > 0 ? 1 : 0) + (dayFilter !== '' ? 1 : 0);
 
@@ -265,7 +270,7 @@ export default function DiscoverPage() {
         <div className="swipe-tabs">
           <button className={`swipe-tab ${tab === 'matches' ? 'swipe-tab-active' : ''}`} onClick={() => setTab('matches')}>
             Schedule match
-            {matches.length > 0 && <span className="swipe-tab-count">{matches.length}</span>}
+            {availableMatches > 0 && <span className="swipe-tab-count">{availableMatches}</span>}
           </button>
           <button className={`swipe-tab ${tab === 'live' ? 'swipe-tab-active' : ''}`} onClick={() => setTab('live')}>
             Live now
