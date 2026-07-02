@@ -156,7 +156,7 @@ export default function DiscoverPage() {
   const queue = useMemo(() => {
     const pool = tab === 'live' ? live : matches;
     let result = [...pool];
-    if (tab === 'matches') result = result.filter(p => !connectedTo.has(p.user_id));
+    if (tab === 'matches') result = result.filter(p => !connectedTo.has(p.user_id) && !pendingTo.has(p.user_id) && !sentTo.has(p.user_id));
     if (genderFilter) result = result.filter(p => p.gender === genderFilter);
     const matchCount = (p) => {
       const userTypes = p.training_type?.split(',').map(t => t.trim()) || [];
@@ -173,7 +173,7 @@ export default function DiscoverPage() {
       result.sort((a, b) => (connectedTo.has(b.user_id) ? 1 : 0) - (connectedTo.has(a.user_id) ? 1 : 0));
     }
     return result;
-  }, [tab, live, matches, genderFilter, trainingFilter, dayFilter, connectedTo]);
+  }, [tab, live, matches, genderFilter, trainingFilter, dayFilter, connectedTo, pendingTo, sentTo]);
 
   // Reset card index when tab or filters change
   useEffect(() => { setCardIdx(0); }, [tab, genderFilter, trainingFilter.join(','), dayFilter]);
