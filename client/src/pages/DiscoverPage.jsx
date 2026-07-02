@@ -268,6 +268,8 @@ export default function DiscoverPage() {
 
   return (
     <div className="swipe-page">
+      <h1 className="page-title swipe-page-title">Discover</h1>
+
       {/* Header */}
       <div className="swipe-header">
         <div className="swipe-tabs">

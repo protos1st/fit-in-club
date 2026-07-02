@@ -3223,6 +3223,10 @@ input, select, textarea {
   padding: 0;
   margin: -16px -16px -100px;
 }
+.swipe-page-title {
+  flex-shrink: 0;
+  margin: 16px 16px 0;
+}
 .swipe-header {
   display: flex;
   align-items: center;
