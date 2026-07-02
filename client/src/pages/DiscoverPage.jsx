@@ -174,6 +174,7 @@ export default function DiscoverPage() {
   const [genderFilter, setGenderFilter] = useState('');
   const [trainingFilter, setTrainingFilter] = useState([]);
   const [dayFilter, setDayFilter] = useState('');
+  const [friendsOnly, setFriendsOnly] = useState(false);
   const showToast = useToast();
   const navigate = useNavigate();
 
@@ -205,6 +206,7 @@ export default function DiscoverPage() {
     const pool = tab === 'live' ? live : matches;
     let result = [...pool];
     if (tab === 'matches') result = result.filter(p => !connectedTo.has(p.user_id) && !pendingTo.has(p.user_id) && !sentTo.has(p.user_id));
+    if (tab === 'live' && friendsOnly) result = result.filter(p => connectedTo.has(p.user_id));
     if (genderFilter) result = result.filter(p => p.gender === genderFilter);
     const matchCount = (p) => {
       const userTypes = p.training_type?.split(',').map(t => t.trim()) || [];
@@ -221,7 +223,7 @@ export default function DiscoverPage() {
       result.sort((a, b) => (connectedTo.has(b.user_id) ? 1 : 0) - (connectedTo.has(a.user_id) ? 1 : 0));
     }
     return result;
-  }, [tab, live, matches, genderFilter, trainingFilter, dayFilter, connectedTo, pendingTo, sentTo]);
+  }, [tab, live, matches, genderFilter, trainingFilter, dayFilter, friendsOnly, connectedTo, pendingTo, sentTo]);
 
   // Reset card index when tab or filters change
   useEffect(() => { setCardIdx(0); }, [tab, genderFilter, trainingFilter.join(','), dayFilter]);
@@ -254,7 +256,8 @@ export default function DiscoverPage() {
   );
 
   const remaining = queue.slice(cardIdx);
-  const activeFilterCount = (genderFilter ? 1 : 0) + (trainingFilter.length > 0 ? 1 : 0) + (dayFilter !== '' ? 1 : 0);
+  const activeFilterCount = (genderFilter ? 1 : 0) + (trainingFilter.length > 0 ? 1 : 0) + (dayFilter !== '' ? 1 : 0) + (tab === 'live' && friendsOnly ? 1 : 0);
+  function clearFilters() { setGenderFilter(''); setTrainingFilter([]); setDayFilter(''); setFriendsOnly(false); }
 
   if (loading) return (
     <div className="swipe-loading">
@@ -406,6 +409,17 @@ export default function DiscoverPage() {
                   </button>
                 ))}
               </div>
+
+              {tab === 'live' && (
+                <>
+                  <div className="filter-sheet-label" style={{ marginTop: 16 }}>Friends only</div>
+                  <div className="filter-sheet-options">
+                    <button className={`filter-pill ${friendsOnly ? 'filter-pill-active' : ''}`} onClick={() => setFriendsOnly(f => !f)}>
+                      {friendsOnly ? 'On — showing connections only' : 'Off — showing everyone live'}
+                    </button>
+                  </div>
+                </>
+              )}
 
               {tab === 'matches' && (
                 <>
