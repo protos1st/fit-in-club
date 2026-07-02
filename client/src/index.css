@@ -3190,6 +3190,8 @@ input, select, textarea {
 .ig-profile-email { font-size: 0.78rem; color: var(--color-muted); margin-top: 1px; margin-bottom: 10px; }
 .ig-profile-stats { display: flex; align-items: center; gap: 0; margin-bottom: 8px; }
 .ig-stat { display: flex; flex-direction: column; align-items: center; min-width: 0; flex: 1; }
+.ig-stat-clickable { cursor: pointer; }
+.ig-stat-clickable:hover .ig-stat-val { color: var(--color-accent); }
 .ig-stat-val { font-size: 0.95rem; font-weight: 700; color: var(--color-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70px; }
 .ig-stat-label { font-size: 0.68rem; color: var(--color-muted); margin-top: 1px; }
 .ig-stat-divider { width: 1px; height: 28px; background: var(--color-line); margin: 0 4px; flex-shrink: 0; }

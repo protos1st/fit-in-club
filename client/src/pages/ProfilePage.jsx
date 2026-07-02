@@ -43,6 +43,7 @@ export default function ProfilePage() {
   const [photoSheet, setPhotoSheet] = useState(false);
   const [photoViewer, setPhotoViewer] = useState(false);
   const [trainingOpen, setTrainingOpen] = useState(false);
+  const [showTrainingList, setShowTrainingList] = useState(false);
   const trainingRef = useRef();
   const [leaderboard, setLeaderboard] = useState([]);
   const fileInputRef = useRef();
@@ -148,6 +149,12 @@ export default function ProfilePage() {
 
   const displayPhoto = preview || user?.avatar_url || null;
   const checkins = leaderboard.find(u => u.user_id === user?.id)?.checkins || 0;
+  const trainingTypesList = user?.training_type ? user.training_type.split(',').map(t => t.trim()).filter(Boolean) : [];
+  const trainingStatLabel = trainingTypesList.length === 0
+    ? '—'
+    : trainingTypesList.length === 1
+    ? trainingTypesList[0]
+    : `${trainingTypesList[0]} +${trainingTypesList.length - 1}`;
 
   return (
     <div>
@@ -179,8 +186,8 @@ export default function ProfilePage() {
               <span className="ig-stat-label">Check-ins</span>
             </div>
             <div className="ig-stat-divider" />
-            <div className="ig-stat">
-              <span className="ig-stat-val">{user?.training_type || '—'}</span>
+            <div className="ig-stat ig-stat-clickable" onClick={() => trainingTypesList.length > 0 && setShowTrainingList(true)}>
+              <span className="ig-stat-val">{trainingStatLabel}</span>
               <span className="ig-stat-label">Training</span>
             </div>
             <div className="ig-stat-divider" />
@@ -192,6 +199,25 @@ export default function ProfilePage() {
           {user?.bio && <div className="ig-profile-bio">{user.bio}</div>}
         </div>
       </div>
+
+      {/* Training types modal */}
+      {showTrainingList && (
+        <Portal>
+          <div className="modal-backdrop" onClick={() => setShowTrainingList(false)}>
+            <div className="modal-card" onClick={e => e.stopPropagation()}>
+              <div className="modal-header">
+                <div className="modal-title">Training types</div>
+                <button className="modal-close" onClick={() => setShowTrainingList(false)} aria-label="Close">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+              <div className="req-profile-training" style={{ justifyContent: 'flex-start' }}>
+                {trainingTypesList.map(t => <span key={t} className="tag">{t}</span>)}
+              </div>
+            </div>
+          </div>
+        </Portal>
+      )}
 
       {/* Photo viewer */}
       {photoViewer && displayPhoto && (
