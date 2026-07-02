@@ -116,6 +116,48 @@ function SwipeCard({ person, onConnect, onPass, isConnected, isPending, onMessag
   );
 }
 
+/* ── Live list row ── */
+function LiveListRow({ person, onConnect, onPass, onMessage, isConnected, isPending }) {
+  return (
+    <div className="live-row">
+      {person.avatar_url ? (
+        <img src={person.avatar_url} alt={person.name} className="live-row-photo" />
+      ) : (
+        <Avatar name={person.name} size={52} />
+      )}
+      <div className="live-row-info">
+        <div className="live-row-name">
+          {person.name}
+          {person.gender && person.gender !== 'Prefer not to say' && (
+            <span className="live-row-gender">{person.gender}</span>
+          )}
+        </div>
+        {person.training_type && <div className="live-row-training">{person.training_type}</div>}
+        <div className="live-row-status">
+          {person.status_tag && <span>{person.status_tag} · </span>}
+          <span className="live-row-live">● At gym {timeAgo(person.checked_in_at)}</span>
+        </div>
+      </div>
+      <div className="live-row-actions">
+        {isConnected ? (
+          <button className="btn btn-outline btn-sm" onClick={onMessage} aria-label="Message">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          </button>
+        ) : (
+          <>
+            <button className="live-row-pass" onClick={onPass} aria-label="Pass">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <button className="btn btn-primary btn-sm" onClick={onConnect} disabled={isPending}>
+              {isPending ? 'Sent' : 'Connect'}
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ── Main page ── */
 export default function DiscoverPage() {
   const [live, setLive] = useState([]);
@@ -236,69 +278,102 @@ export default function DiscoverPage() {
         </button>
       </div>
 
-      {/* Card stack */}
-      <div className="swipe-stack-wrap">
-        {matchNote && tab === 'matches' ? (
-          <div className="swipe-empty-card">
-            <EmptyState type="schedule" title="Set your schedule first" message={matchNote} action="Set schedule" onAction={() => navigate('/')} />
-          </div>
-        ) : remaining.length === 0 ? (
-          <div className="swipe-empty-card">
-            <EmptyState
-              type={tab === 'live' ? 'messages' : 'discover'}
-              title={tab === 'live' ? 'No one live right now' : 'You\'ve seen everyone'}
-              message={tab === 'live' ? 'Check back when more members check in.' : activeFilterCount > 0 ? 'Try clearing your filters.' : 'New members join every day. Check back soon!'}
-              action={activeFilterCount > 0 ? 'Clear filters' : undefined}
-              onAction={activeFilterCount > 0 ? () => { setGenderFilter(''); setTrainingFilter([]); setDayFilter(''); } : undefined}
-            />
-          </div>
-        ) : (
-          <div className="swipe-stack">
-            {/* Show up to 3 cards stacked */}
-            {remaining.slice(0, 3).map((person, i) => (
-              <SwipeCard
-                key={person.user_id}
-                person={person}
-                zIndex={3 - i}
-                isTop={i === 0}
-                isConnected={connectedTo.has(person.user_id)}
-                isPending={sentTo.has(person.user_id) || pendingTo.has(person.user_id)}
-                onConnect={() => handleConnect(person)}
-                onPass={() => handlePass(person)}
-                onMessage={(id) => navigate(`/connections/${id}`)}
+      {tab === 'live' ? (
+        /* Scrollable live list */
+        <div className="live-list-wrap">
+          {queue.length === 0 ? (
+            <div className="swipe-empty-card">
+              <EmptyState
+                type="messages"
+                title="No one live right now"
+                message="Check back when more members check in."
+                action={activeFilterCount > 0 ? 'Clear filters' : undefined}
+                onAction={activeFilterCount > 0 ? () => { setGenderFilter(''); setTrainingFilter([]); setDayFilter(''); } : undefined}
               />
-            ))}
-          </div>
-        )}
-
-        {/* Counter */}
-        {remaining.length > 0 && (
-          <div className="swipe-counter">{cardIdx + 1} / {queue.length}</div>
-        )}
-      </div>
-
-      {/* Action buttons */}
-      {remaining.length > 0 && (
-        <div className="swipe-actions">
-          <button className="swipe-btn swipe-btn-pass" onClick={() => handlePass(remaining[0])} aria-label="Pass">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </button>
-
-          {connectedTo.has(remaining[0]?.user_id) ? (
-            <button className="swipe-btn swipe-btn-message" onClick={() => navigate(`/connections/${remaining[0].user_id}`)} aria-label="Message">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-            </button>
+            </div>
           ) : (
-            <button
-              className="swipe-btn swipe-btn-connect"
-              onClick={() => handleConnect(remaining[0])}
-              disabled={sentTo.has(remaining[0]?.user_id) || pendingTo.has(remaining[0]?.user_id)}
-              aria-label="Connect"
-            >
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            </button>
+            <div className="live-list">
+              {queue.map((person) => (
+                <LiveListRow
+                  key={person.user_id}
+                  person={person}
+                  isConnected={connectedTo.has(person.user_id)}
+                  isPending={sentTo.has(person.user_id) || pendingTo.has(person.user_id)}
+                  onConnect={() => handleConnect(person)}
+                  onPass={() => handlePass(person)}
+                  onMessage={() => navigate(`/connections/${person.user_id}`)}
+                />
+              ))}
+            </div>
           )}
         </div>
+      ) : (
+        <>
+          {/* Card stack */}
+          <div className="swipe-stack-wrap">
+            {matchNote ? (
+              <div className="swipe-empty-card">
+                <EmptyState type="schedule" title="Set your schedule first" message={matchNote} action="Set schedule" onAction={() => navigate('/')} />
+              </div>
+            ) : remaining.length === 0 ? (
+              <div className="swipe-empty-card">
+                <EmptyState
+                  type="discover"
+                  title="You've seen everyone"
+                  message={activeFilterCount > 0 ? 'Try clearing your filters.' : 'New members join every day. Check back soon!'}
+                  action={activeFilterCount > 0 ? 'Clear filters' : undefined}
+                  onAction={activeFilterCount > 0 ? () => { setGenderFilter(''); setTrainingFilter([]); setDayFilter(''); } : undefined}
+                />
+              </div>
+            ) : (
+              <div className="swipe-stack">
+                {/* Show up to 3 cards stacked */}
+                {remaining.slice(0, 3).map((person, i) => (
+                  <SwipeCard
+                    key={person.user_id}
+                    person={person}
+                    zIndex={3 - i}
+                    isTop={i === 0}
+                    isConnected={connectedTo.has(person.user_id)}
+                    isPending={sentTo.has(person.user_id) || pendingTo.has(person.user_id)}
+                    onConnect={() => handleConnect(person)}
+                    onPass={() => handlePass(person)}
+                    onMessage={(id) => navigate(`/connections/${id}`)}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Counter */}
+            {remaining.length > 0 && (
+              <div className="swipe-counter">{cardIdx + 1} / {queue.length}</div>
+            )}
+          </div>
+
+          {/* Action buttons */}
+          {remaining.length > 0 && (
+            <div className="swipe-actions">
+              <button className="swipe-btn swipe-btn-pass" onClick={() => handlePass(remaining[0])} aria-label="Pass">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+
+              {connectedTo.has(remaining[0]?.user_id) ? (
+                <button className="swipe-btn swipe-btn-message" onClick={() => navigate(`/connections/${remaining[0].user_id}`)} aria-label="Message">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                </button>
+              ) : (
+                <button
+                  className="swipe-btn swipe-btn-connect"
+                  onClick={() => handleConnect(remaining[0])}
+                  disabled={sentTo.has(remaining[0]?.user_id) || pendingTo.has(remaining[0]?.user_id)}
+                  aria-label="Connect"
+                >
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
+              )}
+            </div>
+          )}
+        </>
       )}
 
       {/* Filter sheet */}
