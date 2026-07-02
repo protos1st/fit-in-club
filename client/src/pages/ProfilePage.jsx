@@ -336,6 +336,13 @@ export default function ProfilePage() {
           </div>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-hint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
         </div>
+        <div className="profile-setting profile-setting-link" onClick={() => navigate('/passed')}>
+          <div>
+            <div className="profile-setting-title">Passed profiles</div>
+            <div className="profile-setting-desc">Bring back people you passed on</div>
+          </div>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-hint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
       </div>
 
       <div className="section-title mt-md">Account</div>

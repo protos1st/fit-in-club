@@ -45,6 +45,36 @@ router.get('/blocked', async (req, res) => {
   res.json({ blocked: result.rows });
 });
 
+// POST /api/moderation/pass { userId }
+router.post('/pass', async (req, res) => {
+  const userId = validId(req.body.userId);
+  if (!userId) return res.status(400).json({ error: 'Valid userId is required' });
+  if (userId === req.user.id) return res.status(400).json({ error: "You can't pass yourself" });
+
+  await pool.query(
+    'INSERT INTO passes (passer_id, passed_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+    [req.user.id, userId]
+  );
+  res.json({ ok: true });
+});
+
+// DELETE /api/moderation/pass/:userId
+router.delete('/pass/:userId', async (req, res) => {
+  const passedId = validId(req.params.userId);
+  if (!passedId) return res.status(400).json({ error: 'Invalid user ID' });
+  await pool.query('DELETE FROM passes WHERE passer_id = $1 AND passed_id = $2', [req.user.id, passedId]);
+  res.json({ ok: true });
+});
+
+// GET /api/moderation/passed
+router.get('/passed', async (req, res) => {
+  const result = await pool.query(
+    'SELECT p.passed_id as user_id, u.name, u.avatar_url, u.training_type, p.created_at FROM passes p JOIN users u ON u.id = p.passed_id WHERE p.passer_id = $1 ORDER BY p.created_at DESC',
+    [req.user.id]
+  );
+  res.json({ passed: result.rows });
+});
+
 // POST /api/moderation/report { userId, reason }
 router.post('/report', async (req, res) => {
   const userId = validId(req.body.userId);

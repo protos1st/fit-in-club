@@ -186,8 +186,10 @@ export default function DiscoverPage() {
     }
   }
 
-  function handlePass() {
+  function handlePass(person) {
     setCardIdx(i => i + 1);
+    const target = person || remaining[0];
+    if (target) api.passProfile(target.user_id).catch(() => {});
   }
 
   const remaining = queue.slice(cardIdx);
@@ -248,7 +250,7 @@ export default function DiscoverPage() {
                 isConnected={connectedTo.has(person.user_id)}
                 isPending={sentTo.has(person.user_id) || pendingTo.has(person.user_id)}
                 onConnect={() => handleConnect(person)}
-                onPass={handlePass}
+                onPass={() => handlePass(person)}
                 onMessage={(id) => navigate(`/connections/${id}`)}
               />
             ))}
@@ -264,7 +266,7 @@ export default function DiscoverPage() {
       {/* Action buttons */}
       {remaining.length > 0 && (
         <div className="swipe-actions">
-          <button className="swipe-btn swipe-btn-pass" onClick={handlePass} aria-label="Pass">
+          <button className="swipe-btn swipe-btn-pass" onClick={() => handlePass(remaining[0])} aria-label="Pass">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
 

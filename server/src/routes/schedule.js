@@ -98,6 +98,7 @@ router.get('/overlap', async (req, res) => {
     JOIN users u ON u.id = s.user_id
     WHERE u.id != $1
       AND NOT EXISTS (SELECT 1 FROM blocks WHERE (blocker_id = $1 AND blocked_id = u.id) OR (blocker_id = u.id AND blocked_id = $1))
+      AND NOT EXISTS (SELECT 1 FROM passes WHERE passer_id = $1 AND passed_id = u.id)
   `, [req.user.id]);
   const others = othersResult.rows;
 
@@ -193,6 +194,7 @@ router.get('/live', async (req, res) => {
     JOIN users u ON u.id = l.user_id
     WHERE l.expires_at > $1 AND u.id != $2
       AND NOT EXISTS (SELECT 1 FROM blocks WHERE (blocker_id = $2 AND blocked_id = u.id) OR (blocker_id = u.id AND blocked_id = $2))
+      AND NOT EXISTS (SELECT 1 FROM passes WHERE passer_id = $2 AND passed_id = u.id)
     ORDER BY l.checked_in_at DESC
   `, [now, req.user.id]);
 

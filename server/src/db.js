@@ -101,6 +101,16 @@ async function initDb() {
     UPDATE users
     SET training_type = regexp_replace(trim(training_type), '\s*[+]\s*', ', ', 'g')
     WHERE training_type LIKE '%+%';
+
+    CREATE TABLE IF NOT EXISTS passes (
+      id SERIAL PRIMARY KEY,
+      passer_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      passed_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      UNIQUE(passer_id, passed_id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_passes_passer ON passes(passer_id);
+    CREATE INDEX IF NOT EXISTS idx_passes_passed ON passes(passed_id);
   `);
 }
 
