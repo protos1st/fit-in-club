@@ -405,9 +405,13 @@ function MemberModal({ member, onClose, adminPassword }) {
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
         <div className="ad-member-top">
-          <div className="ad-member-avatar">
-            {member.name.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase()}
-          </div>
+          {member.avatar_url ? (
+            <img src={member.avatar_url} alt={member.name} className="ad-member-avatar ad-avatar-img" />
+          ) : (
+            <div className="ad-member-avatar">
+              {member.name.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase()}
+            </div>
+          )}
           <h2 className="ad-member-name">{member.name}</h2>
           {member.is_live && <span className="ad-member-live-tag"><span className="pulse-dot" />At gym now</span>}
         </div>
@@ -459,7 +463,11 @@ function LiveMembersCard({ liveMembers, onSelect }) {
           const mins = Math.max(0, Math.round((new Date(m.expires_at) - Date.now()) / 60000));
           return (
             <div key={m.id} className="ad-live-member" onClick={() => onSelect(m.id)}>
-              <div className="ad-live-avatar">{m.name.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase()}</div>
+              {m.avatar_url ? (
+                <img src={m.avatar_url} alt={m.name} className="ad-live-avatar ad-avatar-img" />
+              ) : (
+                <div className="ad-live-avatar">{m.name.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase()}</div>
+              )}
               <div className="ad-live-info">
                 <div className="ad-live-name">{m.name}</div>
                 <div className="ad-live-meta">
@@ -713,7 +721,16 @@ export default function AdminPage() {
               <tbody>
                 {filteredMembers.map(u => (
                   <tr key={u.id} className="ad-clickable" onClick={() => setSelectedMember(u)}>
-                    <td className="ad-name">{u.name}</td>
+                    <td className="ad-name">
+                      <span className="ad-name-cell">
+                        {u.avatar_url ? (
+                          <img src={u.avatar_url} alt="" className="ad-tbl-avatar ad-avatar-img" />
+                        ) : (
+                          <span className="ad-tbl-avatar">{u.name.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase()}</span>
+                        )}
+                        {u.name}
+                      </span>
+                    </td>
                     <td className="ad-meta">{u.email}</td>
                     <td className="ad-meta">{u.training_type || '—'}</td>
                     <td className="ad-bold">{u.total_checkins}</td>

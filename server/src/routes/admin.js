@@ -160,7 +160,7 @@ router.get('/stats', async (req, res) => {
     `),
 
     pool.query(`
-      SELECT u.id, u.name, u.training_type, l.status_tag, l.checked_in_at, l.expires_at
+      SELECT u.id, u.name, u.avatar_url, u.training_type, l.status_tag, l.checked_in_at, l.expires_at
       FROM live_status l
       JOIN users u ON u.id = l.user_id
       WHERE l.expires_at > NOW()
@@ -168,7 +168,7 @@ router.get('/stats', async (req, res) => {
     `),
 
     pool.query(`
-      SELECT u.id, u.name, u.email, u.training_type, u.gender, u.bio, u.created_at,
+      SELECT u.id, u.name, u.email, u.avatar_url, u.training_type, u.gender, u.bio, u.created_at,
         (SELECT COUNT(*)::int FROM checkin_log cl WHERE cl.user_id = u.id) as total_checkins,
         (SELECT COUNT(*)::int FROM buddy_requests br WHERE (br.from_user_id = u.id OR br.to_user_id = u.id) AND br.status = 'accepted') as connections,
         (SELECT COUNT(*)::int FROM messages m WHERE m.from_user_id = u.id) as messages_sent,

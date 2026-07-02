@@ -2454,6 +2454,11 @@ input, select, textarea {
 .ad-member-search { border: 1.5px solid transparent; transition: border-color 0.2s, box-shadow 0.2s, background 0.2s; }
 .ad-member-search:focus-within { border-color: var(--color-accent); box-shadow: 0 0 0 3px rgba(251,163,39,0.16); background: var(--color-card); }
 
+/* Avatars */
+.ad-avatar-img { object-fit: cover; }
+.ad-name-cell { display: inline-flex; align-items: center; gap: 9px; }
+.ad-tbl-avatar { width: 28px; height: 28px; border-radius: 50%; background: #53603E; color: #fff; font-size: 0.6rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
 /* Sidebar visibility */
 @media (max-width: 980px) {
   .ad-side { display: none; }
