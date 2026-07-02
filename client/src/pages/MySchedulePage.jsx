@@ -1,9 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useToast } from '../lib/ToastContext';
 import { formatTime, initials } from '../lib/utils';
-import Avatar from '../components/Avatar';
 import Portal from '../components/Portal';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -100,9 +98,7 @@ export default function MySchedulePage() {
   const [liveBusy, setLiveBusy] = useState(false);
   const [statusTag, setStatusTag] = useState('');
   const [todayMatches, setTodayMatches] = useState(0);
-  const [dayBuddies, setDayBuddies] = useState({});
   const showToast = useToast();
-  const navigate = useNavigate();
   const timerRef = useRef(null);
 
   const today = new Date().getDay();
@@ -128,7 +124,6 @@ export default function MySchedulePage() {
     loadSchedule();
     api.getMyStatus().then((data) => setLiveStatus(data.status)).catch(() => {});
     api.getTodayMatches().then((data) => setTodayMatches(data.count)).catch(() => {});
-    api.getDayBuddies().then((data) => setDayBuddies(data.buddies || {})).catch(() => {});
   }, [loadSchedule]);
 
   useEffect(() => {
@@ -156,7 +151,6 @@ export default function MySchedulePage() {
       }));
       const data = await api.saveMySchedule(payload);
       setSlots(data.schedule);
-      api.getDayBuddies().then((d) => setDayBuddies(d.buddies || {})).catch(() => {});
       api.getTodayMatches().then((d) => setTodayMatches(d.count)).catch(() => {});
     } catch (err) {
       showToast(err.message, 'error');
@@ -361,7 +355,6 @@ export default function MySchedulePage() {
           {DAYS.map((label, dayIndex) => {
             const daySlots = slots.filter((s) => s.day_of_week === dayIndex);
             const isToday = dayIndex === today;
-            const buddies = dayBuddies[dayIndex] || [];
             return (
               <div key={dayIndex}>
                 <div className={`sched-row ${isToday ? 'sched-row-today' : ''}`}>
@@ -384,16 +377,6 @@ export default function MySchedulePage() {
                     ))}
                     {daySlots.length === 0 && addingDay !== dayIndex && (
                       <span className="sched-empty">—</span>
-                    )}
-                    {buddies.length > 0 && !addingDay && !editingSlot && (
-                      <div className="sched-buddies">
-                        {buddies.slice(0, 3).map(b => (
-                          <div key={b.user_id} className="sched-buddy-avatar-wrap" title={b.name} onClick={() => navigate('/discover')}>
-                            <Avatar name={b.name} size={24} />
-                          </div>
-                        ))}
-                        {buddies.length > 3 && <span className="sched-buddy-more">+{buddies.length - 3}</span>}
-                      </div>
                     )}
                   </div>
                   {addingDay !== dayIndex && editingSlot === null && daySlots.length < 2 && (

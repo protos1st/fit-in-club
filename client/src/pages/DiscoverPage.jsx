@@ -158,10 +158,14 @@ export default function DiscoverPage() {
     let result = [...pool];
     if (tab === 'matches') result = result.filter(p => !connectedTo.has(p.user_id));
     if (genderFilter) result = result.filter(p => p.gender === genderFilter);
-    if (trainingFilter.length > 0) result = result.filter(p => {
+    const matchCount = (p) => {
       const userTypes = p.training_type?.split(',').map(t => t.trim()) || [];
-      return trainingFilter.some(f => userTypes.includes(f));
-    });
+      return trainingFilter.filter(f => userTypes.includes(f)).length;
+    };
+    if (trainingFilter.length > 0) {
+      result = result.filter(p => matchCount(p) > 0);
+      result.sort((a, b) => matchCount(b) - matchCount(a));
+    }
     if (dayFilter !== '' && tab === 'matches') {
       result = result.filter(p => p.overlapping_slots?.some(s => s.day_of_week === Number(dayFilter)));
     }
