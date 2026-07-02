@@ -1600,6 +1600,7 @@ input, select, textarea {
   justify-content: space-between;
   gap: 12px;
 }
+.profile-setting + .profile-setting { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--color-line); }
 .profile-setting-title {
   font-weight: 600;
   font-size: 0.9rem;
@@ -1612,7 +1613,6 @@ input, select, textarea {
 .profile-setting-link { cursor: pointer; border-radius: 8px; padding: 8px; margin: -8px; transition: background 0.15s; }
 .profile-setting-link:hover { background: rgba(0,0,0,0.03); }
 [data-theme="dark"] .profile-setting-link:hover { background: rgba(255,255,255,0.03); }
-.profile-setting-danger { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--color-line); }
 .profile-setting-danger-title { color: var(--color-danger); }
 .profile-bio-input { resize: vertical; }
 
