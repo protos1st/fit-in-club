@@ -156,6 +156,7 @@ export default function DiscoverPage() {
   const queue = useMemo(() => {
     const pool = tab === 'live' ? live : matches;
     let result = [...pool];
+    if (tab === 'matches') result = result.filter(p => !connectedTo.has(p.user_id));
     if (genderFilter) result = result.filter(p => p.gender === genderFilter);
     if (trainingFilter.length > 0) result = result.filter(p => {
       const userTypes = p.training_type?.split(',').map(t => t.trim()) || [];
@@ -164,8 +165,11 @@ export default function DiscoverPage() {
     if (dayFilter !== '' && tab === 'matches') {
       result = result.filter(p => p.overlapping_slots?.some(s => s.day_of_week === Number(dayFilter)));
     }
+    if (tab === 'live') {
+      result.sort((a, b) => (connectedTo.has(b.user_id) ? 1 : 0) - (connectedTo.has(a.user_id) ? 1 : 0));
+    }
     return result;
-  }, [tab, live, matches, genderFilter, trainingFilter, dayFilter]);
+  }, [tab, live, matches, genderFilter, trainingFilter, dayFilter, connectedTo]);
 
   // Reset card index when tab or filters change
   useEffect(() => { setCardIdx(0); }, [tab, genderFilter, trainingFilter.join(','), dayFilter]);
